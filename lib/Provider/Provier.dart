@@ -1,8 +1,7 @@
 import 'dart:convert';
 
 import 'package:alaram/Model/Model.dart';
-import 'package:alaram/Screen/Add_Alarm.dart';
-import 'package:alaram/main.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -11,6 +10,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 
 import 'package:timezone/timezone.dart' as tz;
+
+import '../Screen/home.dart';
 
 class alarmprovider extends ChangeNotifier {
   late SharedPreferences preferences;
