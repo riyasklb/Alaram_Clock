@@ -33,23 +33,14 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFEEEFF5),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Icon(
-              Icons.menu,
-              color: Colors.white,
-            ),
-          )
-        ],
+        backgroundColor: Colors.red,
         title: Text(
           'Alarm Clock',
           style: GoogleFonts.lato(
-            // Applying Google Fonts
-            textStyle: TextStyle(color: Colors.black),
+         
+            textStyle: TextStyle(color: Colors.white),
           ),
         ),
         centerTitle: true,
@@ -58,7 +49,7 @@ class _MyAppState extends State<MyApp> {
         children: [
           Container(
             decoration: BoxDecoration(
-                color: Colors.white,
+                color: Colors.red,
                 boxShadow: [
                   BoxShadow(
                     color: const Color.fromARGB(36, 0, 0, 0), // Shadow color
@@ -82,7 +73,7 @@ class _MyAppState extends State<MyApp> {
                 textStyle: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
-                  color: Colors.black,
+                  color: Colors.white,
                 ),
               ),
             )),
@@ -103,11 +94,10 @@ class _MyAppState extends State<MyApp> {
                           decoration: BoxDecoration(
                             boxShadow: [
                               BoxShadow(
-                                color: const Color.fromARGB(
-                                    53, 0, 0, 0), // Shadow color
-                                offset: Offset(0, 4), // Shadow position
-                                blurRadius: 6, // Blurring the shadow
-                                spreadRadius: 2, // Extending the shadow
+                                color: const Color.fromARGB(29, 0, 0, 0), // Shadow color
+                                offset: Offset(0, 2), // Shadow position
+                                blurRadius: 3, // Blurring the shadow
+                                spreadRadius: 1, // Extending the shadow
                               ),
                             ],
                             borderRadius: BorderRadius.circular(10),
@@ -150,6 +140,7 @@ class _MyAppState extends State<MyApp> {
                                       ],
                                     ),
                                     CupertinoSwitch(
+                                        activeColor: Colors.red,
                                         value: (alarm.modelist[index]
                                                     .milliseconds! <
                                                 DateTime.now()
@@ -178,21 +169,41 @@ class _MyAppState extends State<MyApp> {
           }),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => AddAlarm()));
-        },
-        backgroundColor: Colors.red,
-        child: Icon(
-          Icons.add,
-          color: Colors.white,
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.only(bottom: 5),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+          child: ElevatedButton(
+            onPressed: () {
+              // Your button logic here
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => AddAlarm()));
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red, // Button background color
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30.0),
+              ),
+              elevation: 6, // Add elevation to the button
+              padding:
+                  EdgeInsets.symmetric(vertical: 16), // Adjusts button size
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.add, color: Colors.white),
+                SizedBox(width: 8),
+                Text(
+                  'Add New Alarm',
+                  style: TextStyle(color: Colors.white, fontSize: 18),
+                ),
+              ],
+            ),
+          ),
         ),
-        // Optional: You can add elevation or adjust other properties
-        elevation: 6,
       ),
-      floatingActionButtonLocation:
-          FloatingActionButtonLocation.centerFloat, // Center the FAB
+// Center the FAB
     );
   }
 }

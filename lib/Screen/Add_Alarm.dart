@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:alaram/Provider/Provier.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
@@ -34,22 +35,28 @@ class _AddAlaramState extends State<AddAlarm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Icon(Icons.check),
-          )
-        ],
-        automaticallyImplyLeading: true,
-        title: const Text(
+        backgroundColor: Colors.red,
+        automaticallyImplyLeading: false,
+        title:  Text(
           'Add Alarm',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: GoogleFonts.lato( // Apply Google Font here
+            textStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w600,color: Colors.white),
+          ),
         ),
         centerTitle: true,
+        leading: InkWell(
+            onTap: () {
+              Navigator.pop(context);
+            },
+            child: Icon(
+              Icons.arrow_back_ios,
+              color: Colors.white,
+            )),
       ),
       body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
@@ -71,6 +78,7 @@ class _AddAlaramState extends State<AddAlarm> {
               },
             )),
           ),
+          SizedBox(height: 20,),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Container(
@@ -80,13 +88,19 @@ class _AddAlaramState extends State<AddAlarm> {
                   controller: controller,
                 )),
           ),
+           SizedBox(height: 20,),
           Row(
             children: [
               Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Text(" Repeat daily"),
+                child: Text(
+          'Repeat daily',
+          style: GoogleFonts.lato( // Apply Google Font here
+            textStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          ),
+        ),
               ),
-              CupertinoSwitch(
+              CupertinoSwitch(activeColor: Colors.red,
                 value: repeat,
                 onChanged: (bool value) {
                   repeat = value;
@@ -101,23 +115,43 @@ class _AddAlaramState extends State<AddAlarm> {
                 },
               ),
             ],
+          ),SizedBox(height: 50,),
+          Container(width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+            child: ElevatedButton(
+                onPressed: () {
+                  Random random = new Random();
+                  int randomNumber = random.nextInt(100);
+
+                  context.read<alarmprovider>().SetAlaram(controller.text,
+                      dateTime!, true, name!, randomNumber, Milliseconds!);
+                  context.read<alarmprovider>().SetData();
+
+                  context
+                      .read<alarmprovider>()
+                      .SecduleNotification(notificationtime!, randomNumber);
+
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red, // Button background color
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  elevation: 6, // Add elevation to the button
+                  padding:
+                      EdgeInsets.symmetric(vertical: 16), // Adjusts button size
+                ),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20, ),
+                  child: Text(
+                    "Set Alaram",
+                 style: GoogleFonts.lato( // Apply Google Font here
+            textStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.w600,color: Colors.white),
           ),
-          ElevatedButton(
-              onPressed: () {
-                Random random = new Random();
-                int randomNumber = random.nextInt(100);
-
-                context.read<alarmprovider>().SetAlaram(controller.text,
-                    dateTime!, true, name!, randomNumber, Milliseconds!);
-                context.read<alarmprovider>().SetData();
-
-                context
-                    .read<alarmprovider>()
-                    .SecduleNotification(notificationtime!, randomNumber);
-
-                Navigator.pop(context);
-              },
-              child: Text("Set Alaram")),
+                  ),
+                )),
+          ),
         ],
       ),
     );
