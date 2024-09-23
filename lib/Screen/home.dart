@@ -1,9 +1,7 @@
 import 'package:flutter/cupertino.dart';
-
 import 'dart:async';
 import 'package:alaram/Provider/Provier.dart';
 import 'package:alaram/Screen/Add_Alarm.dart';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -35,11 +33,11 @@ class _MyAppState extends State<MyApp> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.red,
         title: Text(
           'Alarm Clock',
           style: GoogleFonts.lato(
-         
             textStyle: TextStyle(color: Colors.white),
           ),
         ),
@@ -53,8 +51,7 @@ class _MyAppState extends State<MyApp> {
                 boxShadow: [
                   BoxShadow(
                     color: const Color.fromARGB(36, 0, 0, 0), // Shadow color
-                    offset:
-                        Offset(0, 4), // Shadow position (horizontal, vertical)
+                    offset: Offset(0, 4), // Shadow position (horizontal, vertical)
                     blurRadius: 4, // Blurring the shadow
                     spreadRadius: 2, // Extending the shadow
                   ),
@@ -69,7 +66,6 @@ class _MyAppState extends State<MyApp> {
                     DateTime.now(),
                   ),
               style: GoogleFonts.roboto(
-                // Applying Google Fonts
                 textStyle: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -82,90 +78,107 @@ class _MyAppState extends State<MyApp> {
             height: 20,
           ),
           Consumer<alarmprovider>(builder: (context, alarm, child) {
-            return Container(
-              height: MediaQuery.of(context).size.height * 0.7,
-              child: ListView.builder(
-                  itemCount: alarm.modelist.length,
-                  itemBuilder: (BuildContext, index) {
-                    return Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Container(
-                          height: MediaQuery.of(context).size.height * 0.1,
-                          decoration: BoxDecoration(
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color.fromARGB(29, 0, 0, 0), // Shadow color
-                                offset: Offset(0, 2), // Shadow position
-                                blurRadius: 3, // Blurring the shadow
-                                spreadRadius: 1, // Extending the shadow
-                              ),
-                            ],
-                            borderRadius: BorderRadius.circular(10),
-                            color: Colors.white,
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                          alarm.modelist[index].dateTime!,
-                                          style: GoogleFonts.roboto(
-                                            // Applying Google Fonts
-                                            textStyle: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16,
-                                              color: Colors.black,
+            if (alarm.modelist.isEmpty) {
+              // Show message when the list is empty
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 50.0),
+                  child: Text(
+                    'No alarms set yet.',
+                    style: GoogleFonts.lato(
+                      textStyle: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            } else {
+              // Show the list of alarms when available
+              return Container(
+                height: MediaQuery.of(context).size.height * 0.7,
+                child: ListView.builder(
+                    itemCount: alarm.modelist.length,
+                    itemBuilder: (BuildContext, index) {
+                      return Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            height: MediaQuery.of(context).size.height * 0.1,
+                            decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color.fromARGB(29, 0, 0, 0), // Shadow color
+                                  offset: Offset(0, 2), // Shadow position
+                                  blurRadius: 3, // Blurring the shadow
+                                  spreadRadius: 1, // Extending the shadow
+                                ),
+                              ],
+                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.white,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            alarm.modelist[index].dateTime!,
+                                            style: GoogleFonts.roboto(
+                                              textStyle: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                                color: Colors.black,
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(left: 8.0),
-                                          child: Text(
-                                            "|" +
-                                                alarm.modelist[index].label
-                                                    .toString(),
-                                            style: GoogleFonts
-                                                .lato(), // Applying Google Fonts
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 8.0),
+                                            child: Text(
+                                              "|" +
+                                                  alarm.modelist[index].label
+                                                      .toString(),
+                                              style: GoogleFonts
+                                                  .lato(), // Applying Google Fonts
+                                            ),
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                    CupertinoSwitch(
-                                        activeColor: Colors.red,
-                                        value: (alarm.modelist[index]
-                                                    .milliseconds! <
-                                                DateTime.now()
-                                                    .microsecondsSinceEpoch)
-                                            ? false
-                                            : alarm.modelist[index].check,
-                                        onChanged: (v) {
-                                          alarm.EditSwitch(index, v);
+                                        ],
+                                      ),
+                                      CupertinoSwitch(
+                                          activeColor: Colors.red,
+                                          value: (alarm.modelist[index]
+                                                      .milliseconds! <
+                                                  DateTime.now()
+                                                      .microsecondsSinceEpoch)
+                                              ? false
+                                              : alarm.modelist[index].check,
+                                          onChanged: (v) {
+                                            alarm.EditSwitch(index, v);
 
-                                          alarm.CancelNotification(
-                                              alarm.modelist[index].id!);
-                                        }),
-                                  ],
-                                ),
-                                Text(
-                                  alarm.modelist[index].when!,
-                                  style: GoogleFonts
-                                      .lato(), // Applying Google Fonts
-                                )
-                              ],
+                                            alarm.CancelNotification(
+                                                alarm.modelist[index].id!);
+                                          }),
+                                    ],
+                                  ),
+                                  Text(
+                                    alarm.modelist[index].when!,
+                                    style: GoogleFonts
+                                        .lato(), // Applying Google Fonts
+                                  )
+                                ],
+                              ),
                             ),
-                          ),
-                        ));
-                  }),
-            );
+                          ));
+                    }),
+              );
+            }
           }),
         ],
       ),
@@ -175,7 +188,6 @@ class _MyAppState extends State<MyApp> {
           padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
           child: ElevatedButton(
             onPressed: () {
-              // Your button logic here
               Navigator.push(
                   context, MaterialPageRoute(builder: (context) => AddAlarm()));
             },
@@ -185,8 +197,7 @@ class _MyAppState extends State<MyApp> {
                 borderRadius: BorderRadius.circular(30.0),
               ),
               elevation: 6, // Add elevation to the button
-              padding:
-                  EdgeInsets.symmetric(vertical: 16), // Adjusts button size
+              padding: EdgeInsets.symmetric(vertical: 16), // Adjusts button size
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -203,7 +214,6 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
       ),
-// Center the FAB
     );
   }
 }
