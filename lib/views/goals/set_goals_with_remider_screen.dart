@@ -182,99 +182,118 @@ void _saveOptionalGoals() async {
           child: Form(
             key: _formKey,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSectionHeader('Medicine Intake'),
-                _buildMultiSelectChip(
-                  label: 'Select Medicine Times',
-                  items: ['Morning', 'Afternoon', 'Evening', 'Night'],
-                  selectedItems: selectedMedicineTimes,
-                  onSelectionChanged: (selectedList) {
-                    setState(() => selectedMedicineTimes = selectedList);
-                  },
-                ),
-                _buildDropdownField(
-                  label: 'Frequency',
-                  value: medicineFrequency,
-                  items: ['Daily', 'Twice a Day', 'Thrice a Day'],
-                  onChanged: (val) => setState(() => medicineFrequency = val),
-                ),
-                _buildTextField(
-                  controller: medicineDosageController,
-                  labelText: 'Dosage (e.g., 1 tablet)',
-                  validator: (value) =>
-                      value!.isEmpty ? 'Enter dosage amount' : null,
-                ),
-                SizedBox(height: 20.h),
-                _buildSectionHeader('Food Intake'),
-                _buildToggleSwitch('Enable Breakfast', enableBreakfast,
-                    (val) => setState(() => enableBreakfast = val)),
-                _buildToggleSwitch('Enable Lunch', enableLunch,
-                    (val) => setState(() => enableLunch = val)),
-                _buildToggleSwitch('Enable Dinner', enableDinner,
-                    (val) => setState(() => enableDinner = val)),
-                SizedBox(height: 20.h),
-                _buildSectionHeader('Injection'),
-                _buildDropdownField(
-                  label: 'Frequency',
-                  value: injectionFrequency,
-                  items: ['Daily', 'Twice a Day', 'Thrice a Day'],
-                  onChanged: (val) => setState(() => injectionFrequency = val),
-                ),
-                _buildMultiSelectChip(
-                  label: 'Select Injection Times',
-                  items: ['Morning', 'Afternoon', 'Evening', 'Night'],
-                  selectedItems: selectedInjectionTimes,
-                  onSelectionChanged: (selectedList) {
-                    setState(() => selectedInjectionTimes = selectedList);
-                  },
-                ),
-                _buildTextField(
-                  controller: injectionDosageController,
-                  labelText: 'Dosage (e.g., 2ml)',
-                  validator: (value) =>
-                      value!.isEmpty ? 'Enter dosage amount' : null,
-                ),
-                SizedBox(height: 30.h),
-                Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      onPressed: _saveOptionalGoals,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: kblue,
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 80.w, vertical: 15.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12.r),
-                        ),
-                      ),
-                      child: Text(
-                        'Save Goals',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                ElevatedButton(
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => BottumNavBar(),
-                    ),
-                  );
-                },
-                child: Text('Skip'),
-              ),      ],
-                ),
-              ],
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    _buildSectionHeader('Medicine Intake'),
+    _buildMultiSelectChip(
+      label: 'Select Medicine Times',
+      items: ['Morning', 'Afternoon', 'Evening', 'Night'],
+      selectedItems: selectedMedicineTimes,
+      onSelectionChanged: (selectedList) {
+        setState(() => selectedMedicineTimes = selectedList);
+      },
+    ),
+    _buildDropdownField(
+      label: 'Frequency',
+      value: medicineFrequency,
+      items: ['Daily', 'Every Other Day', 'Weekly'],
+      onChanged: (val) => setState(() => medicineFrequency = val),
+    ),
+    _buildTextField(
+      controller: medicineDosageController,
+      labelText: 'Dosage (e.g., 1 tablet)',
+      validator: (value) =>
+          value!.isEmpty ? 'Enter dosage amount' : null,
+    ),
+    SizedBox(height: 20.h),
+    
+    _buildSectionHeader('Food Intake'),
+    _buildToggleSwitch(
+      'Enable Breakfast', 
+      enableBreakfast,
+      (val) => setState(() => enableBreakfast = val)
+    ),
+    _buildToggleSwitch(
+      'Enable Lunch', 
+      enableLunch,
+      (val) => setState(() => enableLunch = val)
+    ),
+    _buildToggleSwitch(
+      'Enable Dinner', 
+      enableDinner,
+      (val) => setState(() => enableDinner = val)
+    ),
+    SizedBox(height: 20.h),
+    
+    _buildSectionHeader('Injection'),
+    _buildDropdownField(
+      label: 'Frequency',
+      value: injectionFrequency,
+      items: ['Daily', 'Every Other Day', 'Weekly'],
+      onChanged: (val) => setState(() => injectionFrequency = val),
+    ),
+    _buildMultiSelectChip(
+      label: 'Select Injection Times',
+      items: ['Morning', 'Afternoon', 'Evening', 'Night'],
+      selectedItems: selectedInjectionTimes,
+      onSelectionChanged: (selectedList) {
+        setState(() => selectedInjectionTimes = selectedList);
+      },
+    ),
+    _buildTextField(
+      controller: injectionDosageController,
+      labelText: 'Dosage (e.g., 2ml)',
+      validator: (value) =>
+          value!.isEmpty ? 'Enter dosage amount' : null,
+    ),
+    SizedBox(height: 30.h),
+    
+    Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        ElevatedButton(
+          onPressed: _saveOptionalGoals,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: kblue,
+            padding: EdgeInsets.symmetric(
+                horizontal: 80.w, vertical: 15.h),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+          ),
+          child: Text(
+            'Save Goals',
+            style: GoogleFonts.poppins(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
             ),
           ),
         ),
-      ),
-    );
+        ElevatedButton(
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => BottumNavBar(),
+              ),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.grey, // Example color for the skip button
+          ),
+          child: Text('Skip'),
+        ),
+      ],
+    ),
+  ],
+)
+
+            ),
+          ),
+        ),
+      );
+    
   }
 
   Widget _buildSectionHeader(String title) {

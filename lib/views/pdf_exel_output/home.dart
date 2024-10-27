@@ -2,6 +2,7 @@ import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/constans/model/hive_model.dart';
 import 'package:alaram/tools/constans/model/profile_model.dart';
 import 'package:alaram/views/bottum_nav/video_totorial_screen.dart';
+import 'package:alaram/views/callender/callender_acreen.dart';
 import 'package:alaram/views/dashboard_screen.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -328,7 +329,7 @@ class _HomeScreenState extends State<HomeScreen> {
             size: 28.r,
           ),
           onPressed: () {
-            Get.to(CalendarScreen());
+            Get.to(GoalCalendarScreen());
             // Notification functionality here
           },
         ),

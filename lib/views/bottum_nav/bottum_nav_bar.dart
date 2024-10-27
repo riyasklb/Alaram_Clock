@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:alaram/tools/constans/color.dart';
-import 'package:alaram/views/add_daily_acitivity_screen.dart';
+
+import 'package:alaram/views/daily_goals/daily_goal_screen.dart';
 import 'package:alaram/views/education.dart';
 import 'package:alaram/views/pdf_exel_output/home.dart';
 import 'package:alaram/views/profile_screen.dart';
@@ -36,7 +37,7 @@ class _BottumNavBarState extends State<BottumNavBar> {
     final List<Widget> bottomBarPages = [
     HomeScreen(),
      
-      AddDailyActivitiesScreen(),
+      GoalCompletionScreen(),
       ProfileScreen(),
       EducationResourcesScreen(),
      

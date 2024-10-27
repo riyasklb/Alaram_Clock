@@ -1,17 +1,18 @@
-import 'package:alaram/tools/constans/model/profile_model.dart';
+import 'package:alaram/tools/constans/color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
-
 import 'auth/register_screen.dart';
+import 'package:alaram/tools/constans/model/profile_model.dart';
 
 class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final profileBox = Hive.box<ProfileModel>('profileBox');
- final goalBox = Hive.box('goalBox');
+    final goalBox = Hive.box('goalBox');
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -20,247 +21,329 @@ class ProfileScreen extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontSize: 24.sp,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: kwhite,
           ),
         ),
-        backgroundColor: Colors.blueAccent,
-        elevation: 8,
+        backgroundColor: Colors.transparent,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blueAccent, Colors.lightBlue],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        elevation: 0,
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16.w),
-        child: SingleChildScrollView(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _buildProfileHeader(profileBox),
+              Divider(thickness: 1, color: Colors.grey[300]),
               SizedBox(height: 20.h),
-
-              // Profile Avatar
-              CircleAvatar(
-                radius: 60.r,
-                backgroundColor: Colors.blueAccent.withOpacity(0.2),
-                child: Icon(
-                  Icons.person,
-                  size: 80.r,
-                  color: Colors.blueAccent,
-                ),
-              ),
-
+              _buildSectionTitle('Profile Information'),
+              SizedBox(height: 10.h),
+              ..._buildProfileCards(profileBox),
               SizedBox(height: 20.h),
-
-              // Profile Data Cards
-              _buildProfileCard('Username', profileBox.get('userProfile')?.username),
-              _buildProfileCard('Email', profileBox.get('userProfile')?.email),
-              _buildProfileCard('Age', profileBox.get('userProfile')?.age.toString()),
-              _buildProfileCard('Mobile', profileBox.get('userProfile')?.mobile),
-              _buildProfileCard('NHS Number', profileBox.get('userProfile')?.nhsNumber),
-              _buildProfileCard('Gender', profileBox.get('userProfile')?.gender),
-              _buildProfileCard('Ethnicity', profileBox.get('userProfile')?.ethnicity),
-              _buildProfileCard('Water Intake Goal', profileBox.get('userProfile')?.waterIntakeGoal?.toString() ?? 'Not Set'),
-              _buildProfileCard('Sleep Goal', profileBox.get('userProfile')?.sleepGoal?.toString() ?? 'Not Set'),
-              _buildProfileCard('Walking Goal', profileBox.get('userProfile')?.walkingGoal?.toString() ?? 'Not Set'),
-          Text('reminders'),
-
-             // Display Data from goalBox
-              _buildGoalCard('Medicine Times', goalBox.get('medicineTimes')?.toString() ?? 'Not Set'),
-              _buildGoalCard('Medicine Frequency', goalBox.get('medicineFrequency')?.toString() ?? 'Not Set'),
-              _buildGoalCard('Medicine Dosage', goalBox.get('medicineDosage')?.toString() ?? 'Not Set'),
-              _buildGoalCard('Injection Times', goalBox.get('injectionTimes')?.toString() ?? 'Not Set'),
-              _buildGoalCard('Injection Frequency', goalBox.get('injectionFrequency')?.toString() ?? 'Not Set'),
-              _buildGoalCard('Injection Dosage', goalBox.get('injectionDosage')?.toString() ?? 'Not Set'),
-              _buildGoalCard('Breakfast Enabled', goalBox.get('enableBreakfast') == true ? 'Yes' : 'No'),
-              _buildGoalCard('Lunch Enabled', goalBox.get('enableLunch') == true ? 'Yes' : 'No'),
-              _buildGoalCard('Dinner Enabled', goalBox.get('enableDinner') == true ? 'Yes' : 'No'),
-
+              _buildSectionTitle('Goals & Reminders'),
+              SizedBox(height: 10.h),
+              ..._buildGoalCards(goalBox),
               SizedBox(height: 30.h),
+              _buildLogoutButton(context, profileBox),
+              SizedBox(height: 40.h),
+          kheight40,kheight40,  ],
+          ),
+        ),
+      ),
+    );
+  }
 
-              // Logout Button with Confirmation
-              ElevatedButton(
-                onPressed: () => _showLogoutConfirmation(context, profileBox),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
-                  padding: EdgeInsets.symmetric(horizontal: 50.w, vertical: 15.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  elevation: 8,
-                ),
-                child: Text(
-                  'Logout',
-                  style: GoogleFonts.poppins(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
+  Widget _buildProfileHeader(Box<ProfileModel> profileBox) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.blueAccent, Colors.lightBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(15.r),
+        boxShadow: [
+          BoxShadow(color: Colors.black26, blurRadius: 10.r, offset: Offset(0, 4)),
+        ],
+      ),
+      padding: EdgeInsets.all(20.w),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          CircleAvatar(
+            radius: 40.r,
+            backgroundColor: Colors.white,
+            child: Icon(Icons.person, size: 50.r, color: Colors.blueAccent),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                profileBox.get('userProfile')?.username ?? 'User',
+                style: GoogleFonts.poppins(
+                  fontSize: 22.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
-
-              SizedBox(height: 40.h),
+              SizedBox(height: 4.h),
+              Text(
+                profileBox.get('userProfile')?.email ?? 'Email',
+                style: GoogleFonts.poppins(
+                  fontSize: 16.sp,
+                  color: Colors.white70,
+                ),
+              ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
 
- // Helper to build goal data cards
-  Widget _buildGoalCard(String label, String value) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 8.h),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.r),
+  List<Widget> _buildProfileCards(Box<ProfileModel> profileBox) {
+    return [
+      _buildProfileCard('Username', profileBox.get('userProfile')?.username),
+      _buildProfileCard('Email', profileBox.get('userProfile')?.email),
+      _buildProfileCard('Age', profileBox.get('userProfile')?.age?.toString()),
+      _buildProfileCard('Mobile', profileBox.get('userProfile')?.mobile),
+      _buildProfileCard('NHS Number', profileBox.get('userProfile')?.nhsNumber),
+      _buildProfileCard('Gender', profileBox.get('userProfile')?.gender),
+      _buildProfileCard('Ethnicity', profileBox.get('userProfile')?.ethnicity),
+      _buildProfileCard('Water Intake Goal', profileBox.get('userProfile')?.waterIntakeGoal?.toString() ?? 'Not Set'),
+      _buildProfileCard('Sleep Goal', profileBox.get('userProfile')?.sleepGoal?.toString() ?? 'Not Set'),
+      _buildProfileCard('Walking Goal', profileBox.get('userProfile')?.walkingGoal?.toString() ?? 'Not Set'),
+    ];
+  }
+
+  List<Widget> _buildGoalCards(Box goalBox) {
+    return [
+      _buildGoalCard('Medicine Times', goalBox.get('medicineTimes')?.toString() ?? 'Not Set'),
+      _buildGoalCard('Medicine Frequency', goalBox.get('medicineFrequency')?.toString() ?? 'Not Set'),
+      _buildGoalCard('Medicine Dosage', goalBox.get('medicineDosage')?.toString() ?? 'Not Set'),
+      _buildGoalCard('Injection Times', goalBox.get('injectionTimes')?.toString() ?? 'Not Set'),
+      _buildGoalCard('Injection Frequency', goalBox.get('injectionFrequency')?.toString() ?? 'Not Set'),
+      _buildGoalCard('Injection Dosage', goalBox.get('injectionDosage')?.toString() ?? 'Not Set'),
+      _buildGoalCard('Breakfast Enabled', goalBox.get('enableBreakfast') == true ? 'Yes' : 'No'),
+      _buildGoalCard('Lunch Enabled', goalBox.get('enableLunch') == true ? 'Yes' : 'No'),
+      _buildGoalCard('Dinner Enabled', goalBox.get('enableDinner') == true ? 'Yes' : 'No')
+    ];
+  }
+
+Widget _buildProfileCard(String label, String? value) {
+  IconData iconData;
+  switch (label) {
+    case 'Username':
+      iconData = Icons.person;
+      break;
+    case 'Email':
+      iconData = Icons.email;
+      break;
+    case 'Age':
+      iconData = Icons.cake;
+      break;
+    case 'Mobile':
+      iconData = Icons.phone;
+      break;
+    case 'NHS Number':
+      iconData = Icons.local_hospital;
+      break;
+    case 'Gender':
+      iconData = Icons.transgender;
+      break;
+    case 'Ethnicity':
+      iconData = Icons.people;
+      break;
+    case 'Water Intake Goal':
+      iconData = Icons.local_drink;
+      break;
+    case 'Sleep Goal':
+      iconData = Icons.bed;
+      break;
+    case 'Walking Goal':
+      iconData = Icons.directions_walk;
+      break;
+    default:
+      iconData = Icons.info; // Default icon for unassigned labels
+      break;
+  }
+
+  return Card(
+    margin: EdgeInsets.symmetric(vertical: 8.h),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12.r),
+    ),
+    elevation: 4,
+    color: Colors.blue[50],
+    child: Padding(
+      padding: EdgeInsets.all(16.w),
+      child: Row(
+        children: [
+          Icon(iconData, size: 28.r, color: Colors.blueAccent),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.bold, color: Colors.grey[800])),
+                SizedBox(height: 4.h),
+                Text(value ?? 'Not Available', style: GoogleFonts.poppins(fontSize: 16.sp, color: Colors.grey[600])),
+              ],
+            ),
+          ),
+        ],
       ),
-      elevation: 4,
-      child: Padding(
-        padding: EdgeInsets.all(16.w),
-        child: Row(
-          children: [
-            Icon(
-              Icons.check_circle_outline,
-              size: 28.r,
-              color: Colors.blueAccent,
+    ),
+  );
+}
+
+Widget _buildGoalCard(String label, String value) {
+  IconData iconData;
+  switch (label) {
+    case 'Medicine Times':
+      iconData = Icons.access_time;
+      break;
+    case 'Medicine Frequency':
+      iconData = Icons.repeat;
+      break;
+    case 'Medicine Dosage':
+      iconData = Icons.healing;
+      break;
+    case 'Injection Times':
+      iconData = Icons.schedule;
+      break;
+    case 'Injection Frequency':
+      iconData = Icons.replay;
+      break;
+    case 'Injection Dosage':
+      iconData = Icons.local_pharmacy;
+      break;
+    case 'Breakfast Enabled':
+      iconData = Icons.breakfast_dining;
+      break;
+    case 'Lunch Enabled':
+      iconData = Icons.lunch_dining;
+      break;
+    case 'Dinner Enabled':
+      iconData = Icons.dinner_dining;
+      break;
+    default:
+      iconData = Icons.check_circle_outline;
+      break;
+  }
+
+  return Card(
+    margin: EdgeInsets.symmetric(vertical: 8.h),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12.r),
+    ),
+    elevation: 4,
+    color: Colors.green[50],
+    child: Padding(
+      padding: EdgeInsets.all(16.w),
+      child: Row(
+        children: [
+          Icon(iconData, size: 28.r, color: Colors.blueAccent),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.bold, color: Colors.grey[800])),
+                SizedBox(height: 4.h),
+                Text(value, style: GoogleFonts.poppins(fontSize: 16.sp, color: Colors.grey[600])),
+              ],
             ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: GoogleFonts.poppins(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[800],
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    value,
-                    style: GoogleFonts.poppins(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+
+  // Widget _buildGoalCard(String label, String value) {
+  //   return Card(
+  //     margin: EdgeInsets.symmetric(vertical: 8.h),
+  //     shape: RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.circular(12.r),
+  //     ),
+  //     elevation: 4,
+  //     color: Colors.green[50],
+  //     child: Padding(
+  //       padding: EdgeInsets.all(16.w),
+  //       child: Row(
+  //         children: [
+  //           Icon(Icons.check_circle_outline, size: 28.r, color: Colors.blueAccent),
+  //           SizedBox(width: 12.w),
+  //           Expanded(
+  //             child: Column(
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Text(label, style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.bold, color: Colors.grey[800])),
+  //                 SizedBox(height: 4.h),
+  //                 Text(value, style: GoogleFonts.poppins(fontSize: 16.sp, color: Colors.grey[600])),
+  //               ],
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: GoogleFonts.poppins(fontSize: 20.sp, fontWeight: FontWeight.bold, color: Colors.blueAccent),
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context, Box profileBox) {
+    return ElevatedButton(
+      onPressed: () => _showLogoutConfirmation(context, profileBox),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.redAccent,
+        padding: EdgeInsets.symmetric(horizontal: 50.w, vertical: 15.h),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.r),
         ),
+      ),
+      child: Text(
+        'Logout',
+        style: GoogleFonts.poppins(fontSize: 18.sp, fontWeight: FontWeight.w600, color: Colors.white),
       ),
     );
   }
 
-//  Widget _buildProfileCard(String label, String? value) {
-//     return _buildGoalCard(label, value ?? 'Not Available');
-//   }
-  // Helper to build profile data cards
-  Widget _buildProfileCard(String label, String? value) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 8.h),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      elevation: 4,
-      child: Padding(
-        padding: EdgeInsets.all(16.w),
-        child: Row(
-          children: [
-            Icon(
-              _getIconForLabel(label),
-              size: 28.r,
-              color: Colors.blueAccent,
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: GoogleFonts.poppins(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[800],
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    value ?? 'Not Available',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.grey[600],
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Helper to get icons for each label
-  IconData _getIconForLabel(String label) {
-    switch (label) {
-      case 'Username':
-        return Icons.person;
-      case 'Email':
-        return Icons.email;
-      case 'Age':
-        return Icons.cake;
-      case 'Mobile':
-        return Icons.phone;
-      case 'NHS Number':
-        return Icons.verified;
-      case 'Gender':
-        return Icons.people;
-      case 'Ethnicity':
-        return Icons.assignment_ind;
-      case 'Water Intake Goal':
-        return Icons.local_drink;
-      case 'Sleep Goal':
-        return Icons.bed;
-      case 'Walking Goal':
-        return Icons.directions_walk;
-      case 'Medicine Goal':
-        return Icons.medical_services;
-      case 'Food Goal':
-        return Icons.fastfood;
-      case 'Injection Goal':
-        return Icons.mediation_outlined;
-      default:
-        return Icons.info;
-    }
-  }
-
-  // Show logout confirmation dialog with option to clear all data
   void _showLogoutConfirmation(BuildContext context, Box profileBox) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Logout and Clear Data'),
-          content: const Text(
-              'Are you sure you want to log out and clear all data? This action cannot be undone.'),
+          title: Text('Logout and Clear Data'),
+          content: Text('Are you sure you want to log out and clear all data? This action cannot be undone.'),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context), // Close the dialog
-              child: const Text('Cancel'),
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () async {
-                // Clear all Hive boxes
                 await profileBox.clear();
-
-                // Navigate to RegisterScreen
                 Get.offAll(() => RegisterScreen());
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-              ),
-              child: const Text('Logout and Clear Data', style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+              child: Text('Logout and Clear Data', style: TextStyle(color: Colors.white)),
             ),
           ],
         );

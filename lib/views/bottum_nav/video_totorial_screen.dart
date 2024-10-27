@@ -15,19 +15,6 @@ class VideoTutorialsScreen extends StatelessWidget {
   }
 }
 
-// Calendar Screen
-class CalendarScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        'Calendar Placeholder',
-        style: GoogleFonts.lato(fontSize: 18.sp),
-      ),
-    );
-  }
-}
-
 
 
 
