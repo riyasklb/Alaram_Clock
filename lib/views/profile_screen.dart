@@ -53,7 +53,7 @@ class ProfileScreen extends StatelessWidget {
               SizedBox(height: 10.h),
               ..._buildGoalCards(goalBox),
               SizedBox(height: 30.h),
-              _buildLogoutButton(context, profileBox),
+              _buildLogoutButton(context, profileBox,goalBox),
               SizedBox(height: 40.h),
           kheight40,kheight40,  ],
           ),
@@ -308,46 +308,49 @@ Widget _buildGoalCard(String label, String value) {
     );
   }
 
-  Widget _buildLogoutButton(BuildContext context, Box profileBox) {
-    return ElevatedButton(
-      onPressed: () => _showLogoutConfirmation(context, profileBox),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.redAccent,
-        padding: EdgeInsets.symmetric(horizontal: 50.w, vertical: 15.h),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.r),
-        ),
+Widget _buildLogoutButton(BuildContext context, Box profileBox, Box goalBox) {
+  return ElevatedButton(
+    onPressed: () => _showLogoutConfirmation(context, profileBox, goalBox),
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.redAccent,
+      padding: EdgeInsets.symmetric(horizontal: 50.w, vertical: 15.h),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.r),
       ),
-      child: Text(
-        'Logout',
-        style: GoogleFonts.poppins(fontSize: 18.sp, fontWeight: FontWeight.w600, color: Colors.white),
-      ),
-    );
-  }
+    ),
+    child: Text(
+      'Logout',
+      style: GoogleFonts.poppins(fontSize: 18.sp, fontWeight: FontWeight.w600, color: Colors.white),
+    ),
+  );
+}
 
-  void _showLogoutConfirmation(BuildContext context, Box profileBox) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Logout and Clear Data'),
-          content: Text('Are you sure you want to log out and clear all data? This action cannot be undone.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                await profileBox.clear();
-                Get.offAll(() => RegisterScreen());
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-              child: Text('Logout and Clear Data', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
-    );
-  }
+
+void _showLogoutConfirmation(BuildContext context, Box profileBox, Box goalBox) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text('Logout and Clear Data'),
+        content: Text('Are you sure you want to log out and clear all data? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await profileBox.clear();
+              await goalBox.clear();
+              Get.offAll(() => RegisterScreen());
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            child: Text('Logout and Clear Data', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 }

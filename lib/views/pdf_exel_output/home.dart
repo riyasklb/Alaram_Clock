@@ -1,10 +1,11 @@
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/constans/model/hive_model.dart';
 import 'package:alaram/tools/constans/model/profile_model.dart';
-import 'package:alaram/views/bottum_nav/video_totorial_screen.dart';
+
 import 'package:alaram/views/callender/callender_acreen.dart';
-import 'package:alaram/views/dashboard_screen.dart';
-import 'package:fl_chart/fl_chart.dart';
+import 'package:alaram/views/daily_goals/daily_goal_screen.dart';
+import 'package:alaram/views/daily_goals/ovrvirew_goals_screen.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -38,7 +39,10 @@ class _HomeScreenState extends State<HomeScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              _buildDateTimeSection(), kheight10,
+              InkWell(onTap: (){
+                Get.to( Get.to(GoalCalendarScreen()));
+              },
+                child: _buildDateTimeSection()), kheight10,
               _buildProfileCard(),
               SizedBox(height: 20.h),
               ValueListenableBuilder(
@@ -324,24 +328,26 @@ class _HomeScreenState extends State<HomeScreen> {
       actions: [
         IconButton(
           icon: Icon(
-            Icons.notifications,
+            Icons.local_activity_sharp,
             color: Colors.white,
             size: 28.r,
           ),
           onPressed: () {
-            Get.to(GoalCalendarScreen());
+Get.to(GoalCompletionScreen()) ;
+
+           
             // Notification functionality here
           },
         ),
         SizedBox(width: 10.w),
         IconButton(
           icon: Icon(
-            Icons.dashboard,
+            Icons.view_agenda,
             color: Colors.white,
             size: 28.r,
           ),
           onPressed: () {
-            Get.to(DashboardScreen());
+            Get.to(GoalOverviewScreen());
           },
         ),
         SizedBox(width: 10.w),

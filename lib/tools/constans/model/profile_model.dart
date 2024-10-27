@@ -41,4 +41,14 @@ class ProfileModel extends HiveObject {
 
   @HiveField(12)
   String? injectionGoal;
+
+    // New fields to track actual progress
+  @HiveField(13)
+  double? actualWaterIntake;
+
+  @HiveField(14)
+  double? actualSleep;
+
+  @HiveField(15)
+  double? actualWalking;
 }
