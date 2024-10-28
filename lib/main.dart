@@ -12,6 +12,37 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
+void printStoredData() async {
+  // Access the Hive boxes
+  var profileBox = Hive.box<ProfileModel>('profileBox');
+  var activityBox = Hive.box<ActivityModel>('activityBox');
+  var settingsBox = Hive.box('settingsBox');
+  var goalBox = Hive.box('goalbox');
+
+  // Print the content of the profile box
+  print('--- Profile Data ---');
+  for (int i = 0; i < profileBox.length; i++) {
+    print(profileBox.getAt(i));
+  }
+
+  // Print the content of the activity box
+  print('--- Activity Data ---');
+  for (int i = 0; i < activityBox.length; i++) {
+    print(activityBox.getAt(i));
+  }
+
+  // Print the settings box content
+  print('--- Settings Data ---');
+  settingsBox.toMap().forEach((key, value) {
+    print('$key: $value');
+  });
+
+  // Print the goal box content
+  print('--- Goal Data ---');
+  goalBox.toMap().forEach((key, value) {
+    print('$key: $value');
+  });
+}
 
  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -38,6 +69,7 @@ void main() async {
   await Hive.openBox<ActivityModel>('activityBox');
   await Hive.openBox('settingsBox');
  await Hive.openBox('goalbox');
+ printStoredData();
   runApp(const MyApp());
 }
 

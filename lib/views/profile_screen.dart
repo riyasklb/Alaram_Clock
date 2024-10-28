@@ -130,9 +130,7 @@ class ProfileScreen extends StatelessWidget {
       _buildGoalCard('Medicine Times', goalBox.get('medicineTimes')?.toString() ?? 'Not Set'),
       _buildGoalCard('Medicine Frequency', goalBox.get('medicineFrequency')?.toString() ?? 'Not Set'),
       _buildGoalCard('Medicine Dosage', goalBox.get('medicineDosage')?.toString() ?? 'Not Set'),
-      _buildGoalCard('Injection Times', goalBox.get('injectionTimes')?.toString() ?? 'Not Set'),
-      _buildGoalCard('Injection Frequency', goalBox.get('injectionFrequency')?.toString() ?? 'Not Set'),
-      _buildGoalCard('Injection Dosage', goalBox.get('injectionDosage')?.toString() ?? 'Not Set'),
+     
       _buildGoalCard('Breakfast Enabled', goalBox.get('enableBreakfast') == true ? 'Yes' : 'No'),
       _buildGoalCard('Lunch Enabled', goalBox.get('enableLunch') == true ? 'Yes' : 'No'),
       _buildGoalCard('Dinner Enabled', goalBox.get('enableDinner') == true ? 'Yes' : 'No')
@@ -218,15 +216,7 @@ Widget _buildGoalCard(String label, String value) {
     case 'Medicine Dosage':
       iconData = Icons.healing;
       break;
-    case 'Injection Times':
-      iconData = Icons.schedule;
-      break;
-    case 'Injection Frequency':
-      iconData = Icons.replay;
-      break;
-    case 'Injection Dosage':
-      iconData = Icons.local_pharmacy;
-      break;
+    
     case 'Breakfast Enabled':
       iconData = Icons.breakfast_dining;
       break;
@@ -271,35 +261,6 @@ Widget _buildGoalCard(String label, String value) {
 }
 
 
-  // Widget _buildGoalCard(String label, String value) {
-  //   return Card(
-  //     margin: EdgeInsets.symmetric(vertical: 8.h),
-  //     shape: RoundedRectangleBorder(
-  //       borderRadius: BorderRadius.circular(12.r),
-  //     ),
-  //     elevation: 4,
-  //     color: Colors.green[50],
-  //     child: Padding(
-  //       padding: EdgeInsets.all(16.w),
-  //       child: Row(
-  //         children: [
-  //           Icon(Icons.check_circle_outline, size: 28.r, color: Colors.blueAccent),
-  //           SizedBox(width: 12.w),
-  //           Expanded(
-  //             child: Column(
-  //               crossAxisAlignment: CrossAxisAlignment.start,
-  //               children: [
-  //                 Text(label, style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.bold, color: Colors.grey[800])),
-  //                 SizedBox(height: 4.h),
-  //                 Text(value, style: GoogleFonts.poppins(fontSize: 16.sp, color: Colors.grey[600])),
-  //               ],
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
 
   Widget _buildSectionTitle(String title) {
     return Text(

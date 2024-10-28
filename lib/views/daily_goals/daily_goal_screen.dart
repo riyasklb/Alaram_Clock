@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
-import 'package:intl/intl.dart'; // Import intl package for date formatting
+import 'package:intl/intl.dart';
 
 class GoalCompletionScreen extends StatefulWidget {
   @override
@@ -14,113 +14,92 @@ class GoalCompletionScreen extends StatefulWidget {
 class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
   final profileBox = Hive.box<ProfileModel>('profileBox');
   late ProfileModel profile;
-  Box? goalBox; // Make nullable
+  Box? goalBox;
 
   double waterProgress = 0.0;
   double sleepProgress = 0.0;
   double walkingProgress = 0.0;
-  bool hasTakenBreakfast = false; // Track breakfast submission
-  bool hasTakenMedicine = false; // Track medicine submission
-  double medicineDosage = 0.0; // Track selected medicine dosage
-  String injectionDay = ""; // Track the day for the injection
-  bool hasTakenInjection = false; // Track injection submission
+  bool hasTakenBreakfast = false;
+  bool hasTakenMorningMedicine = false;
+  bool hasTakenNightMedicine = false;
+  bool hasTakenMorningInjection = false;
+  bool hasTakenNightInjection = false;
+
+  final String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     profile = profileBox.get('userProfile')!;
-    _initializeBoxes();
+    _initializeDailyGoals();
   }
 
-  Future<void> _initializeBoxes() async {
+  Future<void> _initializeDailyGoals() async {
     goalBox = await Hive.openBox('goalBox');
-    _initializeProgress();
-    setState(() {
-      hasTakenBreakfast = goalBox?.get('hasTakenBreakfast') ??
-          false; // Retrieve stored breakfast status
-      hasTakenMedicine = goalBox?.get('hasTakenMedicine') ??
-          false; // Retrieve stored medicine status
-      medicineDosage = goalBox?.get('medicineDosage') ??
-          0.0; // Retrieve stored medicine dosage
-      injectionDay = _getInjectionDay(); // Get injection day based on frequency
-    });
-  }
 
-  void _initializeProgress() {
-    setState(() {
-      waterProgress = profile.waterIntakeGoal ?? 0.0;
-      sleepProgress = profile.sleepGoal ?? 0.0;
-      walkingProgress = profile.walkingGoal ?? 0.0;
-    });
-  }
-
-  String _getInjectionDay() {
-    final today = DateTime.now();
-    final nextWeek = today.add(Duration(days: 7));
-    final dayAfterTomorrow = today.add(Duration(days: 2));
-
-    String frequency = goalBox?.get('injectionFrequency') ??
-        "not set"; // Set default to "not set"
-
-    // Check for the frequency and return appropriate message
-    if (frequency == 'Daily') {
-      return 'Today (${DateFormat.yMMMd().format(today)})';
-    } else if (frequency == 'Every Other Day') {
-      // Check if today is an even or odd day
-      return (today.day % 2 == 0)
-          ? 'Today (${DateFormat.yMMMd().format(today)})'
-          : 'Next (${DateFormat.yMMMd().format(dayAfterTomorrow)})';
-    } else if (frequency == 'Weekly') {
-      return 'Next Week (${DateFormat.yMMMd().format(nextWeek)})';
-    } else {
-      return 'No injections scheduled'; // Default case
+    String lastSavedDate = goalBox?.get('lastSavedDate') ?? '';
+    if (lastSavedDate != currentDate) {
+      _resetDailyGoals();
+      await goalBox?.put('lastSavedDate', currentDate);
     }
+
+    setState(() {
+      hasTakenBreakfast = goalBox?.get('hasTakenBreakfast') ?? false;
+      hasTakenMorningMedicine = goalBox?.get('hasTakenMorningMedicine') ?? false;
+      hasTakenNightMedicine = goalBox?.get('hasTakenNightMedicine') ?? false;
+
+      waterProgress = goalBox?.get('waterProgress') ?? profile.waterIntakeGoal ?? 0.0;
+      sleepProgress = goalBox?.get('sleepProgress') ?? profile.sleepGoal ?? 0.0;
+      walkingProgress = goalBox?.get('walkingProgress') ?? profile.walkingGoal ?? 0.0;
+      _isLoading = false;
+    });
   }
 
-  void _saveProgress() async {
-    profile.waterIntakeGoal = waterProgress;
-    profile.sleepGoal = sleepProgress;
-    profile.walkingGoal = walkingProgress;
-    await profile.save();
+  void _resetDailyGoals() {
+    setState(() {
+      hasTakenBreakfast = false;
+      hasTakenMorningMedicine = false;
+      hasTakenNightMedicine = false;
+      hasTakenMorningInjection = false;
+      hasTakenNightInjection = false;
+      waterProgress = 0.0;
+      sleepProgress = 0.0;
+      walkingProgress = 0.0;
+    });
+  }
 
-    await goalBox?.put(
-        'medicineDosage', medicineDosage); // Save selected medicine dosage
+  Future<void> _saveDailyProgress() async {
+    await goalBox?.put('hasTakenBreakfast', hasTakenBreakfast);
+    await goalBox?.put('hasTakenMorningMedicine', hasTakenMorningMedicine);
+    await goalBox?.put('hasTakenNightMedicine', hasTakenNightMedicine);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Progress saved successfully!')),
-    );
+    await goalBox?.put('waterProgress', waterProgress);
+    await goalBox?.put('sleepProgress', sleepProgress);
+    await goalBox?.put('walkingProgress', walkingProgress);
+    await goalBox?.put('lastSavedDate', currentDate);
   }
 
   void _submitBreakfast() async {
-    setState(() {
-      hasTakenBreakfast = true;
-    });
-    await goalBox?.put(
-        'hasTakenBreakfast', true); // Store breakfast submission status
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Breakfast submitted successfully!')),
-    );
+    setState(() => hasTakenBreakfast = true);
+    await _saveDailyProgress();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Breakfast submitted successfully!')));
   }
 
-  void _takeMedicine() async {
-    setState(() {
-      hasTakenMedicine = true; // Update the medicine status
-    });
-    await goalBox?.put(
-        'hasTakenMedicine', true); // Store medicine submission status
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Medicine taken!')),
-    );
+  void _takeMorningMedicine() async {
+    setState(() => hasTakenMorningMedicine = true);
+    await _saveDailyProgress();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Morning medicine taken!')));
   }
 
-  void _takeInjection() async {
-    setState(() {
-      hasTakenInjection = true; // Update the injection status
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Injection taken!')),
-    );
+  void _takeNightMedicine() async {
+    setState(() => hasTakenNightMedicine = true);
+    await _saveDailyProgress();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Night medicine taken!')));
   }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -128,209 +107,90 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
       appBar: AppBar(
         title: Text(
           'Goal Completion',
-          style: GoogleFonts.poppins(
-            fontSize: 24.sp,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+          style: GoogleFonts.poppins(fontSize: 24.sp, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: Colors.blueAccent,
       ),
-      body: goalBox == null
-          ? Center(
-              child:
-                  CircularProgressIndicator()) // Show loading until goalBox is ready
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
           : Padding(
               padding: EdgeInsets.all(16.w),
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Your Goals',
-                      style: GoogleFonts.poppins(
-                          fontSize: 20.sp, fontWeight: FontWeight.bold),
-                    ),
+                    Text('Your Goals', style: GoogleFonts.poppins(fontSize: 20.sp, fontWeight: FontWeight.bold)),
                     SizedBox(height: 20.h),
-                    // Water Intake Goal Slider
                     _buildGoalProgress(
                       label: 'Water Intake Goal',
                       goal: profile.waterIntakeGoal,
                       progress: waterProgress,
-                      onChanged: (value) =>
-                          setState(() => waterProgress = value),
+                      onChanged: (value) => setState(() => waterProgress = value),
                     ),
                     SizedBox(height: 16.h),
-                    // Sleep Goal Slider
                     _buildGoalProgress(
                       label: 'Sleep Goal',
                       goal: profile.sleepGoal,
                       progress: sleepProgress,
-                      onChanged: (value) =>
-                          setState(() => sleepProgress = value),
+                      onChanged: (value) => setState(() => sleepProgress = value),
                     ),
                     SizedBox(height: 16.h),
-                    // Walking Goal Slider
                     _buildGoalProgress(
                       label: 'Walking Goal',
                       goal: profile.walkingGoal,
                       progress: walkingProgress,
-                      onChanged: (value) =>
-                          setState(() => walkingProgress = value),
+                      onChanged: (value) => setState(() => walkingProgress = value),
                     ),
-                    SizedBox(height: 16.h),
-                    Text('Take your medicine properly'), kheight10,
-                    _buildGoalCard('Medicine Frequency',
-                        goalBox?.get('medicineFrequency') ?? 'Not Set'),
-                    _buildGoalCard('Medicine Dosage',
-                        goalBox?.get('medicineDosage') ?? 'Not Set'),
-                    _buildGoalTimeCard(
-                        'Medicine Times', goalBox?.get('medicineTimes') ?? []),
-                    kheight40,
-                    Text('Take your injection properly'), kheight10,
-                    _buildGoalCard('Injection Dosage',
-                        goalBox?.get('injectionDosage') ?? 'Not Set'),
-                    _buildGoalCard('Injection Frequency',
-                        goalBox?.get('injectionFrequency') ?? 'Not Set'),
                     SizedBox(height: 20.h),
-                    _buildGoalTimeCard('Injection Times',
-                        goalBox?.get('injectionTimes') ?? []),
-                    // Show the injection day based on the frequency
-
-                    SizedBox(height: 20.h),
-                    if (goalBox?.get('enableBreakfast') ==
-                        true) // Only show if breakfast is enabled
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Food Cycle',
-                            style: GoogleFonts.poppins(
-                                fontSize: 16.sp, fontWeight: FontWeight.bold),
+                    Text('Food Cycle', style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 8.h),
+                    hasTakenBreakfast
+                        ? Text('Breakfast taken', style: GoogleFonts.poppins(fontSize: 14.sp, color: Colors.green))
+                        : ElevatedButton(
+                            onPressed: _submitBreakfast,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blueAccent,
+                              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                            ),
+                            child: Text(
+                              'Submit Breakfast',
+                              style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white),
+                            ),
                           ),
-                          SizedBox(height: 8.h),
-                          hasTakenBreakfast
-                              ? Text(
-                                  'Breakfast taken',
-                                  style: GoogleFonts.poppins(
-                                      fontSize: 14.sp, color: Colors.green),
-                                )
-                              : ElevatedButton(
-                                  onPressed: _submitBreakfast,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blueAccent,
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal: 20.w, vertical: 10.h),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8.r),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'Submit Breakfast',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 16.sp,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                        ],
-                      ),
                     SizedBox(height: 20.h),
-                    // Medicine section with dosage slider
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Medicine',
-                          style: GoogleFonts.poppins(
-                              fontSize: 16.sp, fontWeight: FontWeight.bold),
-                        ),
-                        hasTakenMedicine
-                            ? Text(
-                                'Medicine taken',
-                                style: GoogleFonts.poppins(
-                                    fontSize: 14.sp, color: Colors.green),
-                              )
-                            : ElevatedButton(
-                                onPressed: _takeMedicine,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blueAccent,
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 20.w, vertical: 10.h),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.r),
-                                  ),
-                                ),
-                                child: Text(
-                                  'Take Medicine',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                      ],
-                    ),
+                    Text('Medicine', style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                    hasTakenMorningMedicine
+                        ? Text('Morning medicine taken', style: GoogleFonts.poppins(fontSize: 14.sp, color: Colors.green))
+                        : ElevatedButton(
+                            onPressed: _takeMorningMedicine,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blueAccent,
+                              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                            ),
+                            child: Text(
+                              'Take Morning Medicine',
+                              style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white),
+                            ),
+                          ),
+                    SizedBox(height: 10.h),
+                    hasTakenNightMedicine
+                        ? Text('Night medicine taken', style: GoogleFonts.poppins(fontSize: 14.sp, color: Colors.green))
+                        : ElevatedButton(
+                            onPressed: _takeNightMedicine,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blueAccent,
+                              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                            ),
+                            child: Text(
+                              'Take Night Medicine',
+                              style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white),
+                            ),
+                          ),
                     SizedBox(height: 20.h),
-                    // Injection section
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Injection',
-                          style: GoogleFonts.poppins(
-                              fontSize: 16.sp, fontWeight: FontWeight.bold),
-                        ),
-                        SizedBox(height: 8.h),
-                        hasTakenInjection
-                            ? Text(
-                                'Injection taken',
-                                style: GoogleFonts.poppins(
-                                    fontSize: 14.sp, color: Colors.green),
-                              )
-                            : ElevatedButton(
-                                onPressed: _takeInjection,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blueAccent,
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 20.w, vertical: 10.h),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8.r),
-                                  ),
-                                ),
-                                child: Text(
-                                  'Take Injection',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                      ],
-                    ),
-                    SizedBox(height: 20.h),
-                    ElevatedButton(
-                      onPressed: _saveProgress,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 20.w, vertical: 10.h),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                      ),
-                      child: Text(
-                        'Save Progress',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+                 
                   ],
                 ),
               ),
@@ -338,104 +198,21 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
     );
   }
 
-  Widget _buildGoalProgress({
-    required String label,
-    double? goal,
-    required double progress,
-    required ValueChanged<double> onChanged,
-  }) {
+  Widget _buildGoalProgress({required String label, required double? goal, required double progress, required Function(double) onChanged}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style:
-              GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.bold),
-        ),
-        SizedBox(height: 8.h),
-        Row(
-          children: [
-            Expanded(
-              child: Slider(
-                value: progress,
-                max: goal ?? 1.0,
-                onChanged: onChanged,
-              ),
-            ),
-            Text(
-              '${progress.toStringAsFixed(1)} / ${goal?.toStringAsFixed(1) ?? 'Not Set'}',
-              style:
-                  GoogleFonts.poppins(fontSize: 14.sp, color: Colors.grey[600]),
-            ),
-          ],
+        Text('$label (${progress.toStringAsFixed(1)} / ${goal?.toStringAsFixed(1) ?? 0})',
+            style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.w500)),
+        Slider(
+          min: 0.0,
+          max: goal ?? 1.0,
+          value: progress,
+          onChanged: onChanged,
+          activeColor: Colors.blueAccent,
+          inactiveColor: Colors.grey[300],
         ),
       ],
-    );
-  }
-
-  Widget _buildGoalCard(String label, String value) {
-    return Card(
-      child: Padding(
-        padding: EdgeInsets.all(16.w),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(label, style: GoogleFonts.poppins(fontSize: 16.sp)),
-            Text(value, style: GoogleFonts.poppins(fontSize: 16.sp)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Goal card that handles both single string and list of strings.
-  Widget _buildGoalTimeCard(String label, dynamic value) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 8.h),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.r),
-      ),
-      elevation: 2,
-      child: Padding(
-        padding: EdgeInsets.all(16.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: GoogleFonts.poppins(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            if (value is List<String> && value.isNotEmpty) ...[
-              // Display the list of strings if value is a non-empty list
-              for (String time in value)
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 4.h),
-                  child: Text(
-                    time,
-                    style: GoogleFonts.poppins(
-                      fontSize: 16.sp,
-                      color: Colors.black54,
-                    ),
-                  ),
-                ),
-            ] else ...[
-              // Display "Not Set" if the value is null or empty
-              Text(
-                'Not Set',
-                style: GoogleFonts.poppins(
-                  fontSize: 16.sp,
-                  color: Colors.redAccent,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
     );
   }
 }

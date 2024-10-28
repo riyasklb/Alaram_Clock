@@ -1,6 +1,6 @@
 import 'package:hive/hive.dart';
 
-part 'hive_model.g.dart'; // Make sure to run the build command after creating this file
+part 'hive_model.g.dart'; 
 
 
 

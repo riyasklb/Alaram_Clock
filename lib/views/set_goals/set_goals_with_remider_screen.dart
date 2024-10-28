@@ -22,9 +22,9 @@ class _OptionalGoalSettingScreenState extends State<OptionalGoalSettingScreen> {
   final TextEditingController injectionDosageController =
       TextEditingController();
   List<String> selectedMedicineTimes = [];
-  List<String> selectedInjectionTimes = [];
+
   String? medicineFrequency;
-  String? injectionFrequency;
+
   bool enableBreakfast = false;
   bool enableLunch = false;
   bool enableDinner = false;
@@ -131,9 +131,6 @@ void _saveOptionalGoals() async {
     await box.put('medicineTimes', selectedMedicineTimes);
     await box.put('medicineFrequency', medicineFrequency);
     await box.put('medicineDosage', medicineDosageController.text);
-    await box.put('injectionTimes', selectedInjectionTimes);
-    await box.put('injectionFrequency', injectionFrequency);
-    await box.put('injectionDosage', injectionDosageController.text);
     await box.put('enableBreakfast', enableBreakfast);
     await box.put('enableLunch', enableLunch);
     await box.put('enableDinner', enableDinner);
@@ -144,10 +141,7 @@ void _saveOptionalGoals() async {
       scheduleReminder(mappedTime); // Pass mapped time for medicine
     }
 
-    for (String time in selectedInjectionTimes) {
-      String mappedTime = timeMapping[time] ?? '08:00'; // Default to 8 AM if not found
-      scheduleReminder(mappedTime, isInjection: true); // Pass mapped time for injection
-    }
+
 
     // Schedule a notification one minute after submission
     DateTime now = DateTime.now().add(Duration(minutes: 1));
@@ -224,28 +218,7 @@ void _saveOptionalGoals() async {
       (val) => setState(() => enableDinner = val)
     ),
     SizedBox(height: 20.h),
-    
-    _buildSectionHeader('Injection'),
-    _buildDropdownField(
-      label: 'Frequency',
-      value: injectionFrequency,
-      items: ['Daily', 'Every Other Day', 'Weekly'],
-      onChanged: (val) => setState(() => injectionFrequency = val),
-    ),
-    _buildMultiSelectChip(
-      label: 'Select Injection Times',
-      items: ['Morning', 'Afternoon', 'Evening', 'Night'],
-      selectedItems: selectedInjectionTimes,
-      onSelectionChanged: (selectedList) {
-        setState(() => selectedInjectionTimes = selectedList);
-      },
-    ),
-    _buildTextField(
-      controller: injectionDosageController,
-      labelText: 'Dosage (e.g., 2ml)',
-      validator: (value) =>
-          value!.isEmpty ? 'Enter dosage amount' : null,
-    ),
+   
     SizedBox(height: 30.h),
     
     Row(

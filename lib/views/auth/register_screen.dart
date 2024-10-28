@@ -1,6 +1,6 @@
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/constans/model/profile_model.dart';
-import 'package:alaram/views/goals/set_goals_scrrw.dart';
+import 'package:alaram/views/set_goals/set_goals_scrrw.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter/material.dart';

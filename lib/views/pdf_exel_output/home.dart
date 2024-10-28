@@ -1,10 +1,9 @@
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/constans/model/hive_model.dart';
 import 'package:alaram/tools/constans/model/profile_model.dart';
-
 import 'package:alaram/views/callender/callender_acreen.dart';
 import 'package:alaram/views/daily_goals/daily_goal_screen.dart';
-import 'package:alaram/views/daily_goals/ovrvirew_goals_screen.dart';
+import 'package:alaram/views/summery/goal_summery_screen.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -347,7 +346,7 @@ Get.to(GoalCompletionScreen()) ;
             size: 28.r,
           ),
           onPressed: () {
-            Get.to(GoalOverviewScreen());
+            Get.to(GoalSummaryScreen());
           },
         ),
         SizedBox(width: 10.w),

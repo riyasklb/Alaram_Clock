@@ -1,6 +1,6 @@
 import 'package:alaram/tools/constans/model/profile_model.dart';
-import 'package:alaram/views/bottum_nav/bottum_nav_bar.dart';
-import 'package:alaram/views/goals/set_goals_with_remider_screen.dart';
+
+import 'package:alaram/views/set_goals/set_goals_with_remider_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
