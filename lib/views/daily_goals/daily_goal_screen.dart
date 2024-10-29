@@ -1,4 +1,4 @@
-import 'package:alaram/tools/constans/color.dart';
+
 import 'package:alaram/tools/constans/model/profile_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -22,8 +22,8 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
   bool hasTakenBreakfast = false;
   bool hasTakenMorningMedicine = false;
   bool hasTakenNightMedicine = false;
-  bool hasTakenMorningInjection = false;
-  bool hasTakenNightInjection = false;
+  bool hasTakenAfternoonMedicine = false;
+  bool hasTakenEveningMedicine = false;
 
   final String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
   bool _isLoading = true;
@@ -47,6 +47,8 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
     setState(() {
       hasTakenBreakfast = goalBox?.get('hasTakenBreakfast') ?? false;
       hasTakenMorningMedicine = goalBox?.get('hasTakenMorningMedicine') ?? false;
+       hasTakenAfternoonMedicine = goalBox?.get('hasTakenAfternoonMedicine') ?? false;
+        hasTakenEveningMedicine = goalBox?.get('hasTakenEveningMedicine') ?? false;
       hasTakenNightMedicine = goalBox?.get('hasTakenNightMedicine') ?? false;
 
       waterProgress = goalBox?.get('waterProgress') ?? profile.waterIntakeGoal ?? 0.0;
@@ -61,8 +63,8 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
       hasTakenBreakfast = false;
       hasTakenMorningMedicine = false;
       hasTakenNightMedicine = false;
-      hasTakenMorningInjection = false;
-      hasTakenNightInjection = false;
+      hasTakenAfternoonMedicine = false;
+      hasTakenEveningMedicine = false;
       waterProgress = 0.0;
       sleepProgress = 0.0;
       walkingProgress = 0.0;
@@ -73,6 +75,9 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
     await goalBox?.put('hasTakenBreakfast', hasTakenBreakfast);
     await goalBox?.put('hasTakenMorningMedicine', hasTakenMorningMedicine);
     await goalBox?.put('hasTakenNightMedicine', hasTakenNightMedicine);
+
+     await goalBox?.put('hasTakenAfternoonMedicine', hasTakenAfternoonMedicine); 
+     await goalBox?.put('hasTakenEveningMedicine', hasTakenEveningMedicine);
 
     await goalBox?.put('waterProgress', waterProgress);
     await goalBox?.put('sleepProgress', sleepProgress);
@@ -99,6 +104,17 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
   }
 
 
+
+  void _takeAfternoonMedicine() async {
+    setState(() => hasTakenAfternoonMedicine = true);
+    await _saveDailyProgress();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Afternoon medicine taken!')));
+  }
+    void _takeEveningMedicine() async {
+    setState(() => hasTakenEveningMedicine = true);
+    await _saveDailyProgress();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Evening medicine taken!')));
+  }
 
 
   @override
@@ -190,7 +206,41 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
                             ),
                           ),
                     SizedBox(height: 20.h),
-                 
+
+////
+
+
+                        hasTakenEveningMedicine
+                        ? Text('Evening medicine taken', style: GoogleFonts.poppins(fontSize: 14.sp, color: Colors.green))
+                        : ElevatedButton(
+                            onPressed: _takeEveningMedicine,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blueAccent,
+                              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                            ),
+                            child: Text(
+                              'Take Evening Medicine',
+                              style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white),
+                            ),
+                          ),
+                    SizedBox(height: 20.h),
+                        hasTakenAfternoonMedicine
+                        ? Text('Afternoon medicine taken', style: GoogleFonts.poppins(fontSize: 14.sp, color: Colors.green))
+                        : ElevatedButton(
+                            onPressed: _takeAfternoonMedicine,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blueAccent,
+                              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                            ),
+                            child: Text(
+                              'Take Afternoon Medicine',
+                              style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white),
+                            ),
+                          ),
+                    SizedBox(height: 20.h),
+                 ///
                   ],
                 ),
               ),
