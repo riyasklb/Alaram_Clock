@@ -19,65 +19,108 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
   double waterProgress = 0.0;
   double sleepProgress = 0.0;
   double walkingProgress = 0.0;
-  bool hasTakenBreakfast = false;
-  bool hasTakenMorningMedicine = false;
-  bool hasTakenNightMedicine = false;
-  bool hasTakenAfternoonMedicine = false;
-  bool hasTakenEveningMedicine = false;
 
-  final String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+  bool enableBreakfast = false;
+  bool enableLunch = false;
+  bool enableDinner = false;
+
+  Map<String, bool> mealStatus = {
+    'Breakfast': false,
+    'Lunch': false,
+    'Dinner': false,
+  };
+
+  Map<String, bool> medicineStatus = {
+    'Morning': false,
+    'Afternoon': false,
+    'Evening': false,
+    'Night': false,
+  };
+
+  List<String> medicineTimes = [];
   bool _isLoading = true;
+  final String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
   @override
   void initState() {
     super.initState();
     profile = profileBox.get('userProfile')!;
+    fetchMedicineDetails();
     _initializeDailyGoals();
   }
 
-  Future<void> _initializeDailyGoals() async {
-    goalBox = await Hive.openBox('goalBox');
+  Future<void> fetchMedicineDetails() async {
+    goalBox = Hive.box('goalBox');
+    var medicines = goalBox?.get('medicines');
 
+    if (medicines != null) {
+      for (var medicine in medicines) {
+        List<String> times = List<String>.from(medicine['times'] ?? []);
+        medicineTimes.addAll(times);
+      }
+    } else {
+      print('No medicines data found!');
+    }
+
+    // Fetch meal enable flags (mocked here as true for testing)
+    setState(() {
+      enableBreakfast = goalBox?.get('enableBreakfast') ?? true;
+      enableLunch = goalBox?.get('enableLunch') ?? true;
+      enableDinner = goalBox?.get('enableDinner') ?? true;
+      _isLoading = false;
+    });
+
+    print('enableBreakfast: $enableBreakfast');
+    print('enableLunch: $enableLunch');
+    print('enableDinner: $enableDinner');
+  }
+
+  void _initializeDailyGoals() async {
+    goalBox = await Hive.openBox('goalBox');
     String lastSavedDate = goalBox?.get('lastSavedDate') ?? '';
+
     if (lastSavedDate != currentDate) {
       _resetDailyGoals();
       await goalBox?.put('lastSavedDate', currentDate);
     }
 
     setState(() {
-      hasTakenBreakfast = goalBox?.get('hasTakenBreakfast') ?? false;
-      hasTakenMorningMedicine = goalBox?.get('hasTakenMorningMedicine') ?? false;
-       hasTakenAfternoonMedicine = goalBox?.get('hasTakenAfternoonMedicine') ?? false;
-        hasTakenEveningMedicine = goalBox?.get('hasTakenEveningMedicine') ?? false;
-      hasTakenNightMedicine = goalBox?.get('hasTakenNightMedicine') ?? false;
-
-      waterProgress = goalBox?.get('waterProgress') ?? profile.waterIntakeGoal ?? 0.0;
-      sleepProgress = goalBox?.get('sleepProgress') ?? profile.sleepGoal ?? 0.0;
-      walkingProgress = goalBox?.get('walkingProgress') ?? profile.walkingGoal ?? 0.0;
-      _isLoading = false;
+      medicineStatus = {
+        'Morning': goalBox?.get('hasTakenMorningMedicine') ?? false,
+        'Afternoon': goalBox?.get('hasTakenAfternoonMedicine') ?? false,
+        'Evening': goalBox?.get('hasTakenEveningMedicine') ?? false,
+        'Night': goalBox?.get('hasTakenNightMedicine') ?? false,
+      };
     });
   }
 
   void _resetDailyGoals() {
     setState(() {
-      hasTakenBreakfast = false;
-      hasTakenMorningMedicine = false;
-      hasTakenNightMedicine = false;
-      hasTakenAfternoonMedicine = false;
-      hasTakenEveningMedicine = false;
+      medicineStatus = {
+        'Morning': false,
+        'Afternoon': false,
+        'Evening': false,
+        'Night': false,
+      };
       waterProgress = 0.0;
       sleepProgress = 0.0;
       walkingProgress = 0.0;
+      mealStatus = {
+        'Breakfast': false,
+        'Lunch': false,
+        'Dinner': false,
+      };
     });
   }
 
   Future<void> _saveDailyProgress() async {
-    await goalBox?.put('hasTakenBreakfast', hasTakenBreakfast);
-    await goalBox?.put('hasTakenMorningMedicine', hasTakenMorningMedicine);
-    await goalBox?.put('hasTakenNightMedicine', hasTakenNightMedicine);
+    for (var time in medicineStatus.keys) {
+      await goalBox?.put('hasTaken${time}Medicine', medicineStatus[time]);
+    }
 
-     await goalBox?.put('hasTakenAfternoonMedicine', hasTakenAfternoonMedicine); 
-     await goalBox?.put('hasTakenEveningMedicine', hasTakenEveningMedicine);
+    for (var meal in mealStatus.keys) {
+      await goalBox?.put('hasEaten${meal}', mealStatus[meal]);
+    }
 
     await goalBox?.put('waterProgress', waterProgress);
     await goalBox?.put('sleepProgress', sleepProgress);
@@ -85,184 +128,171 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
     await goalBox?.put('lastSavedDate', currentDate);
   }
 
-  void _submitBreakfast() async {
-    setState(() => hasTakenBreakfast = true);
+  void _takeMeal(String meal) async {
+    setState(() {
+      mealStatus[meal] = true;
+    });
     await _saveDailyProgress();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Breakfast submitted successfully!')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$meal taken!')),
+    );
   }
 
-  void _takeMorningMedicine() async {
-    setState(() => hasTakenMorningMedicine = true);
+  void _takeMedicine(String time) async {
+    setState(() {
+      medicineStatus[time] = true;
+    });
     await _saveDailyProgress();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Morning medicine taken!')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('$time medicine taken!')),
+    );
   }
 
-  void _takeNightMedicine() async {
-    setState(() => hasTakenNightMedicine = true);
-    await _saveDailyProgress();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Night medicine taken!')));
+  Widget _buildMealButton(String meal) {
+    return mealStatus[meal]!
+        ? Text('$meal taken', style: GoogleFonts.poppins(fontSize: 14.sp, color: Colors.green))
+        : ElevatedButton(
+            onPressed: () => _takeMeal(meal),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orangeAccent,
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            ),
+            child: Text(
+              'Eat $meal',
+              style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white),
+            ),
+          );
   }
 
-
-
-  void _takeAfternoonMedicine() async {
-    setState(() => hasTakenAfternoonMedicine = true);
-    await _saveDailyProgress();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Afternoon medicine taken!')));
+  Widget _buildMedicineButton(String time) {
+    return medicineStatus[time]!
+        ? Text('$time medicine taken', style: GoogleFonts.poppins(fontSize: 14.sp, color: Colors.green))
+        : ElevatedButton(
+            onPressed: () => _takeMedicine(time),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blueAccent,
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+            ),
+            child: Text(
+              'Take $time Medicine',
+              style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white),
+            ),
+          );
   }
-    void _takeEveningMedicine() async {
-    setState(() => hasTakenEveningMedicine = true);
-    await _saveDailyProgress();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Evening medicine taken!')));
-  }
 
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Goal Completion',
-          style: GoogleFonts.poppins(fontSize: 24.sp, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        backgroundColor: Colors.blueAccent,
+ @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text(
+        'Goal Completion',
+        style: GoogleFonts.poppins(fontSize: 24.sp, fontWeight: FontWeight.bold, color: Colors.white),
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: EdgeInsets.all(16.w),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Your Goals', style: GoogleFonts.poppins(fontSize: 20.sp, fontWeight: FontWeight.bold)),
-                    SizedBox(height: 20.h),
-                    _buildGoalProgress(
-                      label: 'Water Intake Goal',
-                      goal: profile.waterIntakeGoal,
-                      progress: waterProgress,
-                      onChanged: (value) => setState(() => waterProgress = value),
-                    ),
-                    SizedBox(height: 16.h),
-                    _buildGoalProgress(
-                      label: 'Sleep Goal',
-                      goal: profile.sleepGoal,
-                      progress: sleepProgress,
-                      onChanged: (value) => setState(() => sleepProgress = value),
-                    ),
-                    SizedBox(height: 16.h),
-                    _buildGoalProgress(
-                      label: 'Walking Goal',
-                      goal: profile.walkingGoal,
-                      progress: walkingProgress,
-                      onChanged: (value) => setState(() => walkingProgress = value),
-                    ),
-                    SizedBox(height: 20.h),
-                    Text('Food Cycle', style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.bold)),
-                    SizedBox(height: 8.h),
-                    hasTakenBreakfast
-                        ? Text('Breakfast taken', style: GoogleFonts.poppins(fontSize: 14.sp, color: Colors.green))
-                        : ElevatedButton(
-                            onPressed: _submitBreakfast,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blueAccent,
-                              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-                            ),
-                            child: Text(
-                              'Submit Breakfast',
-                              style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white),
-                            ),
-                          ),
-                    SizedBox(height: 20.h),
-                    Text('Medicine', style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.bold)),
-                    hasTakenMorningMedicine
-                        ? Text('Morning medicine taken', style: GoogleFonts.poppins(fontSize: 14.sp, color: Colors.green))
-                        : ElevatedButton(
-                            onPressed: _takeMorningMedicine,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blueAccent,
-                              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-                            ),
-                            child: Text(
-                              'Take Morning Medicine',
-                              style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white),
-                            ),
-                          ),
-                    SizedBox(height: 10.h),
-                    hasTakenNightMedicine
-                        ? Text('Night medicine taken', style: GoogleFonts.poppins(fontSize: 14.sp, color: Colors.green))
-                        : ElevatedButton(
-                            onPressed: _takeNightMedicine,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blueAccent,
-                              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-                            ),
-                            child: Text(
-                              'Take Night Medicine',
-                              style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white),
-                            ),
-                          ),
-                    SizedBox(height: 20.h),
+      backgroundColor: Colors.blueAccent,
+    ),
+    body: _isLoading
+        ? Center(child: CircularProgressIndicator())
+        : Padding(
+            padding: EdgeInsets.all(16.w),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Your Goals',
+                    style: GoogleFonts.poppins(fontSize: 20.sp, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 20.h),
 
-////
+                  // Meal Buttons
+                  if (enableBreakfast) _buildMealButton('Breakfast'),
+                  if (enableLunch) _buildMealButton('Lunch'),
+                  if (enableDinner) _buildMealButton('Dinner'),
 
+                  SizedBox(height: 20.h),
 
-                        hasTakenEveningMedicine
-                        ? Text('Evening medicine taken', style: GoogleFonts.poppins(fontSize: 14.sp, color: Colors.green))
-                        : ElevatedButton(
-                            onPressed: _takeEveningMedicine,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blueAccent,
-                              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-                            ),
-                            child: Text(
-                              'Take Evening Medicine',
-                              style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white),
-                            ),
-                          ),
-                    SizedBox(height: 20.h),
-                        hasTakenAfternoonMedicine
-                        ? Text('Afternoon medicine taken', style: GoogleFonts.poppins(fontSize: 14.sp, color: Colors.green))
-                        : ElevatedButton(
-                            onPressed: _takeAfternoonMedicine,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blueAccent,
-                              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-                            ),
-                            child: Text(
-                              'Take Afternoon Medicine',
-                              style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.w600, color: Colors.white),
-                            ),
-                          ),
-                    SizedBox(height: 20.h),
-                 ///
-                  ],
-                ),
+                  // Sliders Section
+                  Text(
+                    'Progress',
+                    style: GoogleFonts.poppins(fontSize: 18.sp, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 10.h),
+
+                  // Water Intake Slider
+                  _buildSlider(
+                    label: 'Water Intake',
+                    value: waterProgress,
+                    onChanged: (value) {
+                      setState(() {
+                        waterProgress = value;
+                      });
+                    },
+                  ),
+
+                  // Sleep Slider
+                  _buildSlider(
+                    label: 'Sleep',
+                    value: sleepProgress,
+                    onChanged: (value) {
+                      setState(() {
+                        sleepProgress = value;
+                      });
+                    },
+                  ),
+
+                  // Walking Slider
+                  _buildSlider(
+                    label: 'Walking',
+                    value: walkingProgress,
+                    onChanged: (value) {
+                      setState(() {
+                        walkingProgress = value;
+                      });
+                    },
+                  ),
+
+                  SizedBox(height: 20.h),
+
+                  // Medicine Buttons
+                  Text(
+                    'Medicine',
+                    style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.bold),
+                  ),
+                  for (var time in medicineTimes) _buildMedicineButton(time),
+                ],
               ),
             ),
-    );
-  }
-
-  Widget _buildGoalProgress({required String label, required double? goal, required double progress, required Function(double) onChanged}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('$label (${progress.toStringAsFixed(1)} / ${goal?.toStringAsFixed(1) ?? 0})',
-            style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.w500)),
-        Slider(
-          min: 0.0,
-          max: goal ?? 1.0,
-          value: progress,
-          onChanged: onChanged,
-          activeColor: Colors.blueAccent,
-          inactiveColor: Colors.grey[300],
-        ),
-      ],
-    );
-  }
+          ),
+  );
 }
+
+Widget _buildSlider({
+  required String label,
+  required double value,
+  required ValueChanged<double> onChanged,
+}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        '$label: ${(value * 100).toStringAsFixed(0)}%',
+        style: GoogleFonts.poppins(fontSize: 14.sp, fontWeight: FontWeight.w500),
+      ),
+      Slider(
+        value: value,
+        onChanged: onChanged,
+        min: 0.0,
+        max: 1.0,
+        divisions: 10,
+        activeColor: Colors.blueAccent,
+        inactiveColor: Colors.grey[300],
+      ),
+      SizedBox(height: 10.h),
+    ],
+  );
+}
+
+}
+
