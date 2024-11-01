@@ -1,4 +1,5 @@
-import 'package:alaram/tools/constans/model/hive_model.dart';
+import 'package:alaram/tools/constans/model/daily_activity_model.dart';
+
 import 'package:alaram/tools/constans/model/profile_model.dart';
 import 'package:alaram/views/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
@@ -8,14 +9,15 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+
+import 'views/daily_goals/daily_goal_screen.dart';
 
 void printStoredData() async {
   // Access the Hive boxes
   var profileBox = Hive.box<ProfileModel>('profileBox');
-  var activityBox = Hive.box<ActivityModel>('activityBox');
+
   var settingsBox = Hive.box('settingsBox');
   var goalBox = Hive.box('goalbox');
 
@@ -25,11 +27,7 @@ void printStoredData() async {
     print(profileBox.getAt(i));
   }
 
-  // Print the content of the activity box
-  print('--- Activity Data ---');
-  for (int i = 0; i < activityBox.length; i++) {
-    print(activityBox.getAt(i));
-  }
+
 
   // Print the settings box content
   print('--- Settings Data ---');
@@ -44,7 +42,7 @@ void printStoredData() async {
   });
 }
 
- FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 void main() async {
   // Ensure the Flutter bindings are initialized before running any app code
@@ -61,21 +59,30 @@ void main() async {
   tz.initializeTimeZones();
 
   // Register Hive adapters
-  Hive.registerAdapter(ActivityModelAdapter());
-  Hive.registerAdapter(ProfileModelAdapter());
 
+  Hive.registerAdapter(ProfileModelAdapter());
+  Hive.registerAdapter(DailyActivityModelAdapter());
+  await Hive.openBox<DailyActivityModel>('dailyActivities');
   // Open Hive boxes
   await Hive.openBox<ProfileModel>('profileBox');
-  await Hive.openBox<ActivityModel>('activityBox');
+
   await Hive.openBox('settingsBox');
- await Hive.openBox('goalbox');
- printStoredData();
+  await Hive.openBox('goalbox');
+  printStoredData();
+  // if (box.isEmpty) {
+  //   box.add(DailyActivityModel(
+  //     date: DateTime.now().toString(),
+  //     waterIntake: 2.0,
+  //     sleepHours: 8,
+  //     walkingSteps: 5000,
+  //     foodIntake: "Healthy diet",
+  //     medicineIntake: "Paracetamol", userId: 'qwe',
+  //   ));
+  // }
   runApp(const MyApp());
 }
 
-
 // Function to initialize notifications
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -89,10 +96,11 @@ class MyApp extends StatelessWidget {
         return GetMaterialApp(
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
-            textTheme: GoogleFonts.poppinsTextTheme(), // Apply Google Fonts globally
+            textTheme:
+                GoogleFonts.poppinsTextTheme(), // Apply Google Fonts globally
             primarySwatch: Colors.blue,
           ),
-          home:  SplashScreen(), // Start with SplashScreen
+          home: SplashScreen(), // Start with SplashScreen
         );
       },
     );

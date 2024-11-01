@@ -1,9 +1,10 @@
 import 'package:alaram/tools/constans/color.dart';
-import 'package:alaram/tools/constans/model/hive_model.dart';
+
 import 'package:alaram/tools/constans/model/profile_model.dart';
 import 'package:alaram/views/callender/callender_acreen.dart';
 import 'package:alaram/views/daily_goals/daily_goal_screen.dart';
 import 'package:alaram/views/summery/goal_summery_screen.dart';
+import 'package:alaram/views/summery/lsit_scree.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -20,13 +21,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late Box<ActivityModel> _activityBox;
+ // late Box<ActivityModel> _activityBox;
   
 
   @override
   void initState() {
     super.initState();
-    _activityBox = Hive.box<ActivityModel>('activityBox');
+ //   _activityBox = Hive.box<ActivityModel>('activityBox');
   }
 
   @override
@@ -42,22 +43,23 @@ class _HomeScreenState extends State<HomeScreen> {
                 Get.to( Get.to(GoalCalendarScreen()));
               },
                 child: _buildDateTimeSection()), kheight10,
-              _buildProfileCard(),
+              InkWell(onTap:(){Get.to(DailyProgressScreen());} ,
+                child: _buildProfileCard()),
               SizedBox(height: 20.h),
-              ValueListenableBuilder(
-                valueListenable: _activityBox.listenable(),
-                builder: (context, Box<ActivityModel> box, _) {
-                  if (box.isEmpty) {
-                    return Center(
-                      child: Text(
-                        'No activities available.',
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    );
-                  }
-                  return _buildActivityGrid(box);
-                },
-              ),
+              // ValueListenableBuilder(
+              //   valueListenable: _activityBox.listenable(),
+              //   builder: (context, Box<ActivityModel> box, _) {
+              //     if (box.isEmpty) {
+              //       return Center(
+              //         child: Text(
+              //           'No activities available.',
+              //           style: TextStyle(fontSize: 18),
+              //         ),
+              //       );
+              //     }
+              //     return _buildActivityGrid(box);
+              //   },
+              // ),
                Row(
                  children: [
                    Text(
@@ -417,53 +419,53 @@ Get.to(GoalCompletionScreen()) ;
     );
   }
 
- Widget _buildActivityGrid(Box<ActivityModel> activityBox) {
-  List<String> activities = [
-    'Water Intake',
-    'Walking',
-    'Sleep',
-    'Food Intake',
-    'Medicine',
-    'Injection', // Updated from Running to Injection
-  ];
+//  Widget _buildActivityGrid(Box<ActivityModel> activityBox) {
+//   List<String> activities = [
+//     'Water Intake',
+//     'Walking',
+//     'Sleep',
+//     'Food Intake',
+//     'Medicine',
+//     'Injection', // Updated from Running to Injection
+//   ];
 
-  List<Color> colors = [
-    Colors.lightBlueAccent,
-    Colors.greenAccent,
-    Colors.deepPurpleAccent,
-    Colors.orangeAccent,
-    Colors.redAccent,
-    Colors.pinkAccent,
-  ];
+//   List<Color> colors = [
+//     Colors.lightBlueAccent,
+//     Colors.greenAccent,
+//     Colors.deepPurpleAccent,
+//     Colors.orangeAccent,
+//     Colors.redAccent,
+//     Colors.pinkAccent,
+//   ];
 
-  List<String> values = [
-    '${activityBox.getAt(0)?.waterIntake ?? 0} liters',
-    '${activityBox.getAt(0)?.minutesWalked ?? 0} minutes',
-    '${activityBox.getAt(0)?.hoursSlept ?? 0} hours',
-    'Goal Achived',
-    'Not yet',
-    'injections Done Today ', // Update this line for injection count
-  ];
+//   List<String> values = [
+//     '${activityBox.getAt(0)?.waterIntake ?? 0} liters',
+//     '${activityBox.getAt(0)?.minutesWalked ?? 0} minutes',
+//     '${activityBox.getAt(0)?.hoursSlept ?? 0} hours',
+//     'Goal Achived',
+//     'Not yet',
+//     'injections Done Today ', // Update this line for injection count
+//   ];
 
-  return GridView.builder(
-    physics: const NeverScrollableScrollPhysics(),
-    shrinkWrap: true,
-    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-      crossAxisCount: 2,
-      childAspectRatio: 1.5,
-      crossAxisSpacing: 10.w,
-      mainAxisSpacing: 10.h,
-    ),
-    itemCount: activities.length,
-    itemBuilder: (context, index) {
-      return _buildActivityCard(
-        activities[index],
-        values[index],
-        colors[index],
-      );
-    },
-  );
-}
+//   return GridView.builder(
+//     physics: const NeverScrollableScrollPhysics(),
+//     shrinkWrap: true,
+//     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+//       crossAxisCount: 2,
+//       childAspectRatio: 1.5,
+//       crossAxisSpacing: 10.w,
+//       mainAxisSpacing: 10.h,
+//     ),
+//     itemCount: activities.length,
+//     itemBuilder: (context, index) {
+//       return _buildActivityCard(
+//         activities[index],
+//         values[index],
+//         colors[index],
+//       );
+//     },
+//   );
+// }
 
 
   Widget _buildActivityCard(String activity, String value, Color iconColor) {

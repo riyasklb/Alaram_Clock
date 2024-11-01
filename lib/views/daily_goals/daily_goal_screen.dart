@@ -1,4 +1,5 @@
-import 'package:alaram/tools/constans/color.dart';
+
+import 'package:alaram/tools/constans/model/daily_activity_model.dart';
 import 'package:alaram/tools/constans/model/profile_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -15,6 +16,8 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
   final profileBox = Hive.box<ProfileModel>('profileBox');
   late ProfileModel profile;
   Box? goalBox;
+  Box? activityBox; // Declare the activityBox
+
 
   double waterProgress = 0.0;
   double sleepProgress = 0.0;
@@ -37,9 +40,8 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
     'Night': false,
   };
 
-  List<List<String>> medicineTimes = []; // A list of lists of strings
-
-  List<String> medicineNames = []; // New list to hold medicine names
+  List<List<String>> medicineTimes = [];
+  List<String> medicineNames = [];
   bool _isLoading = true;
   final String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
@@ -58,12 +60,9 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
     if (medicines != null) {
       for (var medicine in medicines) {
         List<String> times = List<String>.from(medicine['times'] ?? []);
-        medicineTimes
-            .add(times); // Add each medicine's times as a separate list
-        medicineNames.add(medicine['name']); // Store the medicine name
+        medicineTimes.add(times);
+        medicineNames.add(medicine['name']);
       }
-    } else {
-      print('No medicines data found!');
     }
 
     setState(() {
@@ -76,6 +75,11 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
 
   void _initializeDailyGoals() async {
     goalBox = await Hive.openBox('goalBox');
+     if (!Hive.isBoxOpen('dailyActivities')) {
+    activityBox = await Hive.openBox<DailyActivityModel>('dailyActivities');
+  } else {
+    activityBox = Hive.box<DailyActivityModel>('dailyActivities');
+  }
     String lastSavedDate = goalBox?.get('lastSavedDate') ?? '';
 
     if (lastSavedDate != currentDate) {
@@ -112,36 +116,64 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
     });
   }
 
-  Future<void> _saveDailyProgress() async {
-    for (var time in medicineStatus.keys) {
-      await goalBox?.put('hasTaken${time}Medicine', medicineStatus[time]);
-    }
+Future<void> _saveDailyProgress() async {
+  final dailyActivity = DailyActivityModel(
+    userId: 'r', // Replace with the actual user ID
+    date: currentDate,
+    waterIntake: waterProgress,
+    sleepHours: sleepProgress,
+    walkingSteps: walkingProgress.toInt(),
+    foodIntake: _getFoodIntakeStatus(),
+    medicineIntake: _getMedicineIntakeStatus(),
+  );
 
-    for (var meal in mealStatus.keys) {
-      await goalBox?.put('hasEaten${meal}', mealStatus[meal]);
-    }
+  print('-----------1--------------');
+  await activityBox?.put(currentDate, dailyActivity);
 
-    await goalBox?.put('waterProgress', waterProgress);
-    await goalBox?.put('sleepProgress', sleepProgress);
-    await goalBox?.put('walkingProgress', walkingProgress);
-    await goalBox?.put('lastSavedDate', currentDate);
+  // Retrieve the saved data and print it
+  final savedDailyActivity = activityBox?.get(currentDate);
+  if (savedDailyActivity != null) {
+    print('Daily progress saved successfully:');
+    print('User ID: ${savedDailyActivity.userId}');
+    print('Date: ${savedDailyActivity.date}');
+    print('Water Intake: ${savedDailyActivity.waterIntake}');
+    print('Sleep Hours: ${savedDailyActivity.sleepHours}');
+    print('Walking Steps: ${savedDailyActivity.walkingSteps}');
+    print('Food Intake: ${savedDailyActivity.foodIntake}');
+    print('Medicine Intake: ${savedDailyActivity.medicineIntake}');
+  } else {
+    print('Failed to retrieve saved daily progress.');
+  }
+}
+
+
+  String _getFoodIntakeStatus() {
+    int mealCount = mealStatus.values.where((status) => status).length;
+    if (mealCount == 3) return 'GOOD';
+    if (mealCount == 2) return 'AVERAGE';
+    return 'POOR';
   }
 
-  void _takeMeal(String meal) async {
+  String _getMedicineIntakeStatus() {
+    int medicineCount = medicineStatus.values.where((status) => status).length;
+    if (medicineCount == 4) return 'GOOD';
+    if (medicineCount == 2 || medicineCount == 3) return 'AVERAGE';
+    return 'POOR';
+  }
+
+  void _takeMeal(String meal) {
     setState(() {
       mealStatus[meal] = true;
     });
-    await _saveDailyProgress();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$meal taken!')),
     );
   }
 
-  void _takeMedicine(String time) async {
+  void _takeMedicine(String time) {
     setState(() {
       medicineStatus[time] = true;
     });
-    await _saveDailyProgress();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('$time medicine taken!')),
     );
@@ -174,11 +206,11 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          medicineName, // Display medicine name
+          medicineName,
           style:
               GoogleFonts.poppins(fontSize: 18.sp, fontWeight: FontWeight.bold),
         ),
-        SizedBox(height: 8.h), // Space between medicine name and button
+        SizedBox(height: 8.h),
         medicineStatus[time]!
             ? Text('$time medicine taken',
                 style:
@@ -200,7 +232,7 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
                       color: Colors.white),
                 ),
               ),
-        SizedBox(height: 16.h), // Space between medicine buttons
+        SizedBox(height: 16.h),
       ],
     );
   }
@@ -226,33 +258,22 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Text(
-                    //   'Your Goals',
-                    //   style: GoogleFonts.poppins(
-                    //       fontSize: 20.sp, fontWeight: FontWeight.bold),
-                    // ),
-                    SizedBox(height: 20.h), Text(
+                    SizedBox(height: 20.h),
+                    Text(
                       'Meal',
                       style: GoogleFonts.poppins(
                           fontSize: 20.sp, fontWeight: FontWeight.bold),
-                    ),kheight40,
-
-                    // Meal Buttons
+                    ),
                     if (enableBreakfast) _buildMealButton('Breakfast'),
                     if (enableLunch) _buildMealButton('Lunch'),
                     if (enableDinner) _buildMealButton('Dinner'),
-
                     SizedBox(height: 20.h),
-
-                    // Sliders Section
                     Text(
                       'Progress',
                       style: GoogleFonts.poppins(
                           fontSize: 18.sp, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 10.h),
-
-                    // Water Intake Slider
                     _buildSlider(
                       label: 'Water Intake',
                       value: waterProgress,
@@ -262,8 +283,6 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
                         });
                       },
                     ),
-
-                    // Sleep Slider
                     _buildSlider(
                       label: 'Sleep',
                       value: sleepProgress,
@@ -273,8 +292,6 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
                         });
                       },
                     ),
-
-                    // Walking Slider
                     _buildSlider(
                       label: 'Walking',
                       value: walkingProgress,
@@ -284,38 +301,42 @@ class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
                         });
                       },
                     ),
-
                     SizedBox(height: 20.h),
-
-               
-// Medicine Buttons
                     Text(
-                      'Medicine',
+                      'Medicines',
                       style: GoogleFonts.poppins(
                           fontSize: 20.sp, fontWeight: FontWeight.bold),
                     ),
-kheight40,
-                    for (var i = 0; i < medicineNames.length; i++)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Display the medicine name only once
-                          // Text(
-                          //   medicineNames[i],
-                          //   style: GoogleFonts.poppins(
-                          //       fontSize: 18.sp, fontWeight: FontWeight.bold),
-                          // ),
-                          SizedBox(height: 8.h),
-
-                          // Display a button for each time for the current medicine
-                          for (var time in medicineTimes[i])
-                            _buildMedicineButton(time, medicineNames[i]),
-
-                          SizedBox(height: 16.h), // Space between each medicine
-                        ],
-                      ),
-
+                    ...medicineNames.asMap().entries.map((entry) {
+                      int index = entry.key;
+                      String medicineName = entry.value;
+                      return _buildMedicineButton(
+                          medicineTimes[index].first, medicineName);
+                    }).toList(),
                     SizedBox(height: 20.h),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          _saveDailyProgress();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Daily goals saved!')),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.r)),
+                        ),
+                        child: Text(
+                          'Save Progress',
+                          style: GoogleFonts.poppins(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -330,16 +351,19 @@ kheight40,
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: GoogleFonts.poppins(fontSize: 16.sp)),
+        Text(
+          '$label: ${value.toStringAsFixed(1)}',
+          style: GoogleFonts.poppins(fontSize: 16.sp),
+        ),
         Slider(
           value: value,
           min: 0,
-          max: 100,
-          divisions: 100,
-          label: value.round().toString(),
+          max: 10,
+          divisions: 10,
+          label: value.toStringAsFixed(1),
           onChanged: onChanged,
         ),
-        SizedBox(height: 20.h),
+        SizedBox(height: 16.h),
       ],
     );
   }
