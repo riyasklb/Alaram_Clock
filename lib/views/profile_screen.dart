@@ -51,9 +51,9 @@ class ProfileScreen extends StatelessWidget {
               SizedBox(height: 10.h),
               ..._buildProfileCards(profileBox),
               SizedBox(height: 20.h),
-              _buildSectionTitle('Goals & Reminders'),
+            //  _buildSectionTitle('Goals & Reminders'),
               SizedBox(height: 10.h),
-              ..._buildGoalCards(goalBox),
+        //      ..._buildGoalCards(goalBox),
               SizedBox(height: 30.h),
               _buildLogoutButton(
                   context, profileBox, goalBox, settingsBox,activityBox ),
@@ -136,22 +136,22 @@ class ProfileScreen extends StatelessWidget {
     ];
   }
 
-  List<Widget> _buildGoalCards(Box goalBox) {
-    return [
-      _buildGoalCard('Medicine Times',
-          goalBox.get('medicineTimes')?.toString() ?? 'Not Set'),
-      _buildGoalCard('Medicine Frequency',
-          goalBox.get('medicineFrequency')?.toString() ?? 'Not Set'),
-      _buildGoalCard('Medicine Dosage',
-          goalBox.get('medicineDosage')?.toString() ?? 'Not Set'),
-      _buildGoalCard('Breakfast Enabled',
-          goalBox.get('enableBreakfast') == true ? 'Yes' : 'No'),
-      _buildGoalCard(
-          'Lunch Enabled', goalBox.get('enableLunch') == true ? 'Yes' : 'No'),
-      _buildGoalCard(
-          'Dinner Enabled', goalBox.get('enableDinner') == true ? 'Yes' : 'No')
-    ];
-  }
+  // List<Widget> _buildGoalCards(Box goalBox) {
+  //   return [
+  //     _buildGoalCard('Medicine Times',
+  //         goalBox.get('medicineTimes')?.toString() ?? 'Not Set'),
+  //     _buildGoalCard('Medicine Frequency',
+  //         goalBox.get('medicineFrequency')?.toString() ?? 'Not Set'),
+  //     _buildGoalCard('Medicine Dosage',
+  //         goalBox.get('medicineDosage')?.toString() ?? 'Not Set'),
+  //     _buildGoalCard('Breakfast Enabled',
+  //         goalBox.get('enableBreakfast') == true ? 'Yes' : 'No'),
+  //     _buildGoalCard(
+  //         'Lunch Enabled', goalBox.get('enableLunch') == true ? 'Yes' : 'No'),
+  //     _buildGoalCard(
+  //         'Dinner Enabled', goalBox.get('enableDinner') == true ? 'Yes' : 'No')
+  //   ];
+  // }
 
   Widget _buildProfileCard(String label, String? value) {
     IconData iconData;
