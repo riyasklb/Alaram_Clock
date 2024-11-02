@@ -1,140 +1,73 @@
+// import 'package:alaram/tools/constans/model/daily_activity_model.dart';
 // import 'package:flutter/material.dart';
-// import 'package:google_fonts/google_fonts.dart';
 // import 'package:hive/hive.dart';
-// import 'package:intl/intl.dart';
-// import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-// class GoalCompletionScreen extends StatefulWidget {
-//   @override
-//   State<GoalCompletionScreen> createState() => _GoalCompletionScreenState();
-// }
 
-// class _GoalCompletionScreenState extends State<GoalCompletionScreen> {
-//   Box? goalBox;
-//   List<Map<String, dynamic>> medicinesData = [];
-  
-//   double waterProgress = 0.0;
-//   double sleepProgress = 0.0;
-//   double walkingProgress = 0.0;
-//   bool hasTakenBreakfast = false;
-//   bool hasTakenMorningMedicine = false;
-//   bool hasTakenNightMedicine = false;
-//   bool hasTakenAfternoonMedicine = false;
-//   bool hasTakenEveningMedicine = false;
+// class DailyProgressScreen extends StatelessWidget {
+//   final Box<DailyActivityModel> activityBox = Hive.box('dailyactivities');
 
-//   final String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
-//   bool _isLoading = true;
+//   // Method to retrieve and print saved progress data
+//   Future<List<DailyActivityModel>> _getAndPrintDailyActivities() async {
+//     final activities = activityBox.values.cast<DailyActivityModel>().toList();
 
-//   @override
-//   void initState() {
-//     super.initState();
-//     _initializeDailyGoals();
-//   }
-
-//   Future<void> _initializeDailyGoals() async {
-//     goalBox = await Hive.openBox('goalBox');
-
-//     String lastSavedDate = goalBox?.get('lastSavedDate') ?? '';
-//     if (lastSavedDate != currentDate) {
-//       _resetDailyGoals();
-//       await goalBox?.put('lastSavedDate', currentDate);
+//     // Print each activity to the console
+//     for (var activity in activities) {
+//       print('--- Daily Activity ---');
+//       print('User ID: ${activity.userId}');
+//       print('Date: ${activity.date}');
+//       print('Water Intake: ${activity.waterIntake} L');
+//       print('Sleep Hours: ${activity.sleepHours} hrs');
+//       print('Walking Steps: ${activity.walkingSteps}');
+//       print('Food Intake: ${activity.foodIntake}');
+//       print('Medicine Intake: ${activity.medicineIntake}');
 //     }
 
-//     // Load daily progress and medicines data
-//     setState(() {
-//       hasTakenBreakfast = goalBox?.get('hasTakenBreakfast') ?? false;
-//       hasTakenMorningMedicine = goalBox?.get('hasTakenMorningMedicine') ?? false;
-//       hasTakenAfternoonMedicine = goalBox?.get('hasTakenAfternoonMedicine') ?? false;
-//       hasTakenEveningMedicine = goalBox?.get('hasTakenEveningMedicine') ?? false;
-//       hasTakenNightMedicine = goalBox?.get('hasTakenNightMedicine') ?? false;
-
-//       waterProgress = goalBox?.get('waterProgress') ?? 0.0;
-//       sleepProgress = goalBox?.get('sleepProgress') ?? 0.0;
-//       walkingProgress = goalBox?.get('walkingProgress') ?? 0.0;
-      
-//       // Retrieve medicines data
-//       medicinesData = (goalBox?.get('medicines') as List?)?.cast<Map<String, dynamic>>() ?? [];
-//       _isLoading = false;
-//     });
-//   }
-
-//   void _resetDailyGoals() {
-//     setState(() {
-//       hasTakenBreakfast = false;
-//       hasTakenMorningMedicine = false;
-//       hasTakenNightMedicine = false;
-//       hasTakenAfternoonMedicine = false;
-//       hasTakenEveningMedicine = false;
-//       waterProgress = 0.0;
-//       sleepProgress = 0.0;
-//       walkingProgress = 0.0;
-//     });
-//   }
-
-//   Future<void> _saveDailyProgress() async {
-//     await goalBox?.put('hasTakenBreakfast', hasTakenBreakfast);
-//     await goalBox?.put('hasTakenMorningMedicine', hasTakenMorningMedicine);
-//     await goalBox?.put('hasTakenNightMedicine', hasTakenNightMedicine);
-//     await goalBox?.put('hasTakenAfternoonMedicine', hasTakenAfternoonMedicine); 
-//     await goalBox?.put('hasTakenEveningMedicine', hasTakenEveningMedicine);
-
-//     await goalBox?.put('waterProgress', waterProgress);
-//     await goalBox?.put('sleepProgress', sleepProgress);
-//     await goalBox?.put('walkingProgress', walkingProgress);
-//     await goalBox?.put('lastSavedDate', currentDate);
+//     return activities;
 //   }
 
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
 //       appBar: AppBar(
-//         title: Text(
-//           'Goal Completion',
-//           style: GoogleFonts.poppins(fontSize: 24.sp, fontWeight: FontWeight.bold, color: Colors.white),
-//         ),
-//         backgroundColor: Colors.blueAccent,
+//         title: Text('Daily Progress'),
 //       ),
-//       body: _isLoading
-//           ? Center(child: CircularProgressIndicator())
-//           : Padding(
-//               padding: EdgeInsets.all(16.w),
-//               child: SingleChildScrollView(
-//                 child: Column(
-//                   crossAxisAlignment: CrossAxisAlignment.start,
-//                   children: [
-//                     Text('Your Goals', style: GoogleFonts.poppins(fontSize: 20.sp, fontWeight: FontWeight.bold)),
-//                     SizedBox(height: 20.h),
-//                     // Other progress widgets here...
+//       body: FutureBuilder<List<DailyActivityModel>>(
+//         future: _getAndPrintDailyActivities(),
+//         builder: (context, snapshot) {
+//           if (snapshot.connectionState == ConnectionState.waiting) {
+//             return Center(child: CircularProgressIndicator());
+//           } else if (snapshot.hasError) {
+//             return Center(child: Text('Error loading data'));
+//           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+//             return Center(child: Text('No progress data found.'));
+//           }
 
-//                     SizedBox(height: 20.h),
-//                     Text('Medicine Details', style: GoogleFonts.poppins(fontSize: 16.sp, fontWeight: FontWeight.bold)),
-//                     _buildMedicineList(),
-//                   ],
+//           final activities = snapshot.data!;
+//           return ListView.builder(
+//             itemCount: activities.length,
+//             itemBuilder: (context, index) {
+//               final activity = activities[index];
+//               return Card(
+//                 margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+//                 child: ListTile(
+//                   title: Text('Date: ${activity.date}'),
+//                   subtitle: Column(
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Text('User ID: ${activity.userId}'),
+//                       Text('Water Intake: ${activity.waterIntake} L'),
+//                       Text('Sleep Hours: ${activity.sleepHours} hrs'),
+//                       Text('Walking Steps: ${activity.walkingSteps}'),
+//                       Text('Food Intake: ${activity.foodIntake}'),
+//                       Text('Medicine Intake: ${activity.medicineIntake}'),
+//                     ],
+//                   ),
 //                 ),
-//               ),
-//             ),
-//     );
-//   }
-
-//   Widget _buildMedicineList() {
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: medicinesData.map((medicine) {
-//         return Padding(
-//           padding: EdgeInsets.only(bottom: 10.h),
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.start,
-//             children: [
-//               Text('Name: ${medicine['name']}', style: GoogleFonts.poppins(fontSize: 14.sp, fontWeight: FontWeight.w500)),
-//               Text('Dosage: ${medicine['dosage']}', style: GoogleFonts.poppins(fontSize: 14.sp)),
-//               Text('Quantity: ${medicine['quantity']}', style: GoogleFonts.poppins(fontSize: 14.sp)),
-//               Text('Frequency: ${medicine['frequency']}', style: GoogleFonts.poppins(fontSize: 14.sp)),
-//               Text('Times: ${medicine['times'].join(', ')}', style: GoogleFonts.poppins(fontSize: 14.sp, color: Colors.blueAccent)),
-//               Divider(color: Colors.grey),
-//             ],
-//           ),
-//         );
-//       }).toList(),
+//               );
+//             },
+//           );
+//         },
+//       ),
 //     );
 //   }
 // }

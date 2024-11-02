@@ -277,14 +277,17 @@ Future<void> _saveDailyProgress() async {
                     _buildSlider(
                       label: 'Water Intake',
                       value: waterProgress,
+                       unit: 'Liters', 
                       onChanged: (value) {
                         setState(() {
                           waterProgress = value;
+
                         });
                       },
                     ),
                     _buildSlider(
                       label: 'Sleep',
+                       unit: 'Hourse', 
                       value: sleepProgress,
                       onChanged: (value) {
                         setState(() {
@@ -294,6 +297,7 @@ Future<void> _saveDailyProgress() async {
                     ),
                     _buildSlider(
                       label: 'Walking',
+                      unit: 'Hourse', 
                       value: walkingProgress,
                       onChanged: (value) {
                         setState(() {
@@ -344,27 +348,30 @@ Future<void> _saveDailyProgress() async {
     );
   }
 
-  Widget _buildSlider(
-      {required String label,
-      required double value,
-      required ValueChanged<double> onChanged}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '$label: ${value.toStringAsFixed(1)}',
-          style: GoogleFonts.poppins(fontSize: 16.sp),
-        ),
-        Slider(
-          value: value,
-          min: 0,
-          max: 10,
-          divisions: 10,
-          label: value.toStringAsFixed(1),
-          onChanged: onChanged,
-        ),
-        SizedBox(height: 16.h),
-      ],
-    );
-  }
+Widget _buildSlider({
+  required String label,
+  required double value,
+  required ValueChanged<double> onChanged,
+  required String unit, // New parameter for unit
+}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        '$label: ${value.toStringAsFixed(1)} $unit',
+        style: GoogleFonts.poppins(fontSize: 16.sp),
+      ),
+      Slider(
+        value: value,
+        min: 0,
+        max: 10,
+        divisions: 10,
+        label: '${value.toStringAsFixed(1)} $unit',
+        onChanged: onChanged,
+      ),
+      SizedBox(height: 16.h),
+    ],
+  );
+}
+
 }

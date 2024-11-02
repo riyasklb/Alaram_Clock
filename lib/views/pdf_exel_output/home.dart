@@ -1,10 +1,10 @@
 import 'package:alaram/tools/constans/color.dart';
 
 import 'package:alaram/tools/constans/model/profile_model.dart';
+import 'package:alaram/views/activity_list.dart';
 import 'package:alaram/views/callender/callender_acreen.dart';
 import 'package:alaram/views/daily_goals/daily_goal_screen.dart';
-import 'package:alaram/views/summery/goal_summery_screen.dart';
-import 'package:alaram/views/summery/lsit_scree.dart';
+
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -43,9 +43,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 Get.to( Get.to(GoalCalendarScreen()));
               },
                 child: _buildDateTimeSection()), kheight10,
-              InkWell(onTap:(){Get.to(DailyProgressScreen());} ,
+              InkWell(onTap:(){
+              //  Get.to(DailyProgressScreen());
+                } ,
                 child: _buildProfileCard()),
-              SizedBox(height: 20.h),
+              SizedBox(height: 20.h),_buildActivityGrid(),
               // ValueListenableBuilder(
               //   valueListenable: _activityBox.listenable(),
               //   builder: (context, Box<ActivityModel> box, _) {
@@ -347,8 +349,9 @@ Get.to(GoalCompletionScreen()) ;
             color: Colors.white,
             size: 28.r,
           ),
-          onPressed: () {
-            Get.to(GoalSummaryScreen());
+          onPressed: () {Get.to(   DailyProgressScreen());
+         
+          //  Get.to(GoalSummaryScreen());
           },
         ),
         SizedBox(width: 10.w),
@@ -419,54 +422,53 @@ Get.to(GoalCompletionScreen()) ;
     );
   }
 
-//  Widget _buildActivityGrid(Box<ActivityModel> activityBox) {
-//   List<String> activities = [
-//     'Water Intake',
-//     'Walking',
-//     'Sleep',
-//     'Food Intake',
-//     'Medicine',
-//     'Injection', // Updated from Running to Injection
-//   ];
+  Widget _buildActivityGrid() {
+    List<String> activities = [
+      'Water Intake',
+      'Walking',
+      'Sleep',
+      'Food Intake',
+      'Medicine',
+      'Injection', // Updated from Running to Injection
+    ];
 
-//   List<Color> colors = [
-//     Colors.lightBlueAccent,
-//     Colors.greenAccent,
-//     Colors.deepPurpleAccent,
-//     Colors.orangeAccent,
-//     Colors.redAccent,
-//     Colors.pinkAccent,
-//   ];
+    List<Color> colors = [
+      Colors.lightBlueAccent,
+      Colors.greenAccent,
+      Colors.deepPurpleAccent,
+      Colors.orangeAccent,
+      Colors.redAccent,
+      Colors.pinkAccent,
+    ];
 
-//   List<String> values = [
-//     '${activityBox.getAt(0)?.waterIntake ?? 0} liters',
-//     '${activityBox.getAt(0)?.minutesWalked ?? 0} minutes',
-//     '${activityBox.getAt(0)?.hoursSlept ?? 0} hours',
-//     'Goal Achived',
-//     'Not yet',
-//     'injections Done Today ', // Update this line for injection count
-//   ];
+    List<String> values = [
+      '4 liters',
+      '4 minutes',
+      '7 hours',
+      'Goal Achived',
+      'Not yet',
+      'injections Done Today ', // Update this line for injection count
+    ];
 
-//   return GridView.builder(
-//     physics: const NeverScrollableScrollPhysics(),
-//     shrinkWrap: true,
-//     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-//       crossAxisCount: 2,
-//       childAspectRatio: 1.5,
-//       crossAxisSpacing: 10.w,
-//       mainAxisSpacing: 10.h,
-//     ),
-//     itemCount: activities.length,
-//     itemBuilder: (context, index) {
-//       return _buildActivityCard(
-//         activities[index],
-//         values[index],
-//         colors[index],
-//       );
-//     },
-//   );
-// }
-
+    return GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 1.5,
+        crossAxisSpacing: 10.w,
+        mainAxisSpacing: 10.h,
+      ),
+      itemCount: activities.length,
+      itemBuilder: (context, index) {
+        return _buildActivityCard(
+          activities[index],
+          values[index],
+          colors[index],
+        );
+      },
+    );
+  }
 
   Widget _buildActivityCard(String activity, String value, Color iconColor) {
     return Card(
@@ -518,23 +520,23 @@ Get.to(GoalCompletionScreen()) ;
     );
   }
 
-IconData _getActivityIcon(String activity) {
-  switch (activity) {
-    case 'Water Intake':
-      return Icons.local_drink; // Icon for water intake
-    case 'Walking':
-      return Icons.directions_walk; // Icon for walking
-    case 'Sleep':
-      return Icons.bedtime; // Icon for sleep
-    case 'Food Intake':
-      return Icons.fastfood; // Icon for food intake
-    case 'Medicine':
-      return Icons.medical_services; // Icon for medicine
-    case 'Injection':
-      return Icons.medication; // Custom icon for injection, change if needed
-    default:
-      return Icons.accessibility; // Default icon
+  IconData _getActivityIcon(String activity) {
+    switch (activity) {
+      case 'Water Intake':
+        return Icons.local_drink; // Icon for water intake
+      case 'Walking':
+        return Icons.directions_walk; // Icon for walking
+      case 'Sleep':
+        return Icons.bedtime; // Icon for sleep
+      case 'Food Intake':
+        return Icons.fastfood; // Icon for food intake
+      case 'Medicine':
+        return Icons.medical_services; // Icon for medicine
+      case 'Injection':
+        return Icons.medication; // Custom icon for injection, change if needed
+      default:
+        return Icons.accessibility; // Default icon
+    }
   }
-}
 
 }
