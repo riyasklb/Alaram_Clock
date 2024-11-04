@@ -9,9 +9,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
-import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz;
-
+import 'package:timezone/timezone.dart' as tz;import 'package:timezone/data/latest.dart' as tz;
 import '../../tools/constans/model/goal_model.dart';
 
 class OptionalGoalSettingScreen extends StatefulWidget {
@@ -28,6 +26,8 @@ class _OptionalGoalSettingScreenState extends State<OptionalGoalSettingScreen> {
 
   final _formKey = GlobalKey<FormState>();
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+ 
 
   @override
   void initState() {
@@ -50,53 +50,6 @@ class _OptionalGoalSettingScreenState extends State<OptionalGoalSettingScreen> {
 
     final InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
     await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-
-    const AndroidNotificationChannel channel = AndroidNotificationChannel(
-      'your_channel_id',
-      'your_channel_name',
-      description: 'your_channel_description',
-      importance: Importance.max,
-      playSound: true,
-      enableVibration: true,
-    );
-
-    await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()?.createNotificationChannel(channel);
-  }
-
-  void scheduleReminder(String time) {
-    DateTime now = DateTime.now();
-    DateTime scheduledTime;
-
-    List<String> parts = time.split(':');
-    int hour = int.parse(parts[0]);
-    int minute = int.parse(parts[1]);
-
-    scheduledTime = DateTime(now.year, now.month, now.day, hour, minute);
-
-    if (scheduledTime.isBefore(now)) {
-      scheduledTime = scheduledTime.add(Duration(days: 1));
-    }
-
-    final tzDateTime = tz.TZDateTime.from(scheduledTime, tz.local);
-
-    flutterLocalNotificationsPlugin.zonedSchedule(
-      0,
-      'Health Reminder',
-      'Time to take your medicine!',
-      tzDateTime,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'your_channel_id',
-          'your_channel_name',
-          channelDescription: 'your_channel_description',
-          importance: Importance.max,
-          priority: Priority.high,
-          showWhen: false,
-        ),
-      ),
-      androidAllowWhileIdle: true,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-    );
   }
 
   void _saveOptionalGoals() async {
@@ -121,10 +74,12 @@ class _OptionalGoalSettingScreenState extends State<OptionalGoalSettingScreen> {
           afternoon: enableLunch,
           night: enableDinner,
         ),
-        medicines: medicinesData,
+        medicines: medicinesData,skipped: false,
       );
 
       await box.put(goal.goalId, goal);
+    
+     
 
       Get.snackbar('Success', 'Optional goals saved successfully!', snackPosition: SnackPosition.BOTTOM);
       Get.to(BottumNavBar());
@@ -135,13 +90,6 @@ class _OptionalGoalSettingScreenState extends State<OptionalGoalSettingScreen> {
     final random = Random();
     return random.nextInt(0xFFFFFFFF);
   }
-
-  final Map<String, String> timeMapping = {
-    'Morning': '08:00',
-    'Afternoon': '12:00',
-    'Evening': '18:00',
-    'Night': '20:00',
-  };
 
   @override
   Widget build(BuildContext context) {
@@ -155,9 +103,36 @@ class _OptionalGoalSettingScreenState extends State<OptionalGoalSettingScreen> {
         backgroundColor: kblue,
         actions: [
           TextButton(
-            onPressed: () => Get.to(BottumNavBar()),
-            child: Text('Skip', style: TextStyle(color: kwhite, fontSize: 16.sp)),
-          ),
+  onPressed: () async {
+    // Open the Hive box to store the skipped state
+   
+    
+    final box = await Hive.openBox<Goal>('goals');
+   Goal goal = Goal(
+  goalId: 1,
+  goalType: '',
+  date: DateTime.now(), // You may want to keep the current date as default, or use a default DateTime if you have one.
+  targetValue: Meal(
+    morning: false,
+    afternoon: false,
+    night: false,
+  ),
+  medicines: [], // Empty list for medicines
+  skipped: true,
+);
+
+
+      await box.put(goal.goalId, goal);
+
+    // Navigate to the next screen
+    Get.to(BottumNavBar());
+  },
+  child: Text(
+    'Skip',
+    style: TextStyle(color: kwhite, fontSize: 16.sp),
+  ),
+)
+
         ],
       ),
       body: Padding(

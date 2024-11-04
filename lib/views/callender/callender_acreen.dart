@@ -20,37 +20,51 @@ class _SavedCallenderScreenState extends State<SavedCallenderScreen> {
     _openBox();
   }
 
-  Future<void> _openBox() async {
+  Future<void> _openBox() async {print('-----------11---------------------');
     goalData = await Hive.openBox<Goal>('goals');
-    _loadGoalAppointments(); // Load appointments after opening the box
+    print('--------------------22------------');
+    _loadGoalAppointments();
+    print('-----------------33---------------'); // Load appointments after opening the box
     setState(() {
       _isLoading = false; // Set loading to false after initialization
     });
+    print('---------------44-----------------');
   }
 
-  void _loadGoalAppointments() {
-    List<Appointment> appointments = [];
-    
-    for (int i = 0; i < goalData.length; i++) {
-      final goal = goalData.getAt(i) as Goal;
+ void _loadGoalAppointments() {
+  List<Appointment> appointments = [];
 
-      // Create appointments for medicines
-      if (goal.medicines != null) {
-        for (var medicine in goal.medicines!) {
-          _addAppointmentsForMedicine(medicine, appointments);
-        }
-      }
+  for (int i = 0; i < goalData.length; i++) {
+    final goal = goalData.getAt(i) as Goal;
+print('--------------1-----${goal.skipped}-------------');
+  //  Check if the goal is skipped
+    if (goal.skipped) {
+      print('--------------2------------------');
+      print("Goal  is skipped.");
+      continue; 
+     // Skip loading appointments for this goal
+    } else {
+      print("Goal  is not skipped.");
+    }print('----------------3----------------');
 
-      // Create appointments for food intake
-      if (goal.targetValue != null) {
-        _addAppointmentsForFoodIntake(goal.targetValue!, appointments);
+    // Create appointments for medicines
+    if (goal.medicines != null) {
+      for (var medicine in goal.medicines!) {
+        _addAppointmentsForMedicine(medicine, appointments);
       }
     }
 
-    setState(() {
-      _goalAppointments = appointments; // Update the appointments list
-    });
+    // Create appointments for food intake
+    if (goal.targetValue != null) {
+      _addAppointmentsForFoodIntake(goal.targetValue!, appointments);
+    }
   }
+
+  setState(() {
+    _goalAppointments = appointments; // Update the appointments list
+  });
+}
+
 
   void _addAppointmentsForMedicine(Medicine medicine, List<Appointment> appointments) {
     DateTime startTime = DateTime.now(); // Starting from today

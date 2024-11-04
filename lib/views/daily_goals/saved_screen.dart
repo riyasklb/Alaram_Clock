@@ -32,73 +32,72 @@ class _SavedGoalsScreenState extends State<SavedGoalsScreen> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Saved Goals"),
-      ),
-      body: isBoxOpened && _goaldata.isNotEmpty
-          ? ListView.builder(
-              itemCount: _goaldata.length,
-              itemBuilder: (context, index) {
-                final goal = _goaldata.getAt(index) as Goal?;
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text("Saved Goals"),
+    ),
+    body: isBoxOpened
+        ? (_goaldata.values.any((goal) => goal.skipped == false)
+            ? ListView.builder(
+                itemCount: _goaldata.length,
+                itemBuilder: (context, index) {
+                  final goal = _goaldata.getAt(index) as Goal?;
 
-                // Handle the case where goal could be null
-                if (goal == null) {
-                  return ListTile(
-                    title: Text("Goal not found"),
-                  );
-                }
+                  // Skip goals that are marked as skipped
+                  if (goal == null || goal.skipped) {
+                    return SizedBox.shrink(); // Don't display skipped goals
+                  }
 
-                // Handle null check for targetValue (Meal type)
-                final meal = goal.targetValue ?? Meal();
+                  // Handle null check for targetValue (Meal type)
+                  final meal = goal.targetValue ?? Meal();
 
-                return Card(
-                  margin: EdgeInsets.all(8.0),
-                  child: ListTile(
-                    title: Text("Goal ID: ${goal.goalId}"),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Goal Type: ${goal.goalType}"),
-                        Text("Date: ${goal.date.toLocal()}"),
-                        SizedBox(height: 8),
-                        Text("Meals:"),
-                        Text("Breakfast: ${meal.morning == true ? "Enabled" : "Disabled"}"),
-                        Text("Lunch: ${meal.afternoon == true ? "Enabled" : "Disabled"}"),
-                        Text("Dinner: ${meal.evening == true ? "Enabled" : "Disabled"}"),
-                        Text("Night: ${meal.night == true ? "Enabled" : "Disabled"}"),
-                        SizedBox(height: 8),
-                        Text("Medicines:"),
-                        if (goal.medicines != null)
-                          ...goal.medicines!.map((medicine) {
-                            return Padding(
-                              padding: const EdgeInsets.only(left: 16.0, top: 4.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text("Name: ${medicine.name}"),
-                                  Text("Frequency: ${medicine.frequencyType}"),
-                                  Text("Dosage: ${medicine.dosage}"),
-                                  Text("Quantity: ${medicine.quantity}"),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                        if (goal.medicines == null)
-                          Text("No medicines found"),
-                      ],
+                  return Card(
+                    margin: EdgeInsets.all(8.0),
+                    child: ListTile(
+                      title: Text("Goal ID: ${goal.goalId}"),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Goal Type: ${goal.goalType}"),
+                          Text("Date: ${goal.date.toLocal()}"),
+                          SizedBox(height: 8),
+                          Text("Meals:"),
+                          Text("Breakfast: ${meal.morning == true ? "Enabled" : "Disabled"}"),
+                          Text("Lunch: ${meal.afternoon == true ? "Enabled" : "Disabled"}"),
+                          Text("Dinner: ${meal.evening == true ? "Enabled" : "Disabled"}"),
+                          Text("Night: ${meal.night == true ? "Enabled" : "Disabled"}"),
+                          SizedBox(height: 8),
+                          Text("Medicines:"),
+                          if (goal.medicines != null)
+                            ...goal.medicines!.map((medicine) {
+                              return Padding(
+                                padding: const EdgeInsets.only(left: 16.0, top: 4.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text("Name: ${medicine.name}"),
+                                    Text("Frequency: ${medicine.frequencyType}"),
+                                    Text("Dosage: ${medicine.dosage}"),
+                                    Text("Quantity: ${medicine.quantity}"),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          if (goal.medicines == null)
+                            Text("No medicines found"),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
-            )
-          : Center(
-              child: isBoxOpened
-                  ? Text("No saved goals found")
-                  : CircularProgressIndicator(), // Show loading indicator while waiting
-            ),
-    );
-  }
+                  );
+                },
+              )
+            : Center(child: Text("You don't have goals")))
+        : Center(child: CircularProgressIndicator()), // Show loading indicator while waiting
+  );
+}
+
+    
+  
 }

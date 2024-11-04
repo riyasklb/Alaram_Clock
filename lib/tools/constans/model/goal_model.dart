@@ -20,12 +20,16 @@ class Goal extends HiveObject {
   @HiveField(4)
   List<Medicine>? medicines;
 
+  @HiveField(5) // Add this field with a new field ID
+  bool skipped; // New field to indicate if the goal is skipped
+
   Goal({
     required this.goalId,
     required this.goalType,
     required this.date,
     this.targetValue,
     this.medicines,
+    this.skipped = false, // Default value set to false
   });
 }
 
@@ -43,14 +47,11 @@ class Meal extends HiveObject {
   @HiveField(3)
   bool? night;
 
-
-
   Meal({
     this.morning,
     this.afternoon,
     this.evening,
     this.night,
-  
   });
 }
 
@@ -77,7 +78,6 @@ class Medicine extends HiveObject {
     required this.dosage,
     required this.quantity,
   }) {
-    // Set the nextIntakeDate based on the frequencyType
     nextIntakeDate = calculateNextIntakeDate(frequencyType);
   }
 
@@ -89,7 +89,6 @@ class Medicine extends HiveObject {
       case 'weekly':
         return now.add(Duration(days: 7));
       default:
-        // If frequencyType is a number or not recognized, assume daily intake
         int days = int.tryParse(frequencyType.replaceAll(RegExp(r'[^0-9]'), '')) ?? 1;
         return now.add(Duration(days: days));
     }

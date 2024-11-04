@@ -22,13 +22,14 @@ class GoalAdapter extends TypeAdapter<Goal> {
       date: fields[2] as DateTime,
       targetValue: fields[3] as Meal?,
       medicines: (fields[4] as List?)?.cast<Medicine>(),
+      skipped: fields[5] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, Goal obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.goalId)
       ..writeByte(1)
@@ -38,7 +39,9 @@ class GoalAdapter extends TypeAdapter<Goal> {
       ..writeByte(3)
       ..write(obj.targetValue)
       ..writeByte(4)
-      ..write(obj.medicines);
+      ..write(obj.medicines)
+      ..writeByte(5)
+      ..write(obj.skipped);
   }
 
   @override
