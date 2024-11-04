@@ -1,5 +1,6 @@
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/constans/model/daily_activity_model.dart';
+import 'package:alaram/tools/constans/model/goal_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -9,150 +10,76 @@ import 'auth/register_screen.dart';
 import 'package:alaram/tools/constans/model/profile_model.dart';
 
 class ProfileScreen extends StatelessWidget {
+  Future<void> _openBoxes() async {
+    await Hive.openBox<ProfileModel>('profileBox');
+    await Hive.openBox<Goal>('goals');
+    await Hive.openBox('settingsBox');
+  }
+
   @override
   Widget build(BuildContext context) {
-    final Box<DailyActivityModel> activityBox = Hive.box('dailyactivities');
-    final profileBox = Hive.box<ProfileModel>('profileBox');
-    final goalBox = Hive.box('goalBox');
-    final settingsBox = Hive.box('settingsBox');
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text(
-          'Profile',
-          style: GoogleFonts.poppins(
-            fontSize: 24.sp,
-            fontWeight: FontWeight.bold,
-            color: kwhite,
+    return FutureBuilder(
+      future: _openBoxes(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Failed to open Hive boxes.'));
+        }
+
+        final profileBox = Hive.box<ProfileModel>('profileBox');
+        final goalBox = Hive.box<Goal>('goals');
+        final settingsBox = Hive.box('settingsBox');
+
+        return Scaffold(
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            title: Text(
+              'Profile',
+              style: GoogleFonts.poppins(
+                fontSize: 24.sp,
+                fontWeight: FontWeight.bold,
+                color: kwhite,
+              ),
+            ),
+            backgroundColor: Colors.transparent,
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.blueAccent, Colors.lightBlue],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+            elevation: 0,
           ),
-        ),
-        backgroundColor: Colors.transparent,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.blueAccent, Colors.lightBlue],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildProfileHeader(profileBox),
+                  Divider(thickness: 1, color: Colors.grey[300]),
+                  SizedBox(height: 20.h),
+                  _buildSectionTitle('Profile Information'),
+                  SizedBox(height: 10.h),
+                  ..._buildProfileCards(profileBox),
+                  SizedBox(height: 20.h),
+                  SizedBox(height: 10.h),
+                  SizedBox(height: 30.h),
+                  _buildLogoutButton(context, profileBox, goalBox, settingsBox),
+                  SizedBox(height: 40.h),
+                ],
+              ),
             ),
           ),
-        ),
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildProfileHeader(profileBox),
-              Divider(thickness: 1, color: Colors.grey[300]),
-              SizedBox(height: 20.h),
-              _buildSectionTitle('Profile Information'),
-              SizedBox(height: 10.h),
-              ..._buildProfileCards(profileBox),
-              SizedBox(height: 20.h),
-            //  _buildSectionTitle('Goals & Reminders'),
-              SizedBox(height: 10.h),
-        //      ..._buildGoalCards(goalBox),
-              SizedBox(height: 30.h),
-              _buildLogoutButton(
-                  context, profileBox, goalBox, settingsBox,activityBox ),
-              SizedBox(height: 40.h),
-              kheight40,
-              kheight40,
-            ],
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
-
-  Widget _buildProfileHeader(Box<ProfileModel> profileBox) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.blueAccent, Colors.lightBlue],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(15.r),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black26, blurRadius: 10.r, offset: Offset(0, 4)),
-        ],
-      ),
-      padding: EdgeInsets.all(20.w),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          CircleAvatar(
-            radius: 40.r,
-            backgroundColor: Colors.white,
-            child: Icon(Icons.person, size: 50.r, color: Colors.blueAccent),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                profileBox.get('userProfile')?.username ?? 'User',
-                style: GoogleFonts.poppins(
-                  fontSize: 22.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(height: 4.h),
-              Text(
-                profileBox.get('userProfile')?.email ?? 'Email',
-                style: GoogleFonts.poppins(
-                  fontSize: 16.sp,
-                  color: Colors.white70,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  List<Widget> _buildProfileCards(Box<ProfileModel> profileBox) {
-    return [
-      _buildProfileCard('Username', profileBox.get('userProfile')?.username),
-      _buildProfileCard('Email', profileBox.get('userProfile')?.email),
-      _buildProfileCard('Age', profileBox.get('userProfile')?.age?.toString()),
-      _buildProfileCard('Mobile', profileBox.get('userProfile')?.mobile),
-      _buildProfileCard('NHS Number', profileBox.get('userProfile')?.nhsNumber),
-      _buildProfileCard('Gender', profileBox.get('userProfile')?.gender),
-      _buildProfileCard('Ethnicity', profileBox.get('userProfile')?.ethnicity),
-      _buildProfileCard(
-          'Water Intake Goal',
-          profileBox.get('userProfile')?.waterIntakeGoal?.toString() ??
-              'Not Set'),
-      _buildProfileCard('Sleep Goal',
-          profileBox.get('userProfile')?.sleepGoal?.toString() ?? 'Not Set'),
-      _buildProfileCard('Walking Goal',
-          profileBox.get('userProfile')?.walkingGoal?.toString() ?? 'Not Set'),
-    ];
-  }
-
-  // List<Widget> _buildGoalCards(Box goalBox) {
-  //   return [
-  //     _buildGoalCard('Medicine Times',
-  //         goalBox.get('medicineTimes')?.toString() ?? 'Not Set'),
-  //     _buildGoalCard('Medicine Frequency',
-  //         goalBox.get('medicineFrequency')?.toString() ?? 'Not Set'),
-  //     _buildGoalCard('Medicine Dosage',
-  //         goalBox.get('medicineDosage')?.toString() ?? 'Not Set'),
-  //     _buildGoalCard('Breakfast Enabled',
-  //         goalBox.get('enableBreakfast') == true ? 'Yes' : 'No'),
-  //     _buildGoalCard(
-  //         'Lunch Enabled', goalBox.get('enableLunch') == true ? 'Yes' : 'No'),
-  //     _buildGoalCard(
-  //         'Dinner Enabled', goalBox.get('enableDinner') == true ? 'Yes' : 'No')
-  //   ];
-  // }
-
   Widget _buildProfileCard(String label, String? value) {
     IconData iconData;
     switch (label) {
@@ -298,10 +225,114 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLogoutButton(BuildContext context, Box profileBox, Box goalBox,Box settingsBox, Box activitybox) {
+  Widget _buildProfileHeader(Box<ProfileModel> profileBox) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.blueAccent, Colors.lightBlue],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(15.r),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black26, blurRadius: 10.r, offset: Offset(0, 4)),
+        ],
+      ),
+      padding: EdgeInsets.all(20.w),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          CircleAvatar(
+            radius: 40.r,
+            backgroundColor: Colors.white,
+            child: Icon(Icons.person, size: 50.r, color: Colors.blueAccent),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                profileBox.get('userProfile')?.username ?? 'User',
+                style: GoogleFonts.poppins(
+                  fontSize: 22.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                profileBox.get('userProfile')?.email ?? 'Email',
+                style: GoogleFonts.poppins(
+                  fontSize: 16.sp,
+                  color: Colors.white70,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  List<Widget> _buildProfileCards(Box<ProfileModel> profileBox) {
+    return [
+      _buildProfileCard('Username', profileBox.get('userProfile')?.username),
+      _buildProfileCard('Email', profileBox.get('userProfile')?.email),
+      _buildProfileCard('Age', profileBox.get('userProfile')?.age?.toString()),
+      _buildProfileCard('Mobile', profileBox.get('userProfile')?.mobile),
+      _buildProfileCard('NHS Number', profileBox.get('userProfile')?.nhsNumber),
+      _buildProfileCard('Gender', profileBox.get('userProfile')?.gender),
+      _buildProfileCard('Ethnicity', profileBox.get('userProfile')?.ethnicity),
+      _buildProfileCard(
+          'Water Intake Goal',
+          profileBox.get('userProfile')?.waterIntakeGoal?.toString() ??
+              'Not Set'),
+      _buildProfileCard('Sleep Goal',
+          profileBox.get('userProfile')?.sleepGoal?.toString() ?? 'Not Set'),
+      _buildProfileCard('Walking Goal',
+          profileBox.get('userProfile')?.walkingGoal?.toString() ?? 'Not Set'),
+    ];
+  }
+
+  // List<Widget> _buildGoalCards(Box goalBox) {
+  //   return [
+  //     _buildGoalCard('Medicine Times',
+  //         goalBox.get('medicineTimes')?.toString() ?? 'Not Set'),
+  //     _buildGoalCard('Medicine Frequency',
+  //         goalBox.get('medicineFrequency')?.toString() ?? 'Not Set'),
+  //     _buildGoalCard('Medicine Dosage',
+  //         goalBox.get('medicineDosage')?.toString() ?? 'Not Set'),
+  //     _buildGoalCard('Breakfast Enabled',
+  //         goalBox.get('enableBreakfast') == true ? 'Yes' : 'No'),
+  //     _buildGoalCard(
+  //         'Lunch Enabled', goalBox.get('enableLunch') == true ? 'Yes' : 'No'),
+  //     _buildGoalCard(
+  //         'Dinner Enabled', goalBox.get('enableDinner') == true ? 'Yes' : 'No')
+  //   ];
+  // }
+  // List<Widget> _buildGoalCards(Box<Goal> goalBox) {
+  //   return [
+  //     _buildGoalCard('Medicine Times',
+  //         goalBox.get('goal')?.goalBox.frequencyType?.toString() ?? 'Not Set'),
+  //     _buildGoalCard('Medicine Frequency',
+  //         goalBox.get('goal')?.medicineFrequency?.toString() ?? 'Not Set'),
+  //     _buildGoalCard('Medicine Dosage',
+  //         goalBox.get('goal')?.medicineDosage?.toString() ?? 'Not Set'),
+  //     _buildGoalCard('Breakfast Enabled',
+  //         goalBox.get('goal')?.enableBreakfast == true ? 'Yes' : 'No'),
+  //     _buildGoalCard('Lunch Enabled',
+  //         goalBox.get('goal')?.enableLunch == true ? 'Yes' : 'No'),
+  //     _buildGoalCard('Dinner Enabled',
+  //         goalBox.get('goal')?.enableDinner == true ? 'Yes' : 'No')
+  //   ];
+  // }
+
+  // Other helper methods remain the same, including _buildProfileHeader, _buildProfileCard, etc.
+
+  Widget _buildLogoutButton(BuildContext context, Box profileBox, Box goalBox, Box settingsBox, ) {
     return ElevatedButton(
-      onPressed: () => _showLogoutConfirmation(
-          context, profileBox, goalBox, settingsBox, activitybox),
+      onPressed: () => _showLogoutConfirmation(context, profileBox, goalBox, settingsBox ),
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.redAccent,
         padding: EdgeInsets.symmetric(horizontal: 50.w, vertical: 15.h),
@@ -317,8 +348,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  void _showLogoutConfirmation(BuildContext context, Box profileBox,
-      Box goalBox, Box settingsBox, Box activitybox) {
+  void _showLogoutConfirmation(BuildContext context, Box profileBox, Box goalBox, Box settingsBox, ) {
     showDialog(
       context: context,
       builder: (context) {
@@ -334,15 +364,14 @@ class ProfileScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () async {
                 await profileBox.clear();
-                await goalBox.clear();
+                await goalBox.clear();          // Clear Goal Data
                 await settingsBox.clear();
-                await activitybox.clear();
+              
+              
                 Get.offAll(() => RegisterScreen());
               },
-              style:
-                  ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-              child: Text('Logout and Clear Data',
-                  style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+              child: Text('Logout and Clear Data', style: TextStyle(color: Colors.white)),
             ),
           ],
         );

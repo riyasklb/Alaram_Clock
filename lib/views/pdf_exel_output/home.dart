@@ -3,7 +3,9 @@ import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/constans/model/profile_model.dart';
 import 'package:alaram/views/activity_list.dart';
 import 'package:alaram/views/callender/callender_acreen.dart';
-import 'package:alaram/views/daily_goals/daily_goal_screen.dart';
+import 'package:alaram/views/daily_goals/saved_screen.dart';
+import 'package:alaram/views/profile_screen.dart';
+
 
 
 import 'package:flutter/material.dart';
@@ -40,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               InkWell(onTap: (){
-                Get.to( Get.to(GoalCalendarScreen()));
+                Get.to( Get.to(SavedCallenderScreen()));
               },
                 child: _buildDateTimeSection()), kheight10,
               InkWell(onTap:(){
@@ -336,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen> {
             size: 28.r,
           ),
           onPressed: () {
-Get.to(GoalCompletionScreen()) ;
+//Get.to(GoalCompletionScreen()) ;
 
            
             // Notification functionality here
@@ -358,10 +360,12 @@ Get.to(GoalCompletionScreen()) ;
       ],
       leading: Padding(
         padding: EdgeInsets.only(left: 12.w),
-        child: CircleAvatar(
-          radius: 24.r,
-          backgroundImage: NetworkImage(
-            'https://www.w3schools.com/w3images/avatar2.png',
+        child: InkWell(onTap: (){Get.to( ProfileScreen(),);},
+          child: CircleAvatar(
+            radius: 24.r,
+            backgroundImage: NetworkImage(
+              'https://www.w3schools.com/w3images/avatar2.png',
+            ),
           ),
         ),
       ),
