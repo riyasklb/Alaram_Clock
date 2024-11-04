@@ -20,8 +20,8 @@ class Goal extends HiveObject {
   @HiveField(4)
   List<Medicine>? medicines;
 
-  @HiveField(5) // Add this field with a new field ID
-  bool skipped; // New field to indicate if the goal is skipped
+  @HiveField(5)
+  bool skipped;
 
   Goal({
     required this.goalId,
@@ -29,7 +29,7 @@ class Goal extends HiveObject {
     required this.date,
     this.targetValue,
     this.medicines,
-    this.skipped = false, // Default value set to false
+    this.skipped = false,
   });
 }
 
@@ -72,11 +72,15 @@ class Medicine extends HiveObject {
   @HiveField(4)
   DateTime? nextIntakeDate;
 
+  @HiveField(5)
+  List<String> selectedTimes; // Added field for selected times
+
   Medicine({
     required this.name,
     required this.frequencyType,
     required this.dosage,
     required this.quantity,
+    this.selectedTimes = const [], // Default to an empty list
   }) {
     nextIntakeDate = calculateNextIntakeDate(frequencyType);
   }

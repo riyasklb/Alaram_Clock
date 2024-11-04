@@ -81,6 +81,7 @@ Widget build(BuildContext context) {
                                     Text("Frequency: ${medicine.frequencyType}"),
                                     Text("Dosage: ${medicine.dosage}"),
                                     Text("Quantity: ${medicine.quantity}"),
+                                   Text('${medicine.selectedTimes}')
                                   ],
                                 ),
                               );

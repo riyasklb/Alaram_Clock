@@ -9,7 +9,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
-import 'package:timezone/timezone.dart' as tz;import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 import '../../tools/constans/model/goal_model.dart';
 
 class OptionalGoalSettingScreen extends StatefulWidget {
@@ -52,39 +53,40 @@ class _OptionalGoalSettingScreenState extends State<OptionalGoalSettingScreen> {
     await flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
 
-  void _saveOptionalGoals() async {
-    if (_formKey.currentState!.validate()) {
-      final box = await Hive.openBox<Goal>('goals');
+ void _saveOptionalGoals() async {
+  if (_formKey.currentState!.validate()) {
+    final box = await Hive.openBox<Goal>('goals');
 
-      List<Medicine> medicinesData = medicines.map((medicine) {
-        return Medicine(
-          name: medicine['name'],
-          frequencyType: medicine['frequency'],
-          dosage: medicine['dosageController'].text,
-          quantity: int.parse(medicine['quantityController'].text),
-        );
-      }).toList();
-
-      Goal goal = Goal(
-        goalId: generateGoalId(),
-        goalType: "Optional",
-        date: DateTime.now(),
-        targetValue: Meal(
-          morning: enableBreakfast,
-          afternoon: enableLunch,
-          night: enableDinner,
-        ),
-        medicines: medicinesData,skipped: false,
+    List<Medicine> medicinesData = medicines.map((medicine) {
+      return Medicine(
+        name: medicine['name'],
+        frequencyType: medicine['frequency'],
+        dosage: medicine['dosageController'].text,
+        quantity: int.parse(medicine['quantityController'].text),
+        selectedTimes: List<String>.from(medicine['selectedTimes']), // Added this line
       );
+    }).toList();
 
-      await box.put(goal.goalId, goal);
-    
-     
+    Goal goal = Goal(
+      goalId: generateGoalId(),
+      goalType: "Optional",
+      date: DateTime.now(),
+      targetValue: Meal(
+        morning: enableBreakfast,
+        afternoon: enableLunch,
+        night: enableDinner,
+      ),
+      medicines: medicinesData,
+      skipped: false,
+    );
 
-      Get.snackbar('Success', 'Optional goals saved successfully!', snackPosition: SnackPosition.BOTTOM);
-      Get.to(BottumNavBar());
-    }
+    await box.put(goal.goalId, goal);
+
+    Get.snackbar('Success', 'Optional goals saved successfully!', snackPosition: SnackPosition.BOTTOM);
+    Get.offAll(BottumNavBar());
   }
+}
+
 
   int generateGoalId() {
     final random = Random();
@@ -125,7 +127,7 @@ class _OptionalGoalSettingScreenState extends State<OptionalGoalSettingScreen> {
       await box.put(goal.goalId, goal);
 
     // Navigate to the next screen
-    Get.to(BottumNavBar());
+   Get.offAll(BottumNavBar());
   },
   child: Text(
     'Skip',
