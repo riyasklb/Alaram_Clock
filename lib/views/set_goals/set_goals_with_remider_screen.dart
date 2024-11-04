@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/views/bottum_nav/bottum_nav_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -24,9 +25,8 @@ class _OptionalGoalSettingScreenState extends State<OptionalGoalSettingScreen> {
   bool enableBreakfast = false;
   bool enableLunch = false;
   bool enableDinner = false;
-  
+
   final _formKey = GlobalKey<FormState>();
-  
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   @override
@@ -99,65 +99,43 @@ class _OptionalGoalSettingScreenState extends State<OptionalGoalSettingScreen> {
     );
   }
 
-void _saveOptionalGoals() async {
-  print('--------------1----------------');
-  
-  if (_formKey.currentState!.validate()) {
-    print('--------2----------------------');
+  void _saveOptionalGoals() async {
+    if (_formKey.currentState!.validate()) {
+      final box = await Hive.openBox<Goal>('goals');
 
-    final box = await Hive.openBox<Goal>('goals');
-    print('--------------3----------------');
+      List<Medicine> medicinesData = medicines.map((medicine) {
+        return Medicine(
+          name: medicine['name'],
+          frequencyType: medicine['frequency'],
+          dosage: medicine['dosageController'].text,
+          quantity: int.parse(medicine['quantityController'].text),
+        );
+      }).toList();
 
- List<Medicine> medicinesData = medicines?.map((medicine) {
-  print('-------4-----------------------');
-  return Medicine(
-    name: medicine['name'],
-    frequencyType: medicine['frequency'],
-    dosage: medicine['dosageController'].text,
-    quantity: int.parse(medicine['quantityController'].text),
-  );
-}).toList() ?? []; // If medicines is null, medicinesData will be an empty list
+      Goal goal = Goal(
+        goalId: generateGoalId(),
+        goalType: "Optional",
+        date: DateTime.now(),
+        targetValue: Meal(
+          morning: enableBreakfast,
+          afternoon: enableLunch,
+          night: enableDinner,
+        ),
+        medicines: medicinesData,
+      );
 
-    
-    print('-----------------5-------------');
+      await box.put(goal.goalId, goal);
 
-    Goal goal = Goal(
-      goalId: 1, // Use the new ID generation method
-      goalType: "Optional",
-      date: DateTime.now(),
-      targetValue: Meal(
-        morning: enableBreakfast,
-        afternoon: enableLunch,
-      
-        night: enableDinner,
-      
-      ),
-      //   frequency: "Daily",
-      // ),
-      medicines: medicinesData,
-    );
-
-    print('---------${goal.goalId}-------6-------${goal}-------');
-    await box.put(goal.goalId, goal);
-    print('---------${goal.goalId}-------7-------${goal}-------');
-    // Schedule reminders for each medicine
-    // for (var medicine in medicines) {
-    //   for (String time in medicine['selectedTimes']) {
-    //     String mappedTime = timeMapping[time] ?? '08:00'; // Default to 08:00 if no mapping
-    //     scheduleReminder(mappedTime);
-    //   }
-    // }
-
-    Get.snackbar('Success', 'Optional goals saved successfully!',
-        snackPosition: SnackPosition.BOTTOM);
-    Get.to(BottumNavBar());
+      Get.snackbar('Success', 'Optional goals saved successfully!', snackPosition: SnackPosition.BOTTOM);
+      Get.to(BottumNavBar());
+    }
   }
-}
 
-int generateGoalId() {
-  final random = Random();
-  return random.nextInt(0xFFFFFFFF); // Generate a random number in the allowed range
-}
+  int generateGoalId() {
+    final random = Random();
+    return random.nextInt(0xFFFFFFFF);
+  }
+
   final Map<String, String> timeMapping = {
     'Morning': '08:00',
     'Afternoon': '12:00',
@@ -175,6 +153,12 @@ int generateGoalId() {
               fontSize: 22.sp, fontWeight: FontWeight.bold, color: kwhite),
         ),
         backgroundColor: kblue,
+        actions: [
+          TextButton(
+            onPressed: () => Get.to(BottumNavBar()),
+            child: Text('Skip', style: TextStyle(color: kwhite, fontSize: 16.sp)),
+          ),
+        ],
       ),
       body: Padding(
         padding: EdgeInsets.all(16.w),
@@ -212,7 +196,7 @@ int generateGoalId() {
                 _buildToggleSwitch('Enable Breakfast', enableBreakfast, (val) => setState(() => enableBreakfast = val)),
                 _buildToggleSwitch('Enable Lunch', enableLunch, (val) => setState(() => enableLunch = val)),
                 _buildToggleSwitch('Enable Dinner', enableDinner, (val) => setState(() => enableDinner = val)),
-             
+
                 SizedBox(height: 30.h),
                 ElevatedButton(
                   onPressed: _saveOptionalGoals,
@@ -234,27 +218,17 @@ int generateGoalId() {
         _buildDropdownField(
           label: 'Medicine Name',
           value: medicines[index]['name'],
-          items: <String>[
-            'Paracetamol',
-            'Ibuprofen',
-            'Aspirin',
-            'Amoxicillin'
-          ],
+          items: <String>['Paracetamol', 'Ibuprofen', 'Aspirin', 'Amoxicillin'],
           onChanged: (String? val) => setState(() => medicines[index]['name'] = val),
         ),
-        _buildTextField(
+        _buildIntTextField(
           controller: medicines[index]['quantityController'],
           labelText: 'Quantity (e.g., 10 tablets)',
           validator: (value) => value!.isEmpty ? 'Enter quantity' : null,
         ),
         _buildMultiSelectChip(
           label: 'Select Medicine Times',
-          items: <String>[
-            'Morning',
-            'Afternoon',
-            'Evening',
-            'Night'
-          ],
+          items: <String>['Morning', 'Afternoon', 'Evening', 'Night'],
           selectedItems: medicines[index]['selectedTimes'] as List<String>,
           onSelectionChanged: (List<String> selectedList) {
             setState(() => medicines[index]['selectedTimes'] = selectedList);
@@ -288,39 +262,22 @@ int generateGoalId() {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 16.h),
-      child: Text(
-        title,
-        style: GoogleFonts.poppins(
-            fontSize: 20.sp, fontWeight: FontWeight.bold, color: kblue),
-      ),
-    );
-  }
-
-  Widget _buildDropdownField({
-    required String label,
-    required String? value,
-    required List<String> items,
-    required ValueChanged<String?> onChanged,
+  Widget _buildIntTextField({
+    required TextEditingController controller,
+    required String labelText,
+    String? Function(String?)? validator,
   }) {
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
-      child: DropdownButtonFormField<String>(
-        value: value,
+      child: TextFormField(
+        controller: controller,
+        keyboardType: TextInputType.number,
         decoration: InputDecoration(
-          labelText: label,
+          labelText: labelText,
           border: OutlineInputBorder(),
         ),
-        items: items.map((String item) {
-          return DropdownMenuItem<String>(
-            value: item,
-            child: Text(item),
-          );
-        }).toList(),
-        onChanged: onChanged,
-        validator: (value) => value == null ? 'Select $label' : null,
+        validator: validator,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
       ),
     );
   }
@@ -343,11 +300,36 @@ int generateGoalId() {
     );
   }
 
+  Widget _buildDropdownField({
+    required String label,
+    required String? value,
+    required List<String> items,
+    required void Function(String?)? onChanged,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 16.h),
+      child: DropdownButtonFormField<String>(
+        value: value,
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(),
+        ),
+        items: items.map<DropdownMenuItem<String>>((String item) {
+          return DropdownMenuItem<String>(
+            value: item,
+            child: Text(item),
+          );
+        }).toList(),
+        onChanged: onChanged,
+      ),
+    );
+  }
+
   Widget _buildMultiSelectChip({
     required String label,
     required List<String> items,
     required List<String> selectedItems,
-    required ValueChanged<List<String>> onSelectionChanged,
+    required Function(List<String>) onSelectionChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -359,8 +341,8 @@ int generateGoalId() {
             return FilterChip(
               label: Text(item),
               selected: selectedItems.contains(item),
-              onSelected: (isSelected) {
-                isSelected
+              onSelected: (selected) {
+                selected
                     ? selectedItems.add(item)
                     : selectedItems.remove(item);
                 onSelectionChanged(selectedItems);
@@ -372,16 +354,26 @@ int generateGoalId() {
     );
   }
 
-  Widget _buildToggleSwitch(String label, bool value, ValueChanged<bool> onChanged) {
+  Widget _buildToggleSwitch(String title, bool value, Function(bool) onChanged) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: TextStyle(fontSize: 16.sp)),
+        Text(title, style: TextStyle(fontSize: 16.sp)),
         Switch(
           value: value,
           onChanged: onChanged,
         ),
       ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 16.h),
+      child: Text(
+        title,
+        style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
+      ),
     );
   }
 }

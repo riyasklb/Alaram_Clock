@@ -97,7 +97,7 @@ class _SavedCallenderScreenState extends State<SavedCallenderScreen> {
 
 
 void _addAppointmentsForFoodIntake(Meal meal, List<Appointment> appointments) {
-  DateTime startTime = DateTime.now();
+  DateTime startTime = DateTime(2024, 11, 1);
   DateFormat timeFormatter = DateFormat.jm();
 
   for (int j = 0; j < 30; j++) {
