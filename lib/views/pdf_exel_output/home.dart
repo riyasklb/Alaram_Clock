@@ -1,7 +1,7 @@
 import 'package:alaram/tools/constans/color.dart';
 
 import 'package:alaram/tools/constans/model/profile_model.dart';
-import 'package:alaram/views/activity_list.dart';
+
 import 'package:alaram/views/callender/callender_acreen.dart';
 import 'package:alaram/views/daily_goals/saved_screen.dart';
 import 'package:alaram/views/profile_screen.dart';
@@ -351,7 +351,8 @@ class _HomeScreenState extends State<HomeScreen> {
             color: Colors.white,
             size: 28.r,
           ),
-          onPressed: () {Get.to(   DailyProgressScreen());
+          onPressed: () {
+            //Get.to(   DailyProgressScreen());
          
           //  Get.to(GoalSummaryScreen());
           },

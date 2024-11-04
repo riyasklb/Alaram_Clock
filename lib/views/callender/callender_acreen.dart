@@ -20,15 +20,15 @@ class _SavedCallenderScreenState extends State<SavedCallenderScreen> {
     _openBox();
   }
 
-  Future<void> _openBox() async {print('-----------11---------------------');
+  Future<void> _openBox() async {
     goalData = await Hive.openBox<Goal>('goals');
-    print('--------------------22------------');
+    
     _loadGoalAppointments();
-    print('-----------------33---------------'); // Load appointments after opening the box
+   
     setState(() {
       _isLoading = false; // Set loading to false after initialization
     });
-    print('---------------44-----------------');
+
   }
 
  void _loadGoalAppointments() {
@@ -49,15 +49,18 @@ print('--------------1-----${goal.skipped}-------------');
 
     // Create appointments for medicines
     if (goal.medicines != null) {
+      print('----------------4----------------');
       for (var medicine in goal.medicines!) {
         _addAppointmentsForMedicine(medicine, appointments);
       }
+       print('----------------5----------------');
     }
 
     // Create appointments for food intake
     if (goal.targetValue != null) {
       _addAppointmentsForFoodIntake(goal.targetValue!, appointments);
     }
+     print('----------------6----------------');
   }
 
   setState(() {
@@ -66,46 +69,61 @@ print('--------------1-----${goal.skipped}-------------');
 }
 
 
-  void _addAppointmentsForMedicine(Medicine medicine, List<Appointment> appointments) {
-    DateTime startTime = DateTime.now(); // Starting from today
-    for (int j = 0; j < 30; j++) { // Show appointments for the next 30 days
-      DateTime appointmentDate = startTime.add(Duration(days: j));
-      String frequency = medicine.frequencyType;
+ void _addAppointmentsForMedicine(Medicine medicine, List<Appointment> appointments) {
+  DateTime startTime = DateTime.now(); // Starting from today
+  DateFormat timeFormatter = DateFormat.jm();
 
-      switch (frequency) {
-        case 'Daily':
-          appointments.add(Appointment(
-            startTime: appointmentDate,
-            endTime: appointmentDate.add(Duration(hours: 1)), // Duration of the appointment
-            subject: 'Take ${medicine.name}',
-            color: Colors.blue,
-          ));
+  for (int j = 0; j < 30; j++) { // Show appointments for the next 30 days
+    DateTime appointmentDate = startTime.add(Duration(days: j));
+    String frequency = medicine.frequencyType;
+
+    // Determine which times of day the medicine should be taken
+    for (String timeOfDay in medicine.selectedTimes) {
+      DateTime time;
+      
+      switch (timeOfDay) {
+        case 'Morning':
+          time = appointmentDate.add(Duration(hours: 8)); // 8:00 AM
           break;
-        case 'Weekly':
-          if (appointmentDate.weekday == 1) { // Assuming Monday as the frequency day
-            appointments.add(Appointment(
-              startTime: appointmentDate,
-              endTime: appointmentDate.add(Duration(hours: 1)),
-              subject: 'Take ${medicine.name}',
-              color: Colors.blue,
-            ));
-          }
+        case 'Afternoon':
+          time = appointmentDate.add(Duration(hours: 12)); // 12:00 PM
           break;
-        case 'Every Other Day':
-          if (j % 2 == 0) { // Every other day
-            appointments.add(Appointment(
-              startTime: appointmentDate,
-              endTime: appointmentDate.add(Duration(hours: 1)),
-              subject: 'Take ${medicine.name}',
-              color: Colors.blue,
-            ));
-          }
+        case 'Evening':
+          time = appointmentDate.add(Duration(hours: 18)); // 6:00 PM
+          break;
+        case 'Night':
+          time = appointmentDate.add(Duration(hours: 20)); // 8:00 PM
           break;
         default:
-          break;
+          continue;
+      }
+
+      if (_shouldAddAppointment(j, frequency)) {
+        appointments.add(Appointment(
+          startTime: time,
+          endTime: time.add(Duration(hours: 1)),
+          subject: 'Take ${medicine.name} (${timeFormatter.format(time)})',
+          color: Colors.blue,
+        ));
       }
     }
   }
+}
+
+// Helper method to determine if an appointment should be added based on frequency
+bool _shouldAddAppointment(int dayIndex, String frequency) {
+  switch (frequency) {
+    case 'Daily':
+      return true;
+    case 'Weekly':
+      return dayIndex % 7 == 0;
+    case 'Every Other Day':
+      return dayIndex % 2 == 0;
+    default:
+      return false;
+  }
+}
+
 
 
 
@@ -173,7 +191,8 @@ void _addAppointmentsForFoodIntake(Meal meal, List<Appointment> appointments) {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => TodaysGoalsComplitionScreen(todaysGoals: todaysAppointments),
+            builder:  (context) => TodaysGoalsComplitionScreen(todaysGoals: todaysAppointments),
+
           ),
         );
       }
@@ -201,15 +220,15 @@ void _addAppointmentsForFoodIntake(Meal meal, List<Appointment> appointments) {
 
   List<Appointment> _convertGoalsToAppointments(List<Goal> goals) {
     List<Appointment> appointments = [];
-print('----------------------------1---------------------');
+print('----------------------------1-------1--------------');
     for (var goal in goals) {
-      print('------------------------2-------------------------');
+      print('------------------------2-------2------------------');
       // Assuming you can extract the necessary information from the Goal object
       // Example of creating an appointment:
       if (goal.medicines != null) {
-        print('----------------------3---------------------------');
+        print('----------------------3---------3------------------');
         for (var medicine in goal.medicines!) {
-          print('-------------------4------------------------------');
+          print('-------------------4-----------4-------------------');
           // Create appointments for medicines (you can customize this as needed)
           appointments.add(Appointment(
             startTime: DateTime.now(), // or some specific time
@@ -218,14 +237,14 @@ print('----------------------------1---------------------');
             color: Colors.blue,
           ));
         }
-        print('---------------------5----------------------------');
-      }print('-----------------------6--------------------------');
+        print('---------------------5-----------5-----------------');
+      }print('-----------------------6------------6--------------');
 
       if (goal.targetValue != null) {
-        print('-----------------------7--------------------------');
+        print('-----------------------7-----------7---------------');
         // Handle food intake appointments similarly
         Meal meal = goal.targetValue!;
-        print('----------------------8---------------------------');
+        print('----------------------8------------8---------------');
         if (meal.morning == true) {
           appointments.add(Appointment(
             startTime: DateTime.now().add(Duration(hours: 8)), // Example time
