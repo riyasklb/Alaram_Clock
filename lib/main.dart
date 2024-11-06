@@ -1,3 +1,4 @@
+import 'package:alaram/tools/constans/model/activity_log.dart';
 import 'package:alaram/tools/constans/model/daily_activity_model.dart';
 import 'package:alaram/tools/constans/model/goal_model.dart';
 
@@ -38,6 +39,8 @@ void main() async {
   Hive.registerAdapter(MealAdapter());
    Hive.registerAdapter(DailyMedicineAdapter());
 Hive.registerAdapter(DailyactivityMealValueAdapter());
+ Hive.registerAdapter(ActivityLogAdapter()); // Register the new adapter
+  await Hive.openBox<ActivityLog>('activityLogs');
   await Hive.openBox<DailyActivityModel>('dailyActivities');
 
   await Hive.openBox<ProfileModel>('profileBox');

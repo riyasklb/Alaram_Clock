@@ -4,9 +4,9 @@ import 'package:alaram/tools/constans/model/profile_model.dart';
 
 import 'package:alaram/views/callender/callender_acreen.dart';
 import 'package:alaram/views/daily_goals/daily_activity_overview_screen.dart';
-import 'package:alaram/views/daily_goals/saved_callender.dart';
-import 'package:alaram/views/daily_goals/saved_screen.dart';
+
 import 'package:alaram/views/profile_screen.dart';
+import 'package:alaram/views/sleeptrack/my_actitivity_screen.dart';
 
 
 
@@ -354,9 +354,9 @@ Get.to(DailyActivityOverviewScreen()) ;
             size: 28.r,
           ),
           onPressed: () {
-            Get.to(   DailyCallenderScreen());
+        
          
-          //  Get.to(GoalSummaryScreen());
+            Get.to(MyActivityScreen());
           },
         ),
         SizedBox(width: 10.w),
