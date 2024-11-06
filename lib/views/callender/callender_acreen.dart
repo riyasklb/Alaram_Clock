@@ -5,10 +5,14 @@ import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
+
+
 class SavedCallenderScreen extends StatefulWidget {
   @override
   _SavedCallenderScreenState createState() => _SavedCallenderScreenState();
 }
+
+
 
 class _SavedCallenderScreenState extends State<SavedCallenderScreen> {
   late Box<Goal> goalData;
@@ -57,8 +61,8 @@ print('--------------1-----${goal.skipped}-------------');
     }
 
     // Create appointments for food intake
-    if (goal.targetValue != null) {
-      _addAppointmentsForFoodIntake(goal.targetValue!, appointments);
+    if (goal.MealValue != null) {
+      _addAppointmentsForFoodIntake(goal.MealValue!, appointments);
     }
      print('----------------6----------------');
   }
@@ -177,27 +181,25 @@ void _addAppointmentsForFoodIntake(Meal meal, List<Appointment> appointments) {
     super.dispose();
   }
 
-  void _onTapCalendar(CalendarTapDetails details) {
-    if (details.targetElement == CalendarElement.calendarCell) {
-      // Check if the tapped date is today
-      if (details.date != null && isSameDay(details.date!, DateTime.now())) {
-        // Filter today's goals
-        List<Goal> todaysGoals = _getTodaysGoals();
+void _onTapCalendar(CalendarTapDetails details) {
+  if (details.targetElement == CalendarElement.calendarCell) {
+    if (details.date != null && isSameDay(details.date!, DateTime.now())) {
+      List<Goal> todaysGoals = _getTodaysGoals();
+      List<Appointment> todaysAppointments = _convertGoalsToAppointments(todaysGoals);
 
-        // Convert today's goals to appointments
-        List<Appointment> todaysAppointments = _convertGoalsToAppointments(todaysGoals);
-
-        // Navigate to today's goals screen
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder:  (context) => TodaysGoalsComplitionScreen(todaysGoals: todaysAppointments),
-
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TodaysGoalsCompletionScreen(
+            todaysGoals: todaysGoals,
+         //   todaysAppointments: todaysAppointments,
           ),
-        );
-      }
+        ),
+      );
     }
   }
+}
+
 
   List<Goal> _getTodaysGoals() {
     List<Goal> todaysGoals = [];
@@ -206,8 +208,8 @@ void _addAppointmentsForFoodIntake(Meal meal, List<Appointment> appointments) {
       final goal = goalData.getAt(i) as Goal;
 
       // Check if the goal has meals for today
-      if (goal.targetValue != null) {
-        Meal meal = goal.targetValue!;
+      if (goal.MealValue != null) {
+        Meal meal = goal.MealValue!;
         if ((meal.morning == true) || (meal.afternoon == true) || 
             (meal.evening == true) || (meal.night == true)) {
           todaysGoals.add(goal);
@@ -240,10 +242,10 @@ print('----------------------------1-------1--------------');
         print('---------------------5-----------5-----------------');
       }print('-----------------------6------------6--------------');
 
-      if (goal.targetValue != null) {
+      if (goal.MealValue != null) {
         print('-----------------------7-----------7---------------');
         // Handle food intake appointments similarly
-        Meal meal = goal.targetValue!;
+        Meal meal = goal.MealValue!;
         print('----------------------8------------8---------------');
         if (meal.morning == true) {
           appointments.add(Appointment(

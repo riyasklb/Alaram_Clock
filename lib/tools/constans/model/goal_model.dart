@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:intl/intl.dart';
+
 
 part 'goal_model.g.dart';
 
@@ -15,7 +15,7 @@ class Goal extends HiveObject {
   late DateTime date;
 
   @HiveField(3)
-  Meal? targetValue;
+  Meal? MealValue;
 
   @HiveField(4)
   List<Medicine>? medicines;
@@ -27,7 +27,7 @@ class Goal extends HiveObject {
     required this.goalId,
     required this.goalType,
     required this.date,
-    this.targetValue,
+    this.MealValue,
     this.medicines,
     this.skipped = false,
   });
@@ -84,6 +84,8 @@ class Medicine extends HiveObject {
   }) {
     nextIntakeDate = calculateNextIntakeDate(frequencyType);
   }
+
+  set isChecked(bool isChecked) {}
 
   DateTime calculateNextIntakeDate(String frequencyType) {
     DateTime now = DateTime.now();

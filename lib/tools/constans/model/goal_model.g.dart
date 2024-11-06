@@ -20,7 +20,7 @@ class GoalAdapter extends TypeAdapter<Goal> {
       goalId: fields[0] as int,
       goalType: fields[1] as String,
       date: fields[2] as DateTime,
-      targetValue: fields[3] as Meal?,
+      MealValue: fields[3] as Meal?,
       medicines: (fields[4] as List?)?.cast<Medicine>(),
       skipped: fields[5] as bool,
     );
@@ -37,7 +37,7 @@ class GoalAdapter extends TypeAdapter<Goal> {
       ..writeByte(2)
       ..write(obj.date)
       ..writeByte(3)
-      ..write(obj.targetValue)
+      ..write(obj.MealValue)
       ..writeByte(4)
       ..write(obj.medicines)
       ..writeByte(5)

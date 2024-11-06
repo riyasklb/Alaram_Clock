@@ -1,13 +1,12 @@
 import 'dart:math';
 import 'package:alaram/tools/constans/color.dart';
-import 'package:alaram/views/callender/callender_acreen.dart';
 
+import 'package:alaram/views/daily_goals/daily_activity_overview_screen.dart';
 import 'package:alaram/views/daily_goals/saved_screen.dart';
+import 'package:alaram/views/daily_goals/t.dart';
+
 import 'package:alaram/views/education.dart';
-
 import 'package:alaram/views/pdf_exel_output/home.dart';
-
-
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -38,7 +37,7 @@ class _BottumNavBarState extends State<BottumNavBar> {
   Widget build(BuildContext context) {
     final List<Widget> bottomBarPages = [
       HomeScreen(),
-      SavedCallenderScreen(),
+      DailyActivityOverviewScreen(),
       EducationResourcesScreen(),
       SavedGoalsScreen(),
     ];

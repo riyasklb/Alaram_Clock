@@ -36,7 +36,8 @@ void main() async {
   Hive.registerAdapter(GoalAdapter());
   Hive.registerAdapter(MedicineAdapter());
   Hive.registerAdapter(MealAdapter());
-
+   Hive.registerAdapter(DailyMedicineAdapter());
+Hive.registerAdapter(DailyactivityMealValueAdapter());
   await Hive.openBox<DailyActivityModel>('dailyActivities');
 
   await Hive.openBox<ProfileModel>('profileBox');

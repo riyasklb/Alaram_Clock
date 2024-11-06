@@ -71,7 +71,7 @@ class _OptionalGoalSettingScreenState extends State<OptionalGoalSettingScreen> {
       goalId: generateGoalId(),
       goalType: "Optional",
       date: DateTime.now(),
-      targetValue: Meal(
+      MealValue: Meal(
         morning: enableBreakfast,
         afternoon: enableLunch,
         night: enableDinner,
@@ -114,7 +114,7 @@ class _OptionalGoalSettingScreenState extends State<OptionalGoalSettingScreen> {
   goalId: 1,
   goalType: '',
   date: DateTime.now(), // You may want to keep the current date as default, or use a default DateTime if you have one.
-  targetValue: Meal(
+  MealValue: Meal(
     morning: false,
     afternoon: false,
     night: false,

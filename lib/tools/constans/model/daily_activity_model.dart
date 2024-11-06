@@ -1,63 +1,99 @@
 import 'package:hive/hive.dart';
 
-part 'daily_activity_model.g.dart';
+part 'daily_activity_model.g.dart'; // This will be generated
 
-@HiveType(typeId: 5)
+@HiveType(typeId: 21)
 class DailyActivityModel extends HiveObject {
   @HiveField(0)
-  final String userId;
+  String activityName;
 
   @HiveField(1)
-  final String date;
+  bool isActivityCompleted;
 
   @HiveField(2)
-  final double waterIntake;
+  List<DailyMedicine>? medicines;
 
   @HiveField(3)
-  final double sleepHours;
+  DailyactivityMealValue? mealValue;
 
   @HiveField(4)
-  final int walkingSteps;
+  int goalId; // Unique identifier for the goal
 
   @HiveField(5)
-  final String foodIntake;
+  String frequency; // Frequency of the goal (e.g., daily, weekly)
 
   @HiveField(6)
-  final String medicineIntake;
+  DateTime date; // Date for the activity log
 
   DailyActivityModel({
-    required this.userId,
+    required this.activityName,
+    this.isActivityCompleted = false,
+    this.medicines,
+    this.mealValue,
+    required this.goalId,
+    required this.frequency,
     required this.date,
-    required this.waterIntake,
-    required this.sleepHours,
-    required this.walkingSteps,
-    required this.foodIntake,
-    required this.medicineIntake,
   });
+}
 
-  // Converts the object into a map for saving
-  Map<String, dynamic> toMap() {
-    return {
-      'userId': userId,
-      'date': date,
-      'waterIntake': waterIntake,
-      'sleepHours': sleepHours,
-      'walkingSteps': walkingSteps,
-      'foodIntake': foodIntake,
-      'medicineIntake': medicineIntake,
-    };
-  }
+@HiveType(typeId: 22)
+class DailyMedicine extends HiveObject {
+  @HiveField(0)
+  String name;
 
-  // Creates an object from a map
-  factory DailyActivityModel.fromMap(Map<String, dynamic> map) {
-    return DailyActivityModel(
-      userId: map['userId'],
-      date: map['date'],
-      waterIntake: map['waterIntake'],
-      sleepHours: map['sleepHours'],
-      walkingSteps: map['walkingSteps'],
-      foodIntake: map['foodIntake'],
-      medicineIntake: map['medicineIntake'],
-    );
-  }
+  @HiveField(1)
+  List<String> selectedTimes;
+
+  @HiveField(2)
+  String frequency;
+
+  @HiveField(3)
+  Map<String, bool> taskCompletionStatus;
+
+  DailyMedicine({
+    required this.name,
+    required this.selectedTimes,
+    required this.frequency,
+    required this.taskCompletionStatus,
+  });
+}
+
+@HiveType(typeId: 23)
+class DailyactivityMealValue extends HiveObject {
+  @HiveField(0)
+  bool morning;
+
+  @HiveField(1)
+  bool afternoon;
+
+  @HiveField(2)
+  bool night;
+
+  @HiveField(3)
+  Map<String, bool> mealCompletionStatus;
+
+  DailyactivityMealValue({
+    this.morning = false,
+    this.afternoon = false,
+    this.night = false,
+    required this.mealCompletionStatus,
+  });
+}
+
+@HiveType(typeId: 24)
+class OverallCompletion extends HiveObject {
+  @HiveField(0)
+  int completedGoals;
+
+  @HiveField(1)
+  int totalGoals;
+
+  @HiveField(2)
+  double completionPercentage;
+
+  OverallCompletion({
+    required this.completedGoals,
+    required this.totalGoals,
+    required this.completionPercentage,
+  });
 }
