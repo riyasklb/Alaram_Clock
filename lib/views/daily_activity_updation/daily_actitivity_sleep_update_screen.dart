@@ -1,15 +1,24 @@
 import 'package:alaram/tools/model/activity_log.dart';
+import 'package:alaram/views/bottum_nav/bottum_nav_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/get_navigation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
+import 'package:intl/intl.dart';
 
+class DailyActivitySleepUpdateScreen extends StatefulWidget {
+  @override
+  _DailyActivitySleepUpdateScreenState createState() => _DailyActivitySleepUpdateScreenState();
+}
 
-class DailyActivitySleepUpadateScreen extends StatelessWidget {
-  // TextEditingControllers to capture user input
+class _DailyActivitySleepUpdateScreenState extends State<DailyActivitySleepUpdateScreen> {
   final TextEditingController sleepController = TextEditingController();
   final TextEditingController walkingController = TextEditingController();
   final TextEditingController waterController = TextEditingController();
+
+  DateTime selectedDate = DateTime.now().subtract(Duration(days: 1)); // Default to yesterday's date
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +33,7 @@ class DailyActivitySleepUpadateScreen extends StatelessWidget {
         padding: EdgeInsets.all(16.w),
         child: Column(
           children: [
+            _buildDateSelector(),
             _buildActivityCard('Sleep', 'Hours of sleep', 'hours', sleepController),
             _buildActivityCard('Walking', 'Hours walked', 'hours', walkingController),
             _buildActivityCard('Water Intake', 'Liters of water', 'liters', waterController),
@@ -51,6 +61,46 @@ class DailyActivitySleepUpadateScreen extends StatelessWidget {
     );
   }
 
+  // Widget for date selector
+  Widget _buildDateSelector() {
+    return GestureDetector(
+      onTap: () => _selectDate(context),
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+        margin: EdgeInsets.symmetric(vertical: 10.h),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10.r),
+          border: Border.all(color: Colors.blueAccent, width: 1.5),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              DateFormat('MMMM dd, yyyy').format(selectedDate),
+              style: GoogleFonts.roboto(fontSize: 16.sp, fontWeight: FontWeight.w500),
+            ),
+            Icon(Icons.calendar_today, color: Colors.blueAccent),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Function to select a date
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime.now().subtract(Duration(days: 365)), // Allows selecting up to 1 year ago
+      lastDate: DateTime.now().subtract(Duration(days: 1)), // Exclude today and future dates
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
+
   // Function to store the data in Hive
   void saveActivityLog() async {
     var sleep = double.tryParse(sleepController.text) ?? 0.0;
@@ -59,7 +109,7 @@ class DailyActivitySleepUpadateScreen extends StatelessWidget {
 
     var box = Hive.box<ActivityLog>('activityLogs');
     final activityLog = ActivityLog(
-      date: DateTime.now(),
+      date: selectedDate,
       sleepHours: sleep,
       walkingHours: walking,
       waterIntake: water,
@@ -67,13 +117,15 @@ class DailyActivitySleepUpadateScreen extends StatelessWidget {
 
     await box.add(activityLog);
 
-    // Optionally, clear the inputs after saving
+    // Clear the inputs after saving
     sleepController.clear();
     walkingController.clear();
     waterController.clear();
-
-    // Optionally, show a confirmation message
-    print('Activity log saved!');
+Get.to(BottumNavBar());
+    // Show a confirmation message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Activity log for ${DateFormat('MMMM dd, yyyy').format(selectedDate)} saved!')),
+    );
   }
 
   Widget _buildActivityCard(String title, String hint, String unit, TextEditingController controller) {

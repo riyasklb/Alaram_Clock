@@ -1,6 +1,5 @@
-
-import 'package:alaram/views/daily_activity_updation/dailyactivity_medicine_update_screen.dart';
-import 'package:alaram/views/splash/splash_screen.dart';
+import 'package:alaram/tools/constans/color.dart';
+import 'package:alaram/views/daily_activity_updation/daily_actitivity_sleep_update_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
@@ -11,6 +10,7 @@ import 'package:alaram/views/daily_activity_updation/callender_daily_task_screen
 import 'package:alaram/views/pdf_exel_output/activity_main_screen.dart';
 import 'package:alaram/views/profile/profile_screen.dart';
 import 'package:alaram/views/video/video_tutorial.dart';
+
 class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -35,25 +35,38 @@ class HomePage extends StatelessWidget {
                 children: [
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Home',
-                          style: GoogleFonts.poppins(
-                            fontSize: 28.sp,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Home',
+                              style: GoogleFonts.poppins(
+                                fontSize: 28.sp,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(height: 4.h),
+                            Text(
+                              date,
+                              style: GoogleFonts.poppins(
+                                fontSize: 14.sp,
+                                color: Colors.white.withOpacity(0.8),
+                              ),
+                            ),
+                          ],
                         ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          date,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14.sp,
-                            color: Colors.white.withOpacity(0.8),
-                          ),
-                        ),
+                        InkWell(
+                            onTap: () {
+                              Get.to(DailyActivitySleepUpdateScreen());
+                            },
+                            child: Icon(
+                              Icons.task,
+                              color: kwhite,
+                            ))
                       ],
                     ),
                   ),
@@ -63,10 +76,14 @@ class HomePage extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildAppBarInfoCard('Walk', totalHoursWalked, Icons.directions_walk),
-                        _buildAppBarInfoCard('Sleep', totalHoursSlept, Icons.bedtime),
-                        _buildAppBarInfoCard('Water', totalWaterIntake, Icons.local_drink),
-                        _buildAppBarInfoCard('Overall', overallHealth, Icons.health_and_safety),
+                        _buildAppBarInfoCard(
+                            'Walk', totalHoursWalked, Icons.directions_walk),
+                        _buildAppBarInfoCard(
+                            'Sleep', totalHoursSlept, Icons.bedtime),
+                        _buildAppBarInfoCard(
+                            'Water', totalWaterIntake, Icons.local_drink),
+                        _buildAppBarInfoCard(
+                            'Overall', overallHealth, Icons.health_and_safety),
                       ],
                     ),
                   ),
@@ -88,7 +105,8 @@ class HomePage extends StatelessWidget {
                   icon: Icons.person,
                   color: Colors.blue,
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen()));
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => ProfileScreen()));
                   },
                 ),
                 _buildGridItem(
@@ -96,7 +114,8 @@ class HomePage extends StatelessWidget {
                   icon: Icons.fitness_center,
                   color: Colors.teal,
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => ActivityMainPage()));
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => ActivityMainPage()));
                   },
                 ),
                 _buildGridItem(
@@ -104,7 +123,10 @@ class HomePage extends StatelessWidget {
                   icon: Icons.calendar_today,
                   color: Colors.orange,
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => DailyMedicneTaskCallenderScreen()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => DailyMedicneTaskCallenderScreen()));
                   },
                 ),
                 _buildGridItem(
@@ -112,7 +134,8 @@ class HomePage extends StatelessWidget {
                   icon: Icons.video_library,
                   color: Colors.redAccent,
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => VideoTutorial()));
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => VideoTutorial()));
                   },
                 ),
                 _buildGridItem(
@@ -120,7 +143,7 @@ class HomePage extends StatelessWidget {
                   icon: Icons.book,
                   color: Colors.green,
                   onTap: () {
-              //      Get.to(DailyMedicineIntakeScreen());
+                    //      Get.to(DailyMedicineIntakeScreen());
                     // Add your Resources screen here
                   },
                 ),
@@ -149,18 +172,26 @@ class HomePage extends StatelessWidget {
         SizedBox(height: 4.h),
         Text(
           data,
-          style: GoogleFonts.poppins(fontSize: 16.sp, color: Colors.white, fontWeight: FontWeight.bold),
+          style: GoogleFonts.poppins(
+              fontSize: 16.sp,
+              color: Colors.white,
+              fontWeight: FontWeight.bold),
         ),
         Text(
           title,
-          style: GoogleFonts.poppins(fontSize: 12.sp, color: Colors.white.withOpacity(0.8)),
+          style: GoogleFonts.poppins(
+              fontSize: 12.sp, color: Colors.white.withOpacity(0.8)),
         ),
       ],
     );
   }
 
   // Widget for grid items with onTap callback
-  Widget _buildGridItem({required String title, required IconData icon, required Color color, required VoidCallback onTap}) {
+  Widget _buildGridItem(
+      {required String title,
+      required IconData icon,
+      required Color color,
+      required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Card(
@@ -181,7 +212,8 @@ class HomePage extends StatelessWidget {
               SizedBox(height: 10.h),
               Text(
                 title,
-                style: GoogleFonts.poppins(fontSize: 18.sp, fontWeight: FontWeight.w500),
+                style: GoogleFonts.poppins(
+                    fontSize: 18.sp, fontWeight: FontWeight.w500),
               ),
             ],
           ),
@@ -198,8 +230,10 @@ class AppBarClipper extends CustomClipper<Path> {
     Path path = Path();
     path.lineTo(0, size.height - 40.h); // Starting point of curve
     path.quadraticBezierTo(
-      size.width / 2, size.height,
-      size.width, size.height - 40.h,
+      size.width / 2,
+      size.height,
+      size.width,
+      size.height - 40.h,
     );
     path.lineTo(size.width, 0); // Close the shape
     path.close();
