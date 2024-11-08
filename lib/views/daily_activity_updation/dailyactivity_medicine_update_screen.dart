@@ -1,10 +1,9 @@
+import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/model/daily_activity_model.dart';
 import 'package:alaram/tools/model/goal_model.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
-
-
 
 class DailyActivityUpdateMedicineScreen extends StatefulWidget {
   final List<Goal> todaysGoals;
@@ -21,33 +20,49 @@ class _DailyActivityUpdateMedicineScreenState extends State<DailyActivityUpdateM
   late Map<int, List<bool>> medicineCompletionStatus;
   late Map<int, Map<int, Map<int, bool>>> medicineTimingCompletionStatus;
   late Map<int, Map<String, bool>> mealCompletionStatus;
+  bool isAlreadyUpdated = false;
 
   @override
   void initState() {
     super.initState();
-    goalCompletionStatus = List<bool>.filled(widget.todaysGoals.length, false);
-    medicineCompletionStatus = {
-      for (var i = 0; i < widget.todaysGoals.length; i++)
-        i: List<bool>.filled(widget.todaysGoals[i].medicines?.length ?? 0, false)
-    };
-    medicineTimingCompletionStatus = {
-      for (var i = 0; i < widget.todaysGoals.length; i++)
-        i: {
-          for (var j = 0; j < (widget.todaysGoals[i].medicines?.length ?? 0); j++)
-            j: {
-              for (var k = 0; k < (widget.todaysGoals[i].medicines![j].selectedTimes.length); k++)
-                k: false
-            }
-        }
-    };
-    mealCompletionStatus = {
-      for (var i = 0; i < widget.todaysGoals.length; i++)
-        i: {
-          'morning': false,
-          'afternoon': false,
-          'night': false,
-        }
-    };
+    checkIfAlreadyUpdated();
+  }
+
+  Future<void> checkIfAlreadyUpdated() async {
+    final box = await Hive.openBox<DailyActivityModel>('dailyActivities');
+    final today = DateTime.now();
+    isAlreadyUpdated = box.values.any((activity) =>
+        activity.date.year == today.year &&
+        activity.date.month == today.month &&
+        activity.date.day == today.day);
+
+    if (!isAlreadyUpdated) {
+      goalCompletionStatus = List<bool>.filled(widget.todaysGoals.length, false);
+      medicineCompletionStatus = {
+        for (var i = 0; i < widget.todaysGoals.length; i++)
+          i: List<bool>.filled(widget.todaysGoals[i].medicines?.length ?? 0, false)
+      };
+      medicineTimingCompletionStatus = {
+        for (var i = 0; i < widget.todaysGoals.length; i++)
+          i: {
+            for (var j = 0; j < (widget.todaysGoals[i].medicines?.length ?? 0); j++)
+              j: {
+                for (var k = 0; k < (widget.todaysGoals[i].medicines![j].selectedTimes.length); k++)
+                  k: false
+              }
+          }
+      };
+      mealCompletionStatus = {
+        for (var i = 0; i < widget.todaysGoals.length; i++)
+          i: {
+            'morning': false,
+            'afternoon': false,
+            'night': false,
+          }
+      };
+    }
+
+    setState(() {});
   }
 
   void markGoalAsComplete(int index, bool value) {
@@ -74,87 +89,116 @@ class _DailyActivityUpdateMedicineScreenState extends State<DailyActivityUpdateM
     });
   }
 
-Future<void> submitGoals() async {
-  final box = await Hive.openBox<DailyActivityModel>('dailyActivities');
+  Future<void> submitGoals() async {
+    final box = await Hive.openBox<DailyActivityModel>('dailyActivities');
 
-  List<DailyActivityModel> activities = [];
-  for (int i = 0; i < widget.todaysGoals.length; i++) {
-    final goal = widget.todaysGoals[i];
-    final medicines = goal.medicines?.asMap().entries.map((entry) {
-      int medicineIndex = entry.key;
-      var medicine = entry.value;
+    List<DailyActivityModel> activities = [];
+    for (int i = 0; i < widget.todaysGoals.length; i++) {
+      final goal = widget.todaysGoals[i];
+      final medicines = goal.medicines?.asMap().entries.map((entry) {
+        int medicineIndex = entry.key;
+        var medicine = entry.value;
 
-      return DailyMedicine(
-        name: medicine.name,
-        selectedTimes: medicine.selectedTimes,
-        frequency: medicine.frequencyType,
-        taskCompletionStatus: {
-          for (int timeIndex = 0; timeIndex < medicine.selectedTimes.length; timeIndex++)
-            medicine.selectedTimes[timeIndex]: medicineTimingCompletionStatus[i]![medicineIndex]![timeIndex] ?? false
-        },
+        return DailyMedicine(
+          name: medicine.name,
+          selectedTimes: medicine.selectedTimes,
+          frequency: medicine.frequencyType,
+          taskCompletionStatus: {
+            for (int timeIndex = 0; timeIndex < medicine.selectedTimes.length; timeIndex++)
+              medicine.selectedTimes[timeIndex]: medicineTimingCompletionStatus[i]![medicineIndex]![timeIndex] ?? false
+          },
+        );
+      }).toList();
+
+      final mealValue = DailyactivityMealValue(
+        morning: mealCompletionStatus[i]!['morning'] ?? false,
+        afternoon: mealCompletionStatus[i]!['afternoon'] ?? false,
+        night: mealCompletionStatus[i]!['night'] ?? false,
+        mealCompletionStatus: mealCompletionStatus[i]!, // Pass the whole map if required
       );
-    }).toList();
 
-    final mealValue = DailyactivityMealValue(
-      morning: mealCompletionStatus[i]!['morning'] ?? false,
-      afternoon: mealCompletionStatus[i]!['afternoon'] ?? false,
-      night: mealCompletionStatus[i]!['night'] ?? false,
-      mealCompletionStatus: mealCompletionStatus[i]!, // Pass the whole map if required
-    );
+      activities.add(
+        DailyActivityModel(
+          activityName: 'daily tasks',
+          isActivityCompleted: true,
+          medicines: medicines,
+          mealValue: mealValue,
+          goalId: goal.goalId,
+          frequency: 'daily',
+          date: DateTime.now(),
+        ),
+      );
+    }
 
-    activities.add(
-      DailyActivityModel(
-        activityName: 'daily tasks',
-        isActivityCompleted: true,
-        medicines: medicines,
-        mealValue: mealValue,
-        goalId: goal.goalId,
-        frequency:'daily' ,
-        date: DateTime.now(),
-      ),
+    await box.addAll(activities);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Today's goals saved successfully!")),
     );
+    setState(() {
+      isAlreadyUpdated = true;
+    });
   }
-
-  // Save activities to Hive
- // await box.clear(); // Clear previous day's goals (optional)
-  await box.addAll(activities);
-
-  // Display success message
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text("Today's goals saved successfully!")),
-  );
-}
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Today's Goals", style: GoogleFonts.lato()),
+        title: Text("Today's Goals", style: GoogleFonts.lato(fontSize: 20, fontWeight: FontWeight.bold,color: kwhite)),
+        backgroundColor: kblue,
       ),
-      body: ListView.builder(
+      body: isAlreadyUpdated
+          ? Center(
+              child: Text(
+                "You have already updated your tasks for today!",
+                style: GoogleFonts.lato(fontSize: 18, color: Colors.redAccent),
+              ),
+            )
+          : buildGoalsList(),
+      floatingActionButton: isAlreadyUpdated
+          ? null
+          : FloatingActionButton(
+              onPressed: submitGoals,
+              backgroundColor: Colors.teal,
+              child: Icon(Icons.check, color: Colors.white),
+            ),
+    );
+  }
+
+  Widget buildGoalsList() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ListView.builder(
         itemCount: widget.todaysGoals.length,
         itemBuilder: (context, index) {
           final goal = widget.todaysGoals[index];
           final isGoalCompleted = goalCompletionStatus[index];
 
           return Card(
-            color: isGoalCompleted ? Colors.green.shade50 : Colors.white,
-            elevation: 3,
-            margin: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            color: isGoalCompleted ? Colors.teal.shade50 : Colors.white,
+            elevation: 4,
+            margin: EdgeInsets.symmetric(vertical: 8),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
               side: BorderSide(
-                color: isGoalCompleted ? Colors.green : Colors.grey.shade300,
+                color: isGoalCompleted ? Colors.teal : Colors.grey.shade300,
                 width: 1,
               ),
             ),
             child: Padding(
-              padding: EdgeInsets.all(10),
+              padding: EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Medicine Information Section
+                  Text(
+                    "Goal ${index + 1}",
+                    style: GoogleFonts.lato(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.teal,
+                    ),
+                  ),
+                  SizedBox(height: 8),
                   if (goal.medicines != null && goal.medicines!.isNotEmpty)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,21 +219,15 @@ Future<void> submitGoals() async {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                padding: const EdgeInsets.symmetric(vertical: 6.0),
                                 child: Text(
-                                  "Medicine: ${medicine.name}",
+                                  "${medicine.name} (Frequency: ${medicine.frequencyType})",
                                   style: GoogleFonts.lato(fontWeight: FontWeight.bold),
                                 ),
                               ),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    'Times:',
-                                    style: GoogleFonts.lato(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
                                   ...medicine.selectedTimes.asMap().entries.map(
                                     (entry) {
                                       int timeIndex = entry.key;
@@ -200,9 +238,8 @@ Future<void> submitGoals() async {
                                           Checkbox(
                                             value: medicineTimingCompletionStatus[index]![medicineIndex]![timeIndex] ?? false,
                                             onChanged: (value) =>
-                                                toggleMedicineTimingCompletion(
-                                                    index, medicineIndex, timeIndex, value!),
-                                            activeColor: Colors.green,
+                                                toggleMedicineTimingCompletion(index, medicineIndex, timeIndex, value!),
+                                            activeColor: Colors.teal,
                                           ),
                                           Text(time, style: GoogleFonts.lato()),
                                         ],
@@ -216,13 +253,11 @@ Future<void> submitGoals() async {
                         }).toList(),
                       ],
                     ),
-
-                  // Meal Timing Section
                   if (goal.MealValue != null)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(height: 8),
+                        SizedBox(height: 16),
                         Text(
                           "Meal Timings:",
                           style: GoogleFonts.lato(
@@ -231,57 +266,50 @@ Future<void> submitGoals() async {
                             color: Colors.blueGrey,
                           ),
                         ),
-                        if (goal.MealValue!.morning == true)
-                          Row(
-                            children: [
-                              Checkbox(
-                                value: mealCompletionStatus[index]!['morning'],
-                                onChanged: (value) =>
-                                    toggleMealCompletion(index, 'morning', value!),
-                                activeColor: Colors.green,
-                              ),
-                              Text("Breakfast: 8:00 - 9:00 AM",
-                                  style: GoogleFonts.lato()),
-                            ],
-                          ),
-                        if (goal.MealValue!.afternoon == true)
-                          Row(
-                            children: [
-                              Checkbox(
-                                value: mealCompletionStatus[index]!['afternoon'],
-                                onChanged: (value) => toggleMealCompletion(
-                                    index, 'afternoon', value!),
-                                activeColor: Colors.green,
-                              ),
-                              Text("Lunch: 12:00 - 1:00 PM",
-                                  style: GoogleFonts.lato()),
-                            ],
-                          ),
-                        if (goal.MealValue!.night == true)
-                          Row(
-                            children: [
-                              Checkbox(
-                                value: mealCompletionStatus[index]!['night'],
-                                onChanged: (value) =>
-                                    toggleMealCompletion(index, 'night', value!),
-                                activeColor: Colors.green,
-                              ),
-                              Text("Dinner: 8:00 - 9:00 PM",
-                                  style: GoogleFonts.lato()),
-                            ],
-                          ),
+                        SizedBox(height: 8),
+                        buildMealRow(index, 'morning', "Breakfast: 8:00 - 9:00 AM"),
+                        buildMealRow(index, 'afternoon', "Lunch: 12:30 - 1:30 PM"),
+                        buildMealRow(index, 'night', "Dinner: 8:00 - 9:00 PM"),
                       ],
                     ),
+                  SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: isGoalCompleted,
+                        onChanged: (value) => markGoalAsComplete(index, value!),
+                        activeColor: Colors.teal,
+                      ),
+                      Text(
+                        "Goal Completed",
+                        style: GoogleFonts.lato(fontSize: 16, color: Colors.teal),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: submitGoals,
-        child: Text("Submit", style: GoogleFonts.lato()),
-      ),
+    );
+  }
+
+  Widget buildMealRow(int goalIndex, String meal, String timingText) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Checkbox(
+              value: mealCompletionStatus[goalIndex]![meal],
+              onChanged: (value) => toggleMealCompletion(goalIndex, meal, value!),
+              activeColor: Colors.teal,
+            ),
+            Text(timingText, style: GoogleFonts.lato()),
+          ],
+        ),
+      ],
     );
   }
 }
