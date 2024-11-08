@@ -1,4 +1,5 @@
 import 'package:alaram/tools/constans/color.dart';
+import 'package:alaram/tools/constans/model/activity_log.dart';
 import 'package:alaram/tools/constans/model/daily_activity_model.dart';
 import 'package:alaram/tools/constans/model/goal_model.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,8 @@ class ProfileScreen extends StatelessWidget {
     await Hive.openBox<ProfileModel>('profileBox');
     await Hive.openBox<Goal>('goals');
     await Hive.openBox('settingsBox');
+    await Hive.openBox<ActivityLog>('activityLogs');
+    await Hive.openBox<DailyActivityModel>('dailyActivities');
   }
 
   @override
@@ -31,7 +34,8 @@ class ProfileScreen extends StatelessWidget {
         final profileBox = Hive.box<ProfileModel>('profileBox');
         final goalBox = Hive.box<Goal>('goals');
         final settingsBox = Hive.box('settingsBox');
-
+final activitylog= Hive.box<ActivityLog>('activityLogs');
+  final dailyactivitybox= Hive.box<DailyActivityModel>('dailyActivities');
         return Scaffold(
           appBar: AppBar(
             automaticallyImplyLeading: false,
@@ -68,9 +72,7 @@ class ProfileScreen extends StatelessWidget {
                   SizedBox(height: 10.h),
                   ..._buildProfileCards(profileBox),
                   SizedBox(height: 20.h),
-                  SizedBox(height: 10.h),
-                  SizedBox(height: 30.h),
-                  _buildLogoutButton(context, profileBox, goalBox, settingsBox),
+                  _buildLogoutButton(context, profileBox, goalBox, settingsBox,activitylog,dailyactivitybox),
                   SizedBox(height: 40.h),
                 ],
               ),
@@ -80,6 +82,7 @@ class ProfileScreen extends StatelessWidget {
       },
     );
   }
+
   Widget _buildProfileCard(String label, String? value) {
     IconData iconData;
     switch (label) {
@@ -165,7 +168,6 @@ class ProfileScreen extends StatelessWidget {
       case 'Medicine Dosage':
         iconData = Icons.healing;
         break;
-
       case 'Breakfast Enabled':
         iconData = Icons.breakfast_dining;
         break;
@@ -274,7 +276,6 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-
   List<Widget> _buildProfileCards(Box<ProfileModel> profileBox) {
     return [
       _buildProfileCard('Username', profileBox.get('userProfile')?.username),
@@ -295,87 +296,31 @@ class ProfileScreen extends StatelessWidget {
     ];
   }
 
-  // List<Widget> _buildGoalCards(Box goalBox) {
-  //   return [
-  //     _buildGoalCard('Medicine Times',
-  //         goalBox.get('medicineTimes')?.toString() ?? 'Not Set'),
-  //     _buildGoalCard('Medicine Frequency',
-  //         goalBox.get('medicineFrequency')?.toString() ?? 'Not Set'),
-  //     _buildGoalCard('Medicine Dosage',
-  //         goalBox.get('medicineDosage')?.toString() ?? 'Not Set'),
-  //     _buildGoalCard('Breakfast Enabled',
-  //         goalBox.get('enableBreakfast') == true ? 'Yes' : 'No'),
-  //     _buildGoalCard(
-  //         'Lunch Enabled', goalBox.get('enableLunch') == true ? 'Yes' : 'No'),
-  //     _buildGoalCard(
-  //         'Dinner Enabled', goalBox.get('enableDinner') == true ? 'Yes' : 'No')
-  //   ];
-  // }
-  // List<Widget> _buildGoalCards(Box<Goal> goalBox) {
-  //   return [
-  //     _buildGoalCard('Medicine Times',
-  //         goalBox.get('goal')?.goalBox.frequencyType?.toString() ?? 'Not Set'),
-  //     _buildGoalCard('Medicine Frequency',
-  //         goalBox.get('goal')?.medicineFrequency?.toString() ?? 'Not Set'),
-  //     _buildGoalCard('Medicine Dosage',
-  //         goalBox.get('goal')?.medicineDosage?.toString() ?? 'Not Set'),
-  //     _buildGoalCard('Breakfast Enabled',
-  //         goalBox.get('goal')?.enableBreakfast == true ? 'Yes' : 'No'),
-  //     _buildGoalCard('Lunch Enabled',
-  //         goalBox.get('goal')?.enableLunch == true ? 'Yes' : 'No'),
-  //     _buildGoalCard('Dinner Enabled',
-  //         goalBox.get('goal')?.enableDinner == true ? 'Yes' : 'No')
-  //   ];
-  // }
-
-  // Other helper methods remain the same, including _buildProfileHeader, _buildProfileCard, etc.
-
-  Widget _buildLogoutButton(BuildContext context, Box profileBox, Box goalBox, Box settingsBox, ) {
+  Widget _buildLogoutButton(BuildContext context, Box profileBox, Box goalBox,
+      Box settingsBox, Box activityLogsBox, Box dailyActivitiesBox) {
     return ElevatedButton(
-      onPressed: () => _showLogoutConfirmation(context, profileBox, goalBox, settingsBox ),
+      onPressed: () {
+        profileBox.clear();
+        goalBox.clear();
+        settingsBox.clear();
+        activityLogsBox.clear(); // Clear the activityLogs box
+        dailyActivitiesBox.clear(); // Clear the dailyActivities box
+        Get.to(RegisterScreen());
+      },
       style: ElevatedButton.styleFrom(
+        padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 15.h),
         backgroundColor: Colors.redAccent,
-        padding: EdgeInsets.symmetric(horizontal: 50.w, vertical: 15.h),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12.r),
-        ),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       ),
       child: Text(
         'Logout',
         style: GoogleFonts.poppins(
-            fontSize: 18.sp, fontWeight: FontWeight.w600, color: Colors.white),
+          fontSize: 18.sp,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
       ),
-    );
-  }
-
-  void _showLogoutConfirmation(BuildContext context, Box profileBox, Box goalBox, Box settingsBox, ) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Logout and Clear Data'),
-          content: Text(
-              'Are you sure you want to log out and clear all data? This action cannot be undone.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                await profileBox.clear();
-                await goalBox.clear();          // Clear Goal Data
-                await settingsBox.clear();
-              
-              
-                Get.offAll(() => RegisterScreen());
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-              child: Text('Logout and Clear Data', style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
     );
   }
 }

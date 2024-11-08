@@ -1,11 +1,12 @@
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/constans/model/profile_model.dart';
 import 'package:alaram/views/set_goals/set_goals_scrrw.dart';
+import 'package:delightful_toast/delight_toast.dart';
+import 'package:delightful_toast/toast/components/toast_card.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -32,7 +33,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         title: Text(
           'Register',
           style: GoogleFonts.poppins(
-              fontSize: 24.sp, fontWeight: FontWeight.bold, color: Colors.white),
+              fontSize: 24.sp,
+              fontWeight: FontWeight.bold,
+              color: Colors.white),
         ),
         backgroundColor: Colors.blueAccent,
       ),
@@ -127,11 +130,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           selectedEthnicity != null) {
                         _saveData(context);
                       } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Please complete all fields'),
+                        DelightToastBar(
+                          builder: (context) => const ToastCard(
+                            leading: Icon(
+                              Icons.flutter_dash,
+                              size: 28,
+                            ),
+                            title: Text(
+                              "Please complete all fields",
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                              ),
+                            ),
                           ),
-                        );
+                        ).show(context);
+                        // ScaffoldMessenger.of(context).showSnackBar(
+                        //   SnackBar(
+                        //     content: Text('Please complete all fields'),
+                        //   ),
+                        // );
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -142,13 +160,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                     ),
-                    child: Text(
-                      'Register',
-                      style: GoogleFonts.poppins(
+                    child: isLoading
+                    ? CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      )
+                    : Text(
+                        'Register',
+                        style: GoogleFonts.poppins(
                           fontSize: 18.sp,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white),
-                    ),
+                          color: Colors.white,
+                        ),
+                      ),
                   ),
                 ),
                 SizedBox(height: 40.h),
@@ -170,7 +193,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     TextInputType inputType = TextInputType.text,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(autovalidateMode: AutovalidateMode.onUserInteraction,
+    return TextFormField(
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       controller: controller,
       obscureText: obscureText,
       keyboardType: inputType,
@@ -261,8 +285,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       },
     );
   }
-
+bool isLoading = false; 
   Future<void> _saveData(BuildContext context) async {
+      setState(() {
+      isLoading = true;  // Set loading to true when button is pressed
+    });
+
+    // Delay for 2 seconds to simulate a process
+    await Future.delayed(Duration(seconds: 2));
     final profileBox = Hive.box<ProfileModel>('profileBox');
     final settingsBox = Hive.box('settingsBox');
 
@@ -277,7 +307,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     await profileBox.put('userProfile', profile);
     await settingsBox.put('isRegistered', true);
-
+    DelightToastBar(
+      builder: (context) => const ToastCard(
+        leading: Icon(
+          Icons.flutter_dash,
+          size: 28,
+        ),
+        title: Text(
+          "Data saved successfully!",
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    ).show(context);
+     setState(() {
+      isLoading = false;  // Set loading to true when button is pressed
+    });
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => GoalSettingScreen()),
