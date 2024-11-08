@@ -1,12 +1,13 @@
 import 'dart:math';
 import 'package:alaram/tools/constans/color.dart';
 
-import 'package:alaram/views/daily_goals/daily_activity_overview_screen.dart';
+import 'package:alaram/views/completed_tasks/daily_activity_medicine_log.dart';
 
 
-import 'package:alaram/views/education.dart';
-import 'package:alaram/views/pdf_exel_output/home.dart';
-import 'package:alaram/views/sleeptrack/activity_log_screen.dart';
+
+import 'package:alaram/views/home/home_screen.dart';
+import 'package:alaram/views/pdf_exel_output/activity_main_screen.dart';
+import 'package:alaram/views/completed_tasks/activity_sleep_log_screen.dart';
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -36,10 +37,11 @@ class _BottumNavBarState extends State<BottumNavBar> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> bottomBarPages = [
-      HomeScreen(),
-      DailyActivityOverviewScreen(),
-      EducationResourcesScreen(),
-      ActivityLogScreen(),
+        HomePage(),
+      ActivityMainPage(),
+      DailyMedicineActivityLog(),
+    
+      ActivitySleeplog(),
     ];
 
     return Scaffold(
@@ -88,12 +90,12 @@ class _BottumNavBarState extends State<BottumNavBar> {
                   activeItem: Icon(Icons.fitness_center, color: kwhite),
                 ),
                 BottomBarItem(
-                  inActiveItem: Icon(Icons.person, color: kwhite),
-                  activeItem: Icon(Icons.person, color: kwhite),
+                  inActiveItem: Icon(Icons.task, color: kwhite),
+                  activeItem: Icon(Icons.task, color: kwhite),
                 ),
                 BottomBarItem(
-                  inActiveItem: Icon(Icons.menu_book, color: kwhite),
-                  activeItem: Icon(Icons.menu_book, color: kwhite),
+                  inActiveItem: Icon(Icons.timelapse, color: kwhite),
+                  activeItem: Icon(Icons.timelapse_outlined, color: kwhite),
                 ),
               ],
               onTap: (index) {

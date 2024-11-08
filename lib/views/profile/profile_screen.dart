@@ -1,14 +1,14 @@
 import 'package:alaram/tools/constans/color.dart';
-import 'package:alaram/tools/constans/model/activity_log.dart';
-import 'package:alaram/tools/constans/model/daily_activity_model.dart';
-import 'package:alaram/tools/constans/model/goal_model.dart';
+import 'package:alaram/tools/model/activity_log.dart';
+import 'package:alaram/tools/model/daily_activity_model.dart';
+import 'package:alaram/tools/model/goal_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
-import 'auth/register_screen.dart';
-import 'package:alaram/tools/constans/model/profile_model.dart';
+import '../auth/register_screen.dart';
+import 'package:alaram/tools/model/profile_model.dart';
 
 class ProfileScreen extends StatelessWidget {
   Future<void> _openBoxes() async {

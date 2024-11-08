@@ -1,22 +1,22 @@
-import 'package:alaram/tools/constans/model/daily_activity_model.dart';
-import 'package:alaram/tools/constans/model/goal_model.dart';
+import 'package:alaram/tools/model/daily_activity_model.dart';
+import 'package:alaram/tools/model/goal_model.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 
 
 
-class TodaysGoalsCompletionScreen extends StatefulWidget {
+class DailyActivityUpdateMedicineScreen extends StatefulWidget {
   final List<Goal> todaysGoals;
 
-  TodaysGoalsCompletionScreen({required this.todaysGoals});
+  DailyActivityUpdateMedicineScreen({required this.todaysGoals});
 
   @override
-  _TodaysGoalsCompletionScreenState createState() =>
-      _TodaysGoalsCompletionScreenState();
+  _DailyActivityUpdateMedicineScreenState createState() =>
+      _DailyActivityUpdateMedicineScreenState();
 }
 
-class _TodaysGoalsCompletionScreenState extends State<TodaysGoalsCompletionScreen> {
+class _DailyActivityUpdateMedicineScreenState extends State<DailyActivityUpdateMedicineScreen> {
   late List<bool> goalCompletionStatus;
   late Map<int, List<bool>> medicineCompletionStatus;
   late Map<int, Map<int, Map<int, bool>>> medicineTimingCompletionStatus;

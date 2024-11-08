@@ -11,7 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
-import '../../tools/constans/model/goal_model.dart';
+import '../../tools/model/goal_model.dart';
 
 class OptionalGoalSettingScreen extends StatefulWidget {
   @override

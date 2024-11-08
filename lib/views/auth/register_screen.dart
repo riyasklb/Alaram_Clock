@@ -1,6 +1,6 @@
 import 'package:alaram/tools/constans/color.dart';
-import 'package:alaram/tools/constans/model/profile_model.dart';
-import 'package:alaram/views/set_goals/set_goals_scrrw.dart';
+import 'package:alaram/tools/model/profile_model.dart';
+import 'package:alaram/views/auth/set_goals_scrrw.dart';
 import 'package:delightful_toast/delight_toast.dart';
 import 'package:delightful_toast/toast/components/toast_card.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';

@@ -1,5 +1,5 @@
-import 'package:alaram/tools/constans/model/profile_model.dart';
-import 'package:alaram/views/set_goals/set_goals_with_remider_screen.dart';
+import 'package:alaram/tools/model/profile_model.dart';
+import 'package:alaram/views/auth/set_goals_with_remider_screen.dart';
 import 'package:delightful_toast/delight_toast.dart';
 import 'package:delightful_toast/toast/components/toast_card.dart';
 import 'package:flutter/material.dart';

@@ -1,5 +1,5 @@
-import 'package:alaram/tools/constans/model/goal_model.dart';
-import 'package:alaram/views/callender/today/today_screen.dart';
+import 'package:alaram/tools/model/goal_model.dart';
+import 'package:alaram/views/daily_activity_updation/dailyactivity_medicine_update_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
@@ -7,14 +7,14 @@ import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 
 
-class SavedCallenderScreen extends StatefulWidget {
+class DailyMedicneTaskCallenderScreen extends StatefulWidget {
   @override
-  _SavedCallenderScreenState createState() => _SavedCallenderScreenState();
+  _DailyMedicneTaskCallenderScreenState createState() => _DailyMedicneTaskCallenderScreenState();
 }
 
 
 
-class _SavedCallenderScreenState extends State<SavedCallenderScreen> {
+class _DailyMedicneTaskCallenderScreenState extends State<DailyMedicneTaskCallenderScreen> {
   late Box<Goal> goalData;
   List<Appointment> _goalAppointments = [];
   bool _isLoading = true;
@@ -190,7 +190,7 @@ void _onTapCalendar(CalendarTapDetails details) {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => TodaysGoalsCompletionScreen(
+          builder: (context) => DailyActivityUpdateMedicineScreen(
             todaysGoals: todaysGoals,
          //   todaysAppointments: todaysAppointments,
           ),

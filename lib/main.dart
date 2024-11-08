@@ -1,8 +1,9 @@
-import 'package:alaram/tools/constans/model/activity_log.dart';
-import 'package:alaram/tools/constans/model/daily_activity_model.dart';
-import 'package:alaram/tools/constans/model/goal_model.dart';
+import 'package:alaram/tools/constans/color.dart';
+import 'package:alaram/tools/model/activity_log.dart';
+import 'package:alaram/tools/model/daily_activity_model.dart';
+import 'package:alaram/tools/model/goal_model.dart';
 
-import 'package:alaram/tools/constans/model/profile_model.dart';
+import 'package:alaram/tools/model/profile_model.dart';
 import 'package:alaram/views/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -40,7 +41,7 @@ void main() async {
    Hive.registerAdapter(DailyMedicineAdapter());
 Hive.registerAdapter(DailyactivityMealValueAdapter());
  Hive.registerAdapter(ActivityLogAdapter()); // Register the new adapter
-  await Hive.openBox<ActivityLog>('activityLogs');
+  await Hive.openBox<ActivityLog>(sleepactivitys);
   await Hive.openBox<DailyActivityModel>('dailyActivities');
 
   await Hive.openBox<ProfileModel>('profileBox');

@@ -1,11 +1,11 @@
-import 'package:alaram/tools/constans/model/activity_log.dart';
+import 'package:alaram/tools/model/activity_log.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 
 
-class MyActivityScreen extends StatelessWidget {
+class DailyActivitySleepUpadateScreen extends StatelessWidget {
   // TextEditingControllers to capture user input
   final TextEditingController sleepController = TextEditingController();
   final TextEditingController walkingController = TextEditingController();

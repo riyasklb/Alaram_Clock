@@ -1,17 +1,17 @@
+import 'package:alaram/tools/constans/color.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
-import 'package:alaram/tools/constans/model/activity_log.dart';
+import 'package:alaram/tools/model/activity_log.dart';
 
-class ActivityLogScreen extends StatefulWidget {
+class ActivitySleeplog extends StatefulWidget {
   @override
-  _ActivityLogScreenState createState() => _ActivityLogScreenState();
+  _ActivitySleeplogState createState() => _ActivitySleeplogState();
 }
 
-class _ActivityLogScreenState extends State<ActivityLogScreen> {
-  // Initialize _activityLogs as an empty list
+class _ActivitySleeplogState extends State<ActivitySleeplog> {
   List<ActivityLog> _activityLogs = [];
   late DateTime _selectedDate;
 
@@ -22,9 +22,8 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
     _loadActivityLogs();
   }
 
-  // Load stored activity logs from Hive
   Future<void> _loadActivityLogs() async {
-    var box = await Hive.openBox<ActivityLog>('activityLogs');
+    var box = await Hive.openBox<ActivityLog>(sleepactivitys);
     setState(() {
       _activityLogs = box.values.toList();
     });
@@ -36,8 +35,14 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
       appBar: AppBar(
         title: Text(
           'Activity Log',
-          style: GoogleFonts.lato(fontSize: 20.sp, fontWeight: FontWeight.w600),
+          style: GoogleFonts.lato(
+            fontSize: 22.sp,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
+        backgroundColor: kblue,
+        elevation: 0,
       ),
       body: Column(
         children: [
@@ -48,22 +53,28 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
     );
   }
 
-  // Build the calendar to show the dates with activity logs
   Widget _buildCalendar() {
     return Container(
-      height: 300.h,
+      height: 280.h,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [const Color.fromARGB(123, 229, 221, 253), kwhite],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
       child: SfCalendar(
         view: CalendarView.month,
+        backgroundColor: Colors.transparent,
         onSelectionChanged: (details) {
           setState(() {
-            _selectedDate = details.date!; // Use 'details.date' instead of 'details.selectedDate'
+            _selectedDate = details.date!;
           });
         },
       ),
     );
   }
 
-  // Build the list of activity logs for the selected date
   Widget _buildActivityLogList() {
     final selectedLogs = _activityLogs
         .where((log) =>
@@ -74,14 +85,21 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
 
     if (selectedLogs.isEmpty) {
       return Center(
-        child: Text(
-          'No activities recorded for ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-          style: GoogleFonts.roboto(fontSize: 18.sp, color: Colors.grey),
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 20.h),
+          child: Text(
+            'No activities recorded for ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+            style: GoogleFonts.roboto(
+              fontSize: 18.sp,
+              color: Colors.grey,
+            ),
+          ),
         ),
       );
     }
 
     return ListView.builder(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
       itemCount: selectedLogs.length,
       itemBuilder: (context, index) {
         final activityLog = selectedLogs[index];
@@ -90,38 +108,40 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
     );
   }
 
-  // Build each activity log card
   Widget _buildActivityLogCard(ActivityLog activityLog) {
     return Card(
       margin: EdgeInsets.symmetric(vertical: 10.h),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15.r),
       ),
-      elevation: 5,
+      elevation: 8,
+      color: Colors.deepPurple[50],
+      shadowColor: Colors.purpleAccent.withOpacity(0.2),
       child: Padding(
         padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Date: ${activityLog.date.day}/${activityLog.date.month}/${activityLog.date.year}',
+              '${activityLog.date.day}/${activityLog.date.month}/${activityLog.date.year}',
               style: GoogleFonts.roboto(
                 fontSize: 18.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.blueAccent,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple,
               ),
             ),
+            SizedBox(height: 10.h),
+            Divider(color: Colors.deepPurple[100], thickness: 1),
             SizedBox(height: 8.h),
-            _buildLogDetail('Sleep', '${activityLog.sleepHours} hours'),
-            _buildLogDetail('Walking', '${activityLog.walkingHours} hours'),
-            _buildLogDetail('Water Intake', '${activityLog.waterIntake} liters'),
+            _buildLogDetail('💤 Sleep', '${activityLog.sleepHours} hours'),
+            _buildLogDetail('🚶 Walking', '${activityLog.walkingHours} hours'),
+            _buildLogDetail('💧 Water Intake', '${activityLog.waterIntake} liters'),
           ],
         ),
       ),
     );
   }
 
-  // Build log details for each activity
   Widget _buildLogDetail(String title, String value) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 4.h),
@@ -132,6 +152,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
             style: GoogleFonts.roboto(
               fontSize: 16.sp,
               fontWeight: FontWeight.w500,
+              color: Colors.deepPurple,
             ),
           ),
           Text(
@@ -139,7 +160,7 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
             style: GoogleFonts.roboto(
               fontSize: 16.sp,
               fontWeight: FontWeight.w400,
-              color: Colors.grey[700],
+              color: Colors.black87,
             ),
           ),
         ],
