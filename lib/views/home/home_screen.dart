@@ -1,4 +1,5 @@
 import 'package:alaram/tools/constans/color.dart';
+import 'package:alaram/views/chart/chart_screen.dart';
 import 'package:alaram/views/daily_activity_updation/daily_actitivity_sleep_update_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -152,7 +153,7 @@ class HomePage extends StatelessWidget {
                   icon: Icons.medical_services,
                   color: Colors.purple,
                   onTap: () {
-                    Get.to(DailyMedicneTaskCallenderScreen());
+                    Get.to(ActivityPieChartScreen());
                     // Add your Medicine screen here
                   },
                 ),
