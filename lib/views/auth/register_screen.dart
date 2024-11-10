@@ -3,7 +3,10 @@ import 'package:alaram/tools/model/profile_model.dart';
 import 'package:alaram/views/auth/set_goals_scrrw.dart';
 import 'package:delightful_toast/delight_toast.dart';
 import 'package:delightful_toast/toast/components/toast_card.dart';
+import 'package:delightful_toast/toast/utils/enums.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:hive/hive.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,15 +18,15 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-
   final TextEditingController emailController = TextEditingController();
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController ageController = TextEditingController();
   final TextEditingController mobileController = TextEditingController();
   final TextEditingController nhsNumberController = TextEditingController();
-
   String? selectedGender;
   String? selectedEthnicity;
+  bool isLoading = false;
+  bool isPrivacyChecked = false;
 
   @override
   Widget build(BuildContext context) {
@@ -121,35 +124,48 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 _buildGenderDropdown(),
                 SizedBox(height: 16.h),
                 _buildEthnicityDropdown(),
+                SizedBox(height: 16.h),
+                CheckboxListTile(
+                  title: Text(
+                    "I am solely responsible if my personal information is leaked.",
+                    style: GoogleFonts.poppins(fontSize: 14.sp),
+                  ),
+                  value: isPrivacyChecked,
+                  onChanged: (value) {
+                    setState(() {
+                      isPrivacyChecked = value!;
+                    });
+                  },
+                  controlAffinity: ListTileControlAffinity.leading,
+                ),
                 SizedBox(height: 30.h),
                 Center(
                   child: ElevatedButton(
                     onPressed: () {
                       if (_formKey.currentState!.validate() &&
                           selectedGender != null &&
-                          selectedEthnicity != null) {
+                          selectedEthnicity != null &&
+                          isPrivacyChecked) {
                         _saveData(context);
                       } else {
                         DelightToastBar(
                           builder: (context) => const ToastCard(
                             leading: Icon(
-                              Icons.flutter_dash,
+                              Icons.warning,
                               size: 28,
                             ),
                             title: Text(
-                              "Please complete all fields",
+                              "Please complete all fields and confirm responsibility.",
                               style: TextStyle(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 14,
                               ),
                             ),
                           ),
+                            snackbarDuration: Duration(milliseconds: 2000), // Set toast duration to 2 seconds
+  position: DelightSnackbarPosition.top,
+  autoDismiss: true, // Automatically dismiss after the specified duration
                         ).show(context);
-                        // ScaffoldMessenger.of(context).showSnackBar(
-                        //   SnackBar(
-                        //     content: Text('Please complete all fields'),
-                        //   ),
-                        // );
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -161,17 +177,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     child: isLoading
-                    ? CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      )
-                    : Text(
-                        'Register',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
+                        ? CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          )
+                        : Text(
+                            'Register',
+                            style: GoogleFonts.poppins(
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
                   ),
                 ),
                 SizedBox(height: 40.h),
@@ -285,14 +301,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       },
     );
   }
-bool isLoading = false; 
-  Future<void> _saveData(BuildContext context) async {
-      setState(() {
-      isLoading = true;  // Set loading to true when button is pressed
-    });
 
-    // Delay for 2 seconds to simulate a process
-    await Future.delayed(Duration(seconds: 2));
+  void _saveData(BuildContext context) async {
+    setState(() {
+      isLoading = true;
+    });
+   await Future.delayed(Duration(seconds: 1));
     final profileBox = Hive.box<ProfileModel>('profileBox');
     final settingsBox = Hive.box('settingsBox');
 
@@ -307,27 +321,30 @@ bool isLoading = false;
 
     await profileBox.put('userProfile', profile);
     await settingsBox.put('isRegistered', true);
-    DelightToastBar(
-      builder: (context) => const ToastCard(
-        leading: Icon(
-          Icons.flutter_dash,
-          size: 28,
-        ),
-        title: Text(
-          "Data saved successfully!",
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 14,
-          ),
-        ),
-      ),
-    ).show(context);
-     setState(() {
-      isLoading = false;  // Set loading to true when button is pressed
+
+DelightToastBar(
+  builder: (context) => const ToastCard(
+    leading: Icon(
+      Icons.check,
+      size: 28,
+    ),
+    title: Text(
+      "Profile successfully saved!",
+      style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+    ),
+  ),
+  snackbarDuration: Duration(milliseconds: 2000), // Set toast duration to 2 seconds
+  position: DelightSnackbarPosition.top,
+  autoDismiss: true, // Automatically dismiss after the specified duration
+).show(context);
+
+
+
+    setState(() {
+      isLoading = false;
     });
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => GoalSettingScreen()),
-    );
+Get.offAll(GoalSettingScreen());
+   
+    
   }
 }
