@@ -42,6 +42,10 @@ void _checkPendingUpdates() async {
   DateTime normalizedYesterday = DateTime(yesterday.year, yesterday.month, yesterday.day);
   DateTime normalizedDayBeforeYesterday = DateTime(dayBeforeYesterday.year, dayBeforeYesterday.month, dayBeforeYesterday.day);
 
+  // Format dates for display
+  String formattedYesterday = DateFormat('MMMM dd, yyyy').format(normalizedYesterday);
+  String formattedDayBeforeYesterday = DateFormat('MMMM dd, yyyy').format(normalizedDayBeforeYesterday);
+
   // Check if there's an entry for yesterday or day before yesterday
   bool hasEntryForYesterday = box.values.any((log) {
     DateTime normalizedLogDate = DateTime(log.date.year, log.date.month, log.date.day);
@@ -55,11 +59,11 @@ void _checkPendingUpdates() async {
 
   // Determine the pending status for both dates
   if (!hasEntryForYesterday && !hasEntryForDayBeforeYesterday) {
-    pendingDate = 'Both yesterday and the day before yesterday updates are pending';
+    pendingDate = 'Both $formattedYesterday and $formattedDayBeforeYesterday updates are pending';
   } else if (!hasEntryForYesterday) {
-    pendingDate = 'Yesterday\'s update is pending';
+    pendingDate = 'Update for $formattedYesterday is pending';
   } else if (!hasEntryForDayBeforeYesterday) {
-    pendingDate = DateFormat('MMMM dd, yyyy').format(normalizedDayBeforeYesterday); // Show date for "Day before yesterday"
+    pendingDate = 'Update for $formattedDayBeforeYesterday is pending';
   } else {
     pendingDate = null; // No pending updates
   }
