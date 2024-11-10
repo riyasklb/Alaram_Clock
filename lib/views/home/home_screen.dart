@@ -1,30 +1,36 @@
 import 'package:alaram/tools/constans/color.dart';
+import 'package:alaram/tools/model/activity_log.dart';
 import 'package:alaram/views/chart/chart_screen.dart';
 import 'package:alaram/views/daily_activity_updation/daily_actitivity_sleep_update_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/get_navigation.dart';
-
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:alaram/views/daily_activity_updation/callender_daily_task_screen.dart';
 import 'package:alaram/views/pdf_exel_output/activity_main_screen.dart';
 import 'package:alaram/views/profile/profile_screen.dart';
 import 'package:alaram/views/video/video_tutorial.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/intl.dart'; // For formatting the date
+
+
 
 class HomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final String totalHoursWalked = "5h";
-    final String totalHoursSlept = "7h";
-    final String totalWaterIntake = "2L";
-    final String overallHealth = "Good";
-    final String date = "2024-11-08";
 
+
+  final String date = DateFormat('yyyy-MM-dd').format(DateTime.now()); // Get current date
+
+
+
+  @override
+
+
+
+
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
         children: [
-          // Curved background for the AppBar
           ClipPath(
             clipper: AppBarClipper(),
             child: Container(
@@ -74,25 +80,42 @@ class HomePage extends StatelessWidget {
                   SizedBox(height: 16.h),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16.w),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildAppBarInfoCard(
-                            'Walk', totalHoursWalked, Icons.directions_walk),
-                        _buildAppBarInfoCard(
-                            'Sleep', totalHoursSlept, Icons.bedtime),
-                        _buildAppBarInfoCard(
-                            'Water', totalWaterIntake, Icons.local_drink),
-                        _buildAppBarInfoCard(
-                            'Overall', overallHealth, Icons.health_and_safety),
-                      ],
+                    child: ValueListenableBuilder(
+                      valueListenable: Hive.box<ActivityLog>(sleepactivitys).listenable(),
+                      builder: (context, Box<ActivityLog> box, _) {
+                        // Fetch the latest entry from the database
+                        ActivityLog? latestLog = box.isEmpty ? null : box.values.last;
+
+                        if (latestLog == null) {
+                          return SizedBox(); // Handle the case where there is no data yet
+                        }
+
+                        String totalHoursWalked = latestLog.walkingHours.toStringAsFixed(1) + 'h' ?? '0h';
+                        String totalHoursSlept = latestLog.sleepHours.toStringAsFixed(1) + 'h' ?? '0h';
+                        String totalWaterIntake = latestLog.waterIntake.toStringAsFixed(1) + 'L' ?? '0L';
+
+                        // Calculate overall health based on values
+                        String overallHealth = 'Good'; // Example: Calculate it based on sleep and water intake
+                        if ((latestLog.sleepHours ?? 0) < 6 || (latestLog.waterIntake ?? 0) < 2 || (latestLog.walkingHours ?? 0) < 3) {
+                          overallHealth = 'Bad';
+                        }
+
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildAppBarInfoCard('Walk', totalHoursWalked, Icons.directions_walk),
+                            _buildAppBarInfoCard('Sleep', totalHoursSlept, Icons.bedtime),
+                            _buildAppBarInfoCard('Water', totalWaterIntake, Icons.local_drink),
+                            _buildAppBarInfoCard('Overall Health', overallHealth, Icons.health_and_safety),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ],
               ),
             ),
           ),
-          // Main content with padding to avoid overlap with curved AppBar
           Padding(
             padding: EdgeInsets.only(top: 180.h),
             child: GridView.count(
@@ -144,17 +167,15 @@ class HomePage extends StatelessWidget {
                   icon: Icons.book,
                   color: Colors.green,
                   onTap: () {
-                    //      Get.to(DailyMedicineIntakeScreen());
                     // Add your Resources screen here
                   },
                 ),
                 _buildGridItem(
-                  title: 'Medicine',
-                  icon: Icons.medical_services,
+                  title: 'Chart ',
+                  icon: Icons.pie_chart,
                   color: Colors.purple,
                   onTap: () {
                     Get.to(ActivityPieChartScreen());
-                    // Add your Medicine screen here
                   },
                 ),
               ],
@@ -242,5 +263,5 @@ class AppBarClipper extends CustomClipper<Path> {
   }
 
   @override
-  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
