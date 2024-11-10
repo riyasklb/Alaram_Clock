@@ -14,9 +14,7 @@ class DailyActivitySleepUpdateScreen extends StatefulWidget {
   _DailyActivitySleepUpdateScreenState createState() =>
       _DailyActivitySleepUpdateScreenState();
 }
-
-class _DailyActivitySleepUpdateScreenState
-    extends State<DailyActivitySleepUpdateScreen> {
+class _DailyActivitySleepUpdateScreenState extends State<DailyActivitySleepUpdateScreen> {
   final TextEditingController sleepController = TextEditingController();
   final TextEditingController walkingController = TextEditingController();
   final TextEditingController waterController = TextEditingController();
@@ -33,65 +31,45 @@ class _DailyActivitySleepUpdateScreenState
 
   String? pendingDate; // Add a variable to store the pending date
 
-  void _checkPendingUpdates() async {
-    var box = Hive.box<ActivityLog>('activityLogs');
+void _checkPendingUpdates() async {
+  var box = Hive.box<ActivityLog>('activityLogs');
 
-    // Get yesterday and the day before yesterday
-    DateTime yesterday = DateTime.now().subtract(Duration(days: 1));
-    DateTime dayBeforeYesterday = DateTime.now().subtract(Duration(days: 2));
+  // Get yesterday and the day before yesterday
+  DateTime yesterday = DateTime.now().subtract(Duration(days: 1));
+  DateTime dayBeforeYesterday = DateTime.now().subtract(Duration(days: 2));
 
-    // Normalize both dates to ignore time
-    DateTime normalizedYesterday =
-        DateTime(yesterday.year, yesterday.month, yesterday.day);
-    DateTime normalizedDayBeforeYesterday = DateTime(dayBeforeYesterday.year,
-        dayBeforeYesterday.month, dayBeforeYesterday.day);
+  // Normalize both dates to ignore time
+  DateTime normalizedYesterday = DateTime(yesterday.year, yesterday.month, yesterday.day);
+  DateTime normalizedDayBeforeYesterday = DateTime(dayBeforeYesterday.year, dayBeforeYesterday.month, dayBeforeYesterday.day);
 
-    // Debugging prints to check box content
-    print('Box contents: ${box.values}');
-    print('Normalized Yesterday: $normalizedYesterday');
-    print('Normalized Day Before Yesterday: $normalizedDayBeforeYesterday');
+  // Check if there's an entry for yesterday or day before yesterday
+  bool hasEntryForYesterday = box.values.any((log) {
+    DateTime normalizedLogDate = DateTime(log.date.year, log.date.month, log.date.day);
+    return normalizedLogDate.isAtSameMomentAs(normalizedYesterday);
+  });
 
-    // Check if there's an entry for either yesterday or the day before yesterday
-    bool hasEntryForYesterday = box.values.any((log) {
-      DateTime normalizedLogDate =
-          DateTime(log.date.year, log.date.month, log.date.day);
-      print(
-          'Checking log date: $normalizedLogDate against $normalizedYesterday');
-      return normalizedLogDate.isAtSameMomentAs(normalizedYesterday);
-    });
+  bool hasEntryForDayBeforeYesterday = box.values.any((log) {
+    DateTime normalizedLogDate = DateTime(log.date.year, log.date.month, log.date.day);
+    return normalizedLogDate.isAtSameMomentAs(normalizedDayBeforeYesterday);
+  });
 
-    bool hasEntryForDayBeforeYesterday = box.values.any((log) {
-      DateTime normalizedLogDate =
-          DateTime(log.date.year, log.date.month, log.date.day);
-      print(
-          'Checking log date: $normalizedLogDate against $normalizedDayBeforeYesterday');
-      return normalizedLogDate.isAtSameMomentAs(normalizedDayBeforeYesterday);
-    });
-
-    // Debugging output to check if logs are found
-    print('Has entry for yesterday: $hasEntryForYesterday');
-    print('Has entry for day before yesterday: $hasEntryForDayBeforeYesterday');
-
-    // Set pendingDate to either yesterday or the day before yesterday if missing
-    if (!hasEntryForYesterday) {
-      pendingDate = DateFormat('MMMM dd, yyyy')
-          .format(normalizedYesterday); // Format the date for display
-    } else if (!hasEntryForDayBeforeYesterday) {
-      pendingDate = DateFormat('MMMM dd, yyyy')
-          .format(normalizedDayBeforeYesterday); // Format the date for display
-    } else {
-      pendingDate = null; // No pending update
-    }
-
-    // Set the pending update status
-    hasPendingUpdate = pendingDate != null;
-
-    // Debugging output to confirm if the pending update flag is set
-    print('Pending Update: $hasPendingUpdate');
-    print('Pending Date: $pendingDate');
-
-    setState(() {});
+  // Determine the pending status for both dates
+  if (!hasEntryForYesterday && !hasEntryForDayBeforeYesterday) {
+    pendingDate = 'Both yesterday and the day before yesterday updates are pending';
+  } else if (!hasEntryForYesterday) {
+    pendingDate = 'Yesterday\'s update is pending';
+  } else if (!hasEntryForDayBeforeYesterday) {
+    pendingDate = DateFormat('MMMM dd, yyyy').format(normalizedDayBeforeYesterday); // Show date for "Day before yesterday"
+  } else {
+    pendingDate = null; // No pending updates
   }
+
+  // Set the pending update status
+  hasPendingUpdate = pendingDate != null;
+
+  setState(() {});
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +97,7 @@ class _DailyActivitySleepUpdateScreenState
                 ),
               ),
             Text(
-              'Update your activities for yesterday to keep track of your daily progress.',
+              'Update your activities for the day before yesterday to keep track of your daily progress.',
               style:
                   GoogleFonts.roboto(fontSize: 16.sp, color: Colors.grey[700]),
             ),
