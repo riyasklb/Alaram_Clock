@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:alaram/views/daily_activity_updation/callender_daily_task_screen.dart';
-import 'package:alaram/views/pdf_exel_output/activity_main_screen.dart';
+import 'package:alaram/views/main_activity/activity_main_screen.dart';
 import 'package:alaram/views/profile/profile_screen.dart';
 import 'package:alaram/views/video/video_tutorial.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -15,7 +15,7 @@ import 'package:intl/intl.dart'; // For formatting the date
 
 
 
-class HomePage extends StatelessWidget {
+class BottumNavBar extends StatelessWidget {
 
 
   final String date = DateFormat('yyyy-MM-dd').format(DateTime.now()); // Get current date
@@ -66,14 +66,7 @@ class HomePage extends StatelessWidget {
                             ),
                           ],
                         ),
-                        InkWell(
-                            onTap: () {
-                              Get.to(DailyActivitySleepUpdateScreen());
-                            },
-                            child: Icon(
-                              Icons.task,
-                              color: kwhite,
-                            ))
+                      
                       ],
                     ),
                   ),
@@ -170,14 +163,15 @@ class HomePage extends StatelessWidget {
                     // Add your Resources screen here
                   },
                 ),
-                _buildGridItem(
-                  title: 'Chart ',
-                  icon: Icons.pie_chart,
-                  color: Colors.purple,
-                  onTap: () {
-                    Get.to(ActivityPieChartScreen());
-                  },
-                ),
+            _buildGridItem(
+        title: 'Update Daily Goals',
+        icon: Icons.edit,
+        color: Colors.deepPurple,
+        onTap: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => DailyActivitySleepUpdateScreen())); })
               ],
             ),
           ),

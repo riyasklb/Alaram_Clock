@@ -32,7 +32,7 @@ class _ActivitySleeplogState extends State<ActivitySleeplog> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppBar(automaticallyImplyLeading: false,
         title: Text(
           'Activity Log',
           style: GoogleFonts.lato(

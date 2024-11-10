@@ -6,7 +6,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:alaram/views/pdf_exel_output/activity_main_screen.dart';
+import 'package:alaram/views/main_activity/activity_main_screen.dart';
 
 class DummyHomeScreen extends StatelessWidget {
   @override

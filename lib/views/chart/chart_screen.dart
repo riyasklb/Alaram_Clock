@@ -30,7 +30,7 @@ class _ActivityPieChartScreenState extends State<ActivityPieChartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppBar(automaticallyImplyLeading: false,
         title: Text(
           'Activity Pie Chart',
           style: GoogleFonts.lato(

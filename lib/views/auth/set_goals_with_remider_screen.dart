@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/views/bottum_nav/bottum_nav_bar.dart';
+import 'package:alaram/views/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';

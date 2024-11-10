@@ -1,5 +1,6 @@
 import 'package:alaram/tools/dummy/dummy_initial_screen.dart';
 import 'package:alaram/views/bottum_nav/bottum_nav_bar.dart';
+import 'package:alaram/views/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';

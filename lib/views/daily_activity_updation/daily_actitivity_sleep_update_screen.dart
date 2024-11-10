@@ -1,5 +1,6 @@
+import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/model/activity_log.dart';
-import 'package:alaram/views/bottum_nav/bottum_nav_bar.dart';
+import 'package:alaram/views/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -10,15 +11,87 @@ import 'package:intl/intl.dart';
 
 class DailyActivitySleepUpdateScreen extends StatefulWidget {
   @override
-  _DailyActivitySleepUpdateScreenState createState() => _DailyActivitySleepUpdateScreenState();
+  _DailyActivitySleepUpdateScreenState createState() =>
+      _DailyActivitySleepUpdateScreenState();
 }
 
-class _DailyActivitySleepUpdateScreenState extends State<DailyActivitySleepUpdateScreen> {
+class _DailyActivitySleepUpdateScreenState
+    extends State<DailyActivitySleepUpdateScreen> {
   final TextEditingController sleepController = TextEditingController();
   final TextEditingController walkingController = TextEditingController();
   final TextEditingController waterController = TextEditingController();
 
-  DateTime selectedDate = DateTime.now().subtract(Duration(days: 1)); // Default to yesterday's date
+  DateTime selectedDate =
+      DateTime.now().subtract(Duration(days: 1)); // Default to yesterday's date
+  bool hasPendingUpdate = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPendingUpdates();
+  }
+
+  String? pendingDate; // Add a variable to store the pending date
+
+  void _checkPendingUpdates() async {
+    var box = Hive.box<ActivityLog>('activityLogs');
+
+    // Get yesterday and the day before yesterday
+    DateTime yesterday = DateTime.now().subtract(Duration(days: 1));
+    DateTime dayBeforeYesterday = DateTime.now().subtract(Duration(days: 2));
+
+    // Normalize both dates to ignore time
+    DateTime normalizedYesterday =
+        DateTime(yesterday.year, yesterday.month, yesterday.day);
+    DateTime normalizedDayBeforeYesterday = DateTime(dayBeforeYesterday.year,
+        dayBeforeYesterday.month, dayBeforeYesterday.day);
+
+    // Debugging prints to check box content
+    print('Box contents: ${box.values}');
+    print('Normalized Yesterday: $normalizedYesterday');
+    print('Normalized Day Before Yesterday: $normalizedDayBeforeYesterday');
+
+    // Check if there's an entry for either yesterday or the day before yesterday
+    bool hasEntryForYesterday = box.values.any((log) {
+      DateTime normalizedLogDate =
+          DateTime(log.date.year, log.date.month, log.date.day);
+      print(
+          'Checking log date: $normalizedLogDate against $normalizedYesterday');
+      return normalizedLogDate.isAtSameMomentAs(normalizedYesterday);
+    });
+
+    bool hasEntryForDayBeforeYesterday = box.values.any((log) {
+      DateTime normalizedLogDate =
+          DateTime(log.date.year, log.date.month, log.date.day);
+      print(
+          'Checking log date: $normalizedLogDate against $normalizedDayBeforeYesterday');
+      return normalizedLogDate.isAtSameMomentAs(normalizedDayBeforeYesterday);
+    });
+
+    // Debugging output to check if logs are found
+    print('Has entry for yesterday: $hasEntryForYesterday');
+    print('Has entry for day before yesterday: $hasEntryForDayBeforeYesterday');
+
+    // Set pendingDate to either yesterday or the day before yesterday if missing
+    if (!hasEntryForYesterday) {
+      pendingDate = DateFormat('MMMM dd, yyyy')
+          .format(normalizedYesterday); // Format the date for display
+    } else if (!hasEntryForDayBeforeYesterday) {
+      pendingDate = DateFormat('MMMM dd, yyyy')
+          .format(normalizedDayBeforeYesterday); // Format the date for display
+    } else {
+      pendingDate = null; // No pending update
+    }
+
+    // Set the pending update status
+    hasPendingUpdate = pendingDate != null;
+
+    // Debugging output to confirm if the pending update flag is set
+    print('Pending Update: $hasPendingUpdate');
+    print('Pending Date: $pendingDate');
+
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,11 +105,32 @@ class _DailyActivitySleepUpdateScreenState extends State<DailyActivitySleepUpdat
       body: Padding(
         padding: EdgeInsets.all(16.w),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (hasPendingUpdate)
+              Padding(
+                padding: EdgeInsets.only(bottom: 10.h),
+                child: Text(
+                  'You have a pending update for $pendingDate. Please update to keep your activity log complete.',
+                  style: GoogleFonts.roboto(
+                      fontSize: 14.sp,
+                      color: Colors.redAccent,
+                      fontWeight: FontWeight.w500),
+                ),
+              ),
+            Text(
+              'Update your activities for yesterday to keep track of your daily progress.',
+              style:
+                  GoogleFonts.roboto(fontSize: 16.sp, color: Colors.grey[700]),
+            ),
+            SizedBox(height: 20.h),
             _buildDateSelector(),
-            _buildActivityCard('Sleep', 'Hours of sleep', 'hours', sleepController),
-            _buildActivityCard('Walking', 'Hours walked', 'hours', walkingController),
-            _buildActivityCard('Water Intake', 'Liters of water', 'liters', waterController),
+            _buildActivityCard(
+                'Sleep', 'Hours of sleep', 'hours', sleepController),
+            _buildActivityCard(
+                'Walking', 'Hours walked', 'hours', walkingController),
+            _buildActivityCard(
+                'Water Intake', 'Liters of water', 'liters', waterController),
             Spacer(),
             SizedBox(
               width: double.infinity,
@@ -77,7 +171,8 @@ class _DailyActivitySleepUpdateScreenState extends State<DailyActivitySleepUpdat
           children: [
             Text(
               DateFormat('MMMM dd, yyyy').format(selectedDate),
-              style: GoogleFonts.roboto(fontSize: 16.sp, fontWeight: FontWeight.w500),
+              style: GoogleFonts.roboto(
+                  fontSize: 16.sp, fontWeight: FontWeight.w500),
             ),
             Icon(Icons.calendar_today, color: Colors.blueAccent),
           ],
@@ -91,8 +186,10 @@ class _DailyActivitySleepUpdateScreenState extends State<DailyActivitySleepUpdat
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: selectedDate,
-      firstDate: DateTime.now().subtract(Duration(days: 365)), // Allows selecting up to 1 year ago
-      lastDate: DateTime.now().subtract(Duration(days: 1)), // Exclude today and future dates
+      firstDate: DateTime.now()
+          .subtract(Duration(days: 365)), // Allows selecting up to 1 year ago
+      lastDate: DateTime.now()
+          .subtract(Duration(days: 1)), // Exclude today and future dates
     );
     if (picked != null && picked != selectedDate) {
       setState(() {
@@ -101,15 +198,20 @@ class _DailyActivitySleepUpdateScreenState extends State<DailyActivitySleepUpdat
     }
   }
 
-  // Function to store the data in Hive
+  // Function to save the activity log
   void saveActivityLog() async {
     var sleep = double.tryParse(sleepController.text) ?? 0.0;
     var walking = double.tryParse(walkingController.text) ?? 0.0;
     var water = double.tryParse(waterController.text) ?? 0.0;
 
     var box = Hive.box<ActivityLog>('activityLogs');
+
+    // Normalize the date before saving it to Hive
+    DateTime normalizedDate =
+        DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
+
     final activityLog = ActivityLog(
-      date: selectedDate,
+      date: normalizedDate,
       sleepHours: sleep,
       walkingHours: walking,
       waterIntake: water,
@@ -121,14 +223,20 @@ class _DailyActivitySleepUpdateScreenState extends State<DailyActivitySleepUpdat
     sleepController.clear();
     walkingController.clear();
     waterController.clear();
-Get.to(BottumNavBar());
+
+    Get.to(BottumNavBar());
+
     // Show a confirmation message
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Activity log for ${DateFormat('MMMM dd, yyyy').format(selectedDate)} saved!')),
+      SnackBar(
+          content: Text(
+              'Activity log for ${DateFormat('MMMM dd, yyyy').format(selectedDate)} saved!')),
     );
   }
 
-  Widget _buildActivityCard(String title, String hint, String unit, TextEditingController controller) {
+  // Widget for input fields (Sleep, Walking, Water Intake)
+  Widget _buildActivityCard(String title, String hint, String unit,
+      TextEditingController controller) {
     return Card(
       margin: EdgeInsets.symmetric(vertical: 10.h),
       shape: RoundedRectangleBorder(
@@ -154,13 +262,15 @@ Get.to(BottumNavBar());
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: GoogleFonts.roboto(fontSize: 16.sp, color: Colors.grey),
+                hintStyle:
+                    GoogleFonts.roboto(fontSize: 16.sp, color: Colors.grey),
                 suffixText: unit,
                 suffixStyle: GoogleFonts.roboto(fontSize: 16.sp),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.r),
                 ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
               ),
             ),
           ],

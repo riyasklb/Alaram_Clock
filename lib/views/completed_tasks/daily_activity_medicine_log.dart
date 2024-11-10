@@ -34,7 +34,7 @@ class _DailyMedicineActivityLogState extends State<DailyMedicineActivityLog> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppBar(automaticallyImplyLeading: false,
         title: Text(
           "Daily Activities Overview",
           style: GoogleFonts.lato(color: kwhite),
