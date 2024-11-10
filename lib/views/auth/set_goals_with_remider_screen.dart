@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/views/bottum_nav/bottum_nav_bar.dart';
 import 'package:flutter/material.dart';
@@ -28,65 +27,131 @@ class _OptionalGoalSettingScreenState extends State<OptionalGoalSettingScreen> {
   final _formKey = GlobalKey<FormState>();
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
- 
-
   @override
   void initState() {
     super.initState();
     initializeNotifications();
-  }
-
-  @override
-  void dispose() {
-    for (var medicine in medicines) {
-      medicine['quantityController']?.dispose();
-      medicine['dosageController']?.dispose();
-    }
-    super.dispose();
+    scheduleTestNotification();  // Schedule test notification
   }
 
   Future<void> initializeNotifications() async {
     tz.initializeTimeZones();
     const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
-
     final InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
     await flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
 
- void _saveOptionalGoals() async {
-  if (_formKey.currentState!.validate()) {
-    final box = await Hive.openBox<Goal>('goals');
-
-    List<Medicine> medicinesData = medicines.map((medicine) {
-      return Medicine(
-        name: medicine['name'],
-        frequencyType: medicine['frequency'],
-        dosage: medicine['dosageController'].text,
-        quantity: int.parse(medicine['quantityController'].text),
-        selectedTimes: List<String>.from(medicine['selectedTimes']), // Added this line
-      );
-    }).toList();
-
-    Goal goal = Goal(
-      goalId: generateGoalId(),
-      goalType: "Optional",
-      date: DateTime.now(),
-      MealValue: Meal(
-        morning: enableBreakfast,
-        afternoon: enableLunch,
-        night: enableDinner,
+  // Schedule a test notification after 1 minute
+  Future<void> scheduleTestNotification() async {
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+      0,  // Test notification ID
+      'Test Notification',
+      'This is a test notification for 1 minute delay.',
+      tz.TZDateTime.now(tz.local).add(const Duration(minutes: 1)),
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'test_channel',
+          'Test Notification Channel',
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
       ),
-      medicines: medicinesData,
-      skipped: false,
+      androidAllowWhileIdle: true,
+      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
     );
-
-    await box.put(goal.goalId, goal);
-
-    Get.snackbar('Success', 'Optional goals saved successfully!', snackPosition: SnackPosition.BOTTOM);
-    Get.offAll(BottumNavBar());
   }
-}
 
+  // Schedule notification at a specific time
+  Future<void> scheduleNotification(String title, String body, int hour, int minute, int notificationId) async {
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+      notificationId,
+      title,
+      body,
+      _nextInstanceOfTime(hour, minute),
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'medicine_reminder_channel',
+          'Medicine Reminder',
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+      ),
+      androidAllowWhileIdle: true,
+      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.time,
+    );
+  }
+
+  tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
+    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
+    tz.TZDateTime scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    if (scheduledDate.isBefore(now)) {
+      scheduledDate = scheduledDate.add(Duration(days: 1));
+    }
+    return scheduledDate;
+  }
+
+  Future<void> _saveOptionalGoals() async {
+    if (_formKey.currentState!.validate()) {
+      final box = await Hive.openBox<Goal>('goals');
+
+      List<Medicine> medicinesData = medicines.map((medicine) {
+        return Medicine(
+          name: medicine['name'],
+          frequencyType: medicine['frequency'],
+          dosage: medicine['dosageController'].text,
+          quantity: int.parse(medicine['quantityController'].text),
+          selectedTimes: List<String>.from(medicine['selectedTimes']),
+        );
+      }).toList();
+
+      Goal goal = Goal(
+        goalId: generateGoalId(),
+        goalType: "Optional",
+        date: DateTime.now(),
+        MealValue: Meal(
+          morning: enableBreakfast,
+          afternoon: enableLunch,
+          night: enableDinner,
+        ),
+        medicines: medicinesData,
+        skipped: false,
+      );
+
+      await box.put(goal.goalId, goal);
+
+      int notificationId = 1;
+      for (var medicine in medicinesData) {
+        for (String time in medicine.selectedTimes) {
+          final timeParts = _parseTimeString(time);
+          await scheduleNotification(
+            "Medicine Reminder",
+            "It's time to take your ${medicine.name} - ${medicine.dosage} dosage",
+            timeParts[0],
+            timeParts[1],
+            notificationId++,
+          );
+        }
+      }
+
+      if (enableBreakfast) await scheduleNotification("Meal Reminder", "It's time for Breakfast", 8, 0, notificationId++);
+      if (enableLunch) await scheduleNotification("Meal Reminder", "It's time for Lunch", 12, 0, notificationId++);
+      if (enableDinner) await scheduleNotification("Meal Reminder", "It's time for Dinner", 19, 0, notificationId++);
+
+      Get.snackbar('Success', 'Optional goals saved successfully!', snackPosition: SnackPosition.BOTTOM);
+      Get.offAll(BottumNavBar());
+    }
+  }
+
+  List<int> _parseTimeString(String time) {
+    switch (time) {
+      case 'Morning': return [8, 0];
+      case 'Afternoon': return [12, 0];
+      case 'Evening': return [17, 0];
+      case 'Night': return [20, 0];
+      default: return [0, 0];
+    }
+  }
 
   int generateGoalId() {
     final random = Random();
@@ -100,41 +165,33 @@ class _OptionalGoalSettingScreenState extends State<OptionalGoalSettingScreen> {
         title: Text(
           'Set Optional Goals',
           style: GoogleFonts.poppins(
-              fontSize: 22.sp, fontWeight: FontWeight.bold, color: kwhite),
+            fontSize: 22.sp, fontWeight: FontWeight.bold, color: kwhite),
         ),
         backgroundColor: kblue,
         actions: [
           TextButton(
-  onPressed: () async {
-    // Open the Hive box to store the skipped state
-   
-    
-    final box = await Hive.openBox<Goal>('goals');
-   Goal goal = Goal(
-  goalId: 1,
-  goalType: '',
-  date: DateTime.now(), // You may want to keep the current date as default, or use a default DateTime if you have one.
-  MealValue: Meal(
-    morning: false,
-    afternoon: false,
-    night: false,
-  ),
-  medicines: [], // Empty list for medicines
-  skipped: true,
-);
-
-
-      await box.put(goal.goalId, goal);
-
-    // Navigate to the next screen
-   Get.offAll(BottumNavBar());
-  },
-  child: Text(
-    'Skip',
-    style: TextStyle(color: kwhite, fontSize: 16.sp),
-  ),
-)
-
+            onPressed: () async {
+              final box = await Hive.openBox<Goal>('goals');
+              Goal goal = Goal(
+                goalId: generateGoalId(),
+                goalType: '',
+                date: DateTime.now(),
+                MealValue: Meal(
+                  morning: false,
+                  afternoon: false,
+                  night: false,
+                ),
+                medicines: [],
+                skipped: true,
+              );
+              await box.put(goal.goalId, goal);
+              Get.offAll(BottumNavBar());
+            },
+            child: Text(
+              'Skip',
+              style: TextStyle(color: kwhite, fontSize: 16.sp),
+            ),
+          ),
         ],
       ),
       body: Padding(
@@ -173,7 +230,6 @@ class _OptionalGoalSettingScreenState extends State<OptionalGoalSettingScreen> {
                 _buildToggleSwitch('Enable Breakfast', enableBreakfast, (val) => setState(() => enableBreakfast = val)),
                 _buildToggleSwitch('Enable Lunch', enableLunch, (val) => setState(() => enableLunch = val)),
                 _buildToggleSwitch('Enable Dinner', enableDinner, (val) => setState(() => enableDinner = val)),
-
                 SizedBox(height: 30.h),
                 ElevatedButton(
                   onPressed: _saveOptionalGoals,

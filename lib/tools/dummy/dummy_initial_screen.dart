@@ -1,524 +1,254 @@
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/views/auth/register_screen.dart';
+import 'package:alaram/views/daily_activity_updation/daily_actitivity_sleep_update_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-
+import 'package:get/get_navigation/get_navigation.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:alaram/views/pdf_exel_output/activity_main_screen.dart';
 
-import 'package:intl/intl.dart';
-
-
-
-
-
-class DummyHomeScreen extends StatefulWidget {
-  @override
-  State<DummyHomeScreen> createState() => _DummyHomeScreenState();
-}
-
-class _DummyHomeScreenState extends State<DummyHomeScreen> {
+class DummyHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final String totalHoursWalked = "5h";
+    final String totalHoursSlept = "7h";
+    final String totalWaterIntake = "2L";
+    final String overallHealth = "Good";
+    final String date = "2024-11-08";
+
     return Scaffold(
-      appBar: _buildCustomAppBar(),
-      body: Padding(
-        padding: EdgeInsets.all(16.w),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildDateTimeSection(),  kheight10,
-              _buildProfileCard(),
-              SizedBox(height: 20.h),
-              _buildActivityGrid(),kheight10,_buildRegistrationSection() ,
-kheight40,
-              Row(
+      body: Stack(
+        children: [
+          // Curved background for the AppBar
+          ClipPath(
+            clipper: AppBarClipper(),
+            child: Container(
+              color: Colors.blueAccent,
+              height: 200.h,
+              padding: EdgeInsets.only(top: 40.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Video Tutorial ',
-                    style: GoogleFonts.poppins(
-                      fontSize: 22.sp,
-                      fontWeight: FontWeight.w600,
-                      color: kblue,
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Home',
+                              style: GoogleFonts.poppins(
+                                fontSize: 28.sp,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(height: 4.h),
+                            Text(
+                              date,
+                              style: GoogleFonts.poppins(
+                                fontSize: 14.sp,
+                                color: Colors.white.withOpacity(0.8),
+                              ),
+                            ),
+                          ],
+                        ),
+                        InkWell(
+                          onTap: () {
+                            Get.to(DailyActivitySleepUpdateScreen());
+                          },
+                          child: Icon(
+                            Icons.task,
+                            color: Colors.white,
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildAppBarInfoCard(
+                            'Walk', totalHoursWalked, Icons.directions_walk),
+                        _buildAppBarInfoCard(
+                            'Sleep', totalHoursSlept, Icons.bedtime),
+                        _buildAppBarInfoCard(
+                            'Water', totalWaterIntake, Icons.local_drink),
+                        _buildAppBarInfoCard(
+                            'Overall', overallHealth, Icons.health_and_safety),
+                      ],
                     ),
                   ),
                 ],
               ),
-              kheight10,
-              kheight10,
-              _buildVideoTutorialList(),
-              kheight40, kheight40 // Enhanced Video Tutorial Button
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-// Enhanced Video Tutorial List Section
-  Widget _buildVideoTutorialList() {
-    // Sample data for tutorials (replace with real data)
-    List<Map<String, String>> tutorials = [
-      {
-        "title": "Intro to Recovery",
-        "thumbnail": "assets/logo/rb_19305.png",
-        "description":
-            "An introduction to the recovery process after thrombosis treatment, outlining essential steps and strategies."
-      },
-      {
-        "title": "Exercise Tips",
-        "thumbnail": "assets/logo/7942060_3794815.jpg",
-        "description":
-            "Learn about the best exercises that can help improve your mobility and overall health during recovery."
-      },
-      {
-        "title": "Healthy Eating",
-        "thumbnail": "assets/logo/rb_28533.png",
-        "description":
-            "Discover nutritious foods that support your recovery and contribute to your well-being."
-      },
-      {
-        "title": "Mental Health",
-        "thumbnail": "assets/logo/rb_2149044577.png",
-        "description":
-            "Understanding the importance of mental health in recovery, including tips for maintaining a positive mindset."
-      },
-    ];
-
-    return ListView.builder(
-      itemCount: tutorials.length, // Number of items in the list
-      shrinkWrap: true, // Wraps the list to prevent overflow
-      physics:
-          NeverScrollableScrollPhysics(), // Disable scrolling for this list
-      itemBuilder: (context, index) {
-        // Construct each tutorial card using the helper method
-        return _buildTutorialCard(
-          title: tutorials[index]["title"]!, // Get title from the map
-          thumbnail: tutorials[index]
-              ["thumbnail"]!, // Get thumbnail path from the map
-          description: tutorials[index]
-              ["description"]!, // Get description from the map
-        );
-      },
-    );
-  }
-
-// Define your _buildTutorialCard widget
-  Widget _buildTutorialCard(
-      {required String title,
-      required String thumbnail,
-      required String description}) {
-    return Card(
-      elevation: 3, // Increased elevation for better depth effect
-      margin: EdgeInsets.symmetric(
-          vertical: 10.0,
-          horizontal: 8), // Increased vertical margin between cards
-      shape: RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.circular(15.0), // Rounded corners for the card
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0), // Padding around the card content
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
-              alignment: Alignment.center, // Center the play button
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                      10.0), // Rounded corners for the image
-                  child: Image.asset(
-                    thumbnail, // Load the thumbnail image
-                    fit: BoxFit.cover,
-                    height: 100, // Fixed height for the image
-                    width: 100, // Fixed width for the image
-                  ),
-                ),
-                // Play button overlay
-                IconButton(
-                  icon: Icon(Icons.play_circle_fill,
-                      size: 40, color: Colors.white), // Play button icon
-                  onPressed: () {
-                    // Add your onPressed logic here
-                    print('Play video for: $title');
-                  },
-                ),
-              ],
             ),
-            SizedBox(width: 15.0), // Space between image and title
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title, // Display the tutorial title
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16, // Slightly larger title font size
-                      color: Colors.black87,
-                    ), // Style for the title
-                    maxLines: 2, // Limit to 2 lines
-                    overflow:
-                        TextOverflow.ellipsis, // Handle overflow with ellipsis
-                  ),
-                  SizedBox(height: 5.0), // Space between title and description
-                  Text(
-                    description, // Display the tutorial description
-                    style: TextStyle(
-                      color: Colors.grey[700], // Grey color for description
-                      fontSize: 14, // Font size for description
-                    ), // Style for description
-                    maxLines: 3, // Limit description to 3 lines
-                    overflow:
-                        TextOverflow.ellipsis, // Handle overflow with ellipsis
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDateTimeSection() {
-    String currentDate = DateFormat('EEEE, MMM d   ').format(DateTime.now());
-    String currentTime = DateFormat('    hh:mm a   ').format(DateTime.now());
-
-    return Center(
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(
-          vertical: 20.h,
-        ),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.blueAccent.withOpacity(0.15),
-              Colors.lightBlueAccent.withOpacity(0.15)
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(25.r),
-          border:
-              Border.all(color: Colors.blueAccent.withOpacity(0.3), width: 1.5),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Date Section
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Icon(Icons.calendar_today,
-                    color: Colors.blueAccent, size: 28.r),
-                SizedBox(height: 8.h),
-                Text(
-                  currentDate,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
-            ),
-
-            // Vertical Divider
-            Container(
-              width: 1.5,
-              height: 50.h,
-              color: Colors.grey[400],
-              margin: EdgeInsets.symmetric(horizontal: 15.w),
-            ),
-
-            // Time Section
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Icon(Icons.access_time, color: Colors.blueAccent, size: 28.r),
-                SizedBox(height: 8.h),
-                Text(
-                  currentTime,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Modern Custom AppBar with Gradient and Icon Buttons
-  AppBar _buildCustomAppBar() {
-    return AppBar(
-      flexibleSpace: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.blueAccent, Colors.lightBlueAccent],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(30.r),
-            bottomRight: Radius.circular(30.r),
-          ),
-        ),
-      ),
-      toolbarHeight: 80.h,
-      title: RichText(
-        textAlign: TextAlign.center,
-        text: TextSpan(
-          children: [
-            TextSpan(
-              text: 'Activity ',
-              style: GoogleFonts.poppins(
-                fontSize: 22.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-            TextSpan(
-              text: 'Overview',
-              style: GoogleFonts.poppins(
-                fontSize: 22.sp,
-                fontWeight: FontWeight.w400,
-                color: Colors.white70,
-              ),
-            ),
-          ],
-        ),
-      ),
-      centerTitle: true,
-      elevation: 10,
-      shadowColor: Colors.blueAccent.withOpacity(0.4),
-      actions: [
-        IconButton(
-          icon: Icon(
-            Icons.notifications,
-            color: Colors.white,
-            size: 28.r,
-          ),
-          onPressed: () {
-            // Notification functionality here
-          },
-        ),
-        SizedBox(width: 10.w),
-        IconButton(
-          icon: Icon(
-            Icons.dashboard,
-            color: Colors.white,
-            size: 28.r,
-          ),
-          onPressed: () {
-            
-          },
-        ),
-        SizedBox(width: 10.w),
-      ],
-      leading: Padding(
-        padding: EdgeInsets.only(left: 12.w),
-        child: CircleAvatar(
-          radius: 24.r,
-          backgroundImage: NetworkImage(
-            'https://www.w3schools.com/w3images/avatar2.png',
-          ),
-        ),
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(30.r),
-          bottomRight: Radius.circular(30.r),
-        ),
-      ),
-    );
-  }
-
-  // Profile Card at the top of the screen
-  Widget _buildProfileCard() {
-    return Card(
-      elevation: 6,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20.r),
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(16.w),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 40.r,
-              backgroundColor: Colors.blue.withOpacity(0.1),
-              child: Icon(
-                Icons.person,
-                color: Colors.blue,
-                size: 50.r,
-              ),
-            ),
-            SizedBox(width: 20.w),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Guest User',
-                  style: GoogleFonts.poppins(
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  'Height: 182 cm  |  Weight: 76 kg',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14.sp,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-// Registration Section Widget
-Widget _buildRegistrationSection() {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.center,
-    children: [
-      Text(
-        'Join our community and track your recovery activities!',
-        style: GoogleFonts.poppins(
-          fontSize: 16.sp,
-          fontWeight: FontWeight.normal,
-          color: Colors.black, // Text color
-        ),
-        textAlign: TextAlign.center,
-      ),
-      SizedBox(height: 10.h), // Space between text and button
-      ElevatedButton(
-        onPressed: () {
-          Get.offAll(RegisterScreen());
-          // Dummy action for the button
-          print('Registration button pressed');
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blueAccent, // Button color
-          padding: EdgeInsets.symmetric(vertical: 15.h, horizontal: 30.w),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30.r), // Rounded corners
-          ),
-        ),
-        child: Text(
-          'Register Now',
-          style: GoogleFonts.poppins(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.bold,
-            color: Colors.white, // Text color
-          ),
-        ),
-      ),
-    ],
-  );
-}
-
-  Widget _buildActivityGrid() {
-    List<String> activities = [
-      'Water Intake',
-      'Walking',
-      'Sleep',
-      'Food Intake',
-      'Medicine',
-      'Injection', // Updated from Running to Injection
-    ];
-
-    List<Color> colors = [
-      Colors.lightBlueAccent,
-      Colors.greenAccent,
-      Colors.deepPurpleAccent,
-      Colors.orangeAccent,
-      Colors.redAccent,
-      Colors.pinkAccent,
-    ];
-
-    List<String> values = [
-      '4 liters',
-      '4 minutes',
-      '7 hours',
-      'Goal Achived',
-      'Not yet',
-      'injections Done Today ', // Update this line for injection count
-    ];
-
-    return GridView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 1.5,
-        crossAxisSpacing: 10.w,
-        mainAxisSpacing: 10.h,
-      ),
-      itemCount: activities.length,
-      itemBuilder: (context, index) {
-        return _buildActivityCard(
-          activities[index],
-          values[index],
-          colors[index],
-        );
-      },
-    );
-  }
-
-  Widget _buildActivityCard(String activity, String value, Color iconColor) {
-    return Card(
-      elevation: 6,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15.r),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [iconColor.withOpacity(0.2), iconColor.withOpacity(0.6)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(15.r),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(16.w),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
+          // Main content with padding to avoid overlap with curved AppBar
+          Column(
             children: [
-              Icon(
-                _getActivityIcon(activity),
-                color: iconColor,
-                size: 40.r,
-              ),
-              SizedBox(height: 10.h),
+              SizedBox(height: 220.h), // Adjust height to avoid overlap with AppBar
               Text(
-                activity,
+                'Join our community and track your recovery activities!',
                 style: GoogleFonts.poppins(
                   fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.black, // Text color
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 10.h), // Space between text and button
+              ElevatedButton(
+                onPressed: () {
+                  Get.offAll(RegisterScreen());
+                  print('Registration button pressed');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent, // Button color
+                  padding: EdgeInsets.symmetric(vertical: 15.h, horizontal: 30.w),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30.r), // Rounded corners
+                  ),
+                ),
+                child: Text(
+                  'Register Now',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white, // Text color
+                  ),
                 ),
               ),
-              SizedBox(height: 5.h),
-              Text(
-                value,
-                style: GoogleFonts.poppins(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.black54,
+              SizedBox(height: 20.h), // Space before GridView
+              Flexible(
+                child: Padding(
+                  padding: EdgeInsets.only(top: 10.h),
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16.w,
+                    mainAxisSpacing: 16.h,
+                    padding: EdgeInsets.all(16.w),
+                    children: [
+                      _buildGridItem(
+                        title: 'Profile',
+                        icon: Icons.person,
+                        color: Colors.blue,
+                        onTap: () {
+                          // Navigator.push(context,
+                          //     MaterialPageRoute(builder: (_) => ProfileScreen()));
+                        },
+                      ),
+                      _buildGridItem(
+                        title: 'Activity',
+                        icon: Icons.fitness_center,
+                        color: Colors.teal,
+                        onTap: () {
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (_) => ActivityMainPage()));
+                        },
+                      ),
+                      _buildGridItem(
+                        title: 'Calendar',
+                        icon: Icons.calendar_today,
+                        color: Colors.orange,
+                        onTap: () {
+                          // Navigator.push(
+                          //     context,
+                          //     MaterialPageRoute(
+                          //         builder: (_) => DailyMedicneTaskCallenderScreen()));
+                        },
+                      ),
+                      _buildGridItem(
+                        title: 'Video Tutorials',
+                        icon: Icons.video_library,
+                        color: Colors.redAccent,
+                        onTap: () {
+                          // Navigator.push(context,
+                          //     MaterialPageRoute(builder: (_) => VideoTutorial()));
+                        },
+                      ),
+                      _buildGridItem(
+                        title: 'Resources',
+                        icon: Icons.book,
+                        color: Colors.green,
+                        onTap: () {
+                          // Get.to(DailyMedicineIntakeScreen());
+                        },
+                      ),
+                      _buildGridItem(
+                        title: 'Medicine',
+                        icon: Icons.medical_services,
+                        color: Colors.purple,
+                        onTap: () {
+                          // Get.to(DailyMedicneTaskCallenderScreen());
+                        },
+                      ),
+                    ],
+                  ),
                 ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Widget for AppBar information cards
+  Widget _buildAppBarInfoCard(String title, String data, IconData icon) {
+    return Column(
+      children: [
+        Icon(icon, color: Colors.white, size: 24.sp),
+        SizedBox(height: 4.h),
+        Text(
+          data,
+          style: GoogleFonts.poppins(
+              fontSize: 16.sp,
+              color: Colors.white,
+              fontWeight: FontWeight.bold),
+        ),
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+              fontSize: 12.sp, color: Colors.white.withOpacity(0.8)),
+        ),
+      ],
+    );
+  }
+
+  // Widget for grid items with onTap callback
+  Widget _buildGridItem(
+      {required String title,
+      required IconData icon,
+      required Color color,
+      required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        elevation: 4,
+        child: Container(
+          padding: EdgeInsets.all(12.w),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16.r),
+            color: color.withOpacity(0.1),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 50.sp, color: color),
+              SizedBox(height: 10.h),
+              Text(
+                title,
+                style: GoogleFonts.poppins(
+                    fontSize: 18.sp, fontWeight: FontWeight.w500),
               ),
             ],
           ),
@@ -526,23 +256,25 @@ Widget _buildRegistrationSection() {
       ),
     );
   }
+}
 
-  IconData _getActivityIcon(String activity) {
-    switch (activity) {
-      case 'Water Intake':
-        return Icons.local_drink; // Icon for water intake
-      case 'Walking':
-        return Icons.directions_walk; // Icon for walking
-      case 'Sleep':
-        return Icons.bedtime; // Icon for sleep
-      case 'Food Intake':
-        return Icons.fastfood; // Icon for food intake
-      case 'Medicine':
-        return Icons.medical_services; // Icon for medicine
-      case 'Injection':
-        return Icons.medication; // Custom icon for injection, change if needed
-      default:
-        return Icons.accessibility; // Default icon
-    }
+// Custom Clipper for creating a curved AppBar background
+class AppBarClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    Path path = Path();
+    path.lineTo(0, size.height - 40.h); // Starting point of curve
+    path.quadraticBezierTo(
+      size.width / 2,
+      size.height,
+      size.width,
+      size.height - 40.h,
+    );
+    path.lineTo(size.width, 0); // Close the shape
+    path.close();
+    return path;
   }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }
