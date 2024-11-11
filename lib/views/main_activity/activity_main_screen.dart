@@ -1,16 +1,15 @@
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/model/activity_log.dart';
 import 'package:alaram/tools/model/profile_model.dart';
+import 'package:alaram/views/chart/chart_screen.dart';
 import 'package:alaram/views/completed_tasks/activity_sleep_log_screen.dart';
 import 'package:alaram/views/completed_tasks/daily_activity_medicine_log.dart';
-import 'package:alaram/views/daily_activity_updation/dailyactivity_medicine_update_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/adapters.dart';
-
-import '../daily_activity_updation/daily_actitivity_sleep_update_screen.dart';
+import 'package:intl/intl.dart';
 
 class ActivityMainPage extends StatefulWidget {
   @override
@@ -55,6 +54,17 @@ class _ActivityMainPageState extends State<ActivityMainPage> {
       valueListenable: _activityLogBox.listenable(),
       builder: (context, Box<ActivityLog> box, _) {
         List<ActivityLog> activityLogs = box.values.toList();
+        
+        // Sort logs by date and get the latest
+        activityLogs.sort((a, b) => b.date.compareTo(a.date)); // assuming `date` is a field in ActivityLog
+
+        if (activityLogs.isEmpty) {
+          return SizedBox.shrink();
+        }
+
+        ActivityLog latestLog = activityLogs.first;
+        double value = valueExtractor(latestLog);
+        String formattedDate = DateFormat('yyyy-MM-dd HH:mm').format(latestLog.date);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,28 +77,20 @@ class _ActivityMainPageState extends State<ActivityMainPage> {
               ),
             ),
             SizedBox(height: 10.h),
-            ListView.builder(
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: activityLogs.length,
-              itemBuilder: (context, index) {
-                ActivityLog log = activityLogs[index];
-                double value = valueExtractor(log);
-                return _buildActivityCard(label, value, icon, categoryColor);
-              },
-            ),
+            _buildActivityCard(label, value, icon, categoryColor, formattedDate),
           ],
         );
       },
     );
   }
 
-  Widget _buildActivityCard(String label, double value, IconData icon, Color categoryColor) {
+  Widget _buildActivityCard(String label, double value, IconData icon, Color categoryColor, String date) {
     return GestureDetector(
       onTap: () {
+        Get.to(ActivityPieChartScreen());
         // Handle activity card tap
       },
-      child: AnimatedContainer(
+      child: AnimatedContainer(width: double.infinity,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
         decoration: BoxDecoration(
@@ -119,6 +121,15 @@ class _ActivityMainPageState extends State<ActivityMainPage> {
                 '$value hours',
                 style: GoogleFonts.poppins(
                   fontSize: 14.sp,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.black54,
+                ),
+              ),
+              SizedBox(height: 10.h),
+              Text(
+                'Last updated: $date',
+                style: GoogleFonts.poppins(
+                  fontSize: 12.sp,
                   fontWeight: FontWeight.w400,
                   color: Colors.black54,
                 ),
@@ -188,136 +199,116 @@ class _ActivityMainPageState extends State<ActivityMainPage> {
           bottomRight: Radius.circular(30.r),
         ),
       ),
-  actions: [InkWell(onTap: (){Get.to(DailyMedicineActivityLog());},
-    child: Icon(Icons.medical_information,color: kwhite,)),SizedBox(width: 50,)],  );
+      actions: [InkWell(onTap: (){Get.to(DailyMedicineActivityLog());},
+        child: Icon(Icons.medical_information,color: kwhite,)),SizedBox(width: 50,)],
+    );
   }
 
- Widget _buildProfileCard() {
-  final profileBox = Hive.box<ProfileModel>('profileBox');
-  final ProfileModel? profileData = profileBox.get('userProfile');
+  Widget _buildProfileCard() {
+    final profileBox = Hive.box<ProfileModel>('profileBox');
+    final ProfileModel? profileData = profileBox.get('userProfile');
 
-  return GestureDetector(
-    onTap: () {
-      Get.to(ActivitySleeplog());
-      // Handle profile card tap
-    },
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(15.r),
-        gradient: LinearGradient(
-          colors: [Colors.blueAccent, Colors.lightBlueAccent],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return GestureDetector(
+      onTap: () {
+        Get.to(ActivitySleeplog());
+        // Handle profile card tap
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15.r),
+          gradient: LinearGradient(
+            colors: [Colors.blueAccent, Colors.lightBlueAccent],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(16.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 30.r,
-                  backgroundColor: Colors.white,
-                  child: Icon(
-                    Icons.person,
-                    size: 30.r,
-                    color: Colors.blueAccent,
-                  ),
-                ),
-                SizedBox(width: 10.w),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      profileData?.username ?? 'No Name',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                    SizedBox(height: 5.h),
-                    Text(
-                      profileData?.email ?? 'No Email',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            SizedBox(height: 20.h),
-            Text(
-              'Daily Goals',
-              style: GoogleFonts.poppins(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-            SizedBox(height: 10.h),
-            _buildGoalCard('Water Intake', profileData?.waterIntakeGoal.toString() ?? 'No data', Icons.local_drink),
-            SizedBox(height: 10.h),
-            _buildGoalCard('Sleep Goal', profileData?.sleepGoal.toString() ?? 'No data', Icons.bed),
-            SizedBox(height: 10.h),
-            _buildGoalCard('Walking Goal', profileData?.walkingGoal.toString() ?? 'No data', Icons.directions_walk),
-          ],
-        ),
-      ),
-    ),
-  );
-}
-
-Widget _buildGoalCard(String title, String goal, IconData icon) {
-  return Container(
-    padding: EdgeInsets.all(12.w),
-    decoration: BoxDecoration(
-      color: Colors.white.withOpacity(0.2),
-      borderRadius: BorderRadius.circular(12.r),
-    ),
-    child: Row(
-      children: [
-        Icon(
-          icon,
-          size: 30.r,
-          color: Colors.white,
-        ),
-        SizedBox(width: 10.w),
-        Expanded(
+        child: Padding(
+          padding: EdgeInsets.all(16.w),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 30.r,
+                    backgroundColor: Colors.white,
+                    child: Icon(
+                      Icons.person,
+                      size: 30.r,
+                      color: Colors.blueAccent,
+                    ),
+                  ),
+                  SizedBox(width: 10.w),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        profileData?.username ?? 'No Name',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 5.h),
+                      Text(
+                        profileData?.email ?? 'No Email',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w400,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              SizedBox(height: 20.h),
               Text(
-                title,
+                'Daily Goals',
                 style: GoogleFonts.poppins(
-                  fontSize: 14.sp,
+                  fontSize: 16.sp,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
                 ),
               ),
-              SizedBox(height: 5.h),
-              Text(
-                goal,
-                style: GoogleFonts.poppins(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w400,
-                  color: Colors.white70,
-                ),
-              ),
+              SizedBox(height: 10.h),
+              _buildGoalCard('Water Intake', profileData?.waterIntakeGoal.toString() ?? 'No data', Icons.local_drink),
+              SizedBox(height: 10.h),
+              _buildGoalCard('Sleep Goal', profileData?.sleepGoal.toString() ?? 'No data', Icons.bed),
+              SizedBox(height: 10.h),
+              _buildGoalCard('Walking Goal', profileData?.walkingGoal.toString() ?? 'No data', Icons.directions_walk),
             ],
           ),
         ),
-      ],
-    ),
-  );
-}
+      ),
+    );
+  }
 
-
-
+  Widget _buildGoalCard(String label, String value, IconData icon) {
+    return Card(
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(10.w),
+        child: Row(
+          children: [
+            Icon(icon, size: 40.r, color: Colors.blueAccent),
+            SizedBox(width: 15.w),
+            Text(
+              '$label: $value',
+              style: GoogleFonts.poppins(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
