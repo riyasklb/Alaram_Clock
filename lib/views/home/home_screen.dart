@@ -1,6 +1,7 @@
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/model/activity_log.dart';
-import 'package:alaram/views/chart/chart_screen.dart';
+import 'package:alaram/tools/test.dart';
+
 import 'package:alaram/views/daily_activity_updation/daily_actitivity_sleep_update_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -160,6 +161,7 @@ class BottumNavBar extends StatelessWidget {
                   icon: Icons.book,
                   color: Colors.green,
                   onTap: () {
+                    Get.to(GoalOverviewScreen());
                     // Add your Resources screen here
                   },
                 ),

@@ -73,12 +73,13 @@ print('--------------1-----${goal.skipped}-------------');
 }
 
 
- void _addAppointmentsForMedicine(Medicine medicine, List<Appointment> appointments) {
+void _addAppointmentsForMedicine(Medicine medicine, List<Appointment> appointments) {
   DateTime startTime = DateTime.now(); // Starting from today
   DateFormat timeFormatter = DateFormat.jm();
 
   for (int j = 0; j < 30; j++) { // Show appointments for the next 30 days
-    DateTime appointmentDate = startTime.add(Duration(days: j));
+    // Set the appointment date to midnight for each day
+    DateTime appointmentDate = DateTime(startTime.year, startTime.month, startTime.day).add(Duration(days: j));
     String frequency = medicine.frequencyType;
 
     // Determine which times of day the medicine should be taken
@@ -113,6 +114,7 @@ print('--------------1-----${goal.skipped}-------------');
     }
   }
 }
+
 
 // Helper method to determine if an appointment should be added based on frequency
 bool _shouldAddAppointment(int dayIndex, String frequency) {
