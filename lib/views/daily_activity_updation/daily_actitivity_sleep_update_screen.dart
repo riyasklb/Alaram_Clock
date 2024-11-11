@@ -14,14 +14,15 @@ class DailyActivitySleepUpdateScreen extends StatefulWidget {
   _DailyActivitySleepUpdateScreenState createState() =>
       _DailyActivitySleepUpdateScreenState();
 }
+
 class _DailyActivitySleepUpdateScreenState extends State<DailyActivitySleepUpdateScreen> {
   final TextEditingController sleepController = TextEditingController();
   final TextEditingController walkingController = TextEditingController();
   final TextEditingController waterController = TextEditingController();
 
-  DateTime selectedDate =
-      DateTime.now().subtract(Duration(days: 1)); // Default to yesterday's date
+  DateTime selectedDate = DateTime.now().subtract(Duration(days: 1)); // Default to yesterday's date
   bool hasPendingUpdate = false;
+  String? pendingDate;
 
   @override
   void initState() {
@@ -29,51 +30,41 @@ class _DailyActivitySleepUpdateScreenState extends State<DailyActivitySleepUpdat
     _checkPendingUpdates();
   }
 
-  String? pendingDate; // Add a variable to store the pending date
+  void _checkPendingUpdates() async {
+    var box = Hive.box<ActivityLog>('activityLogs');
 
-void _checkPendingUpdates() async {
-  var box = Hive.box<ActivityLog>('activityLogs');
+    DateTime yesterday = DateTime.now().subtract(Duration(days: 1));
+    DateTime dayBeforeYesterday = DateTime.now().subtract(Duration(days: 2));
 
-  // Get yesterday and the day before yesterday
-  DateTime yesterday = DateTime.now().subtract(Duration(days: 1));
-  DateTime dayBeforeYesterday = DateTime.now().subtract(Duration(days: 2));
+    DateTime normalizedYesterday = DateTime(yesterday.year, yesterday.month, yesterday.day);
+    DateTime normalizedDayBeforeYesterday = DateTime(dayBeforeYesterday.year, dayBeforeYesterday.month, dayBeforeYesterday.day);
 
-  // Normalize both dates to ignore time
-  DateTime normalizedYesterday = DateTime(yesterday.year, yesterday.month, yesterday.day);
-  DateTime normalizedDayBeforeYesterday = DateTime(dayBeforeYesterday.year, dayBeforeYesterday.month, dayBeforeYesterday.day);
+    String formattedYesterday = DateFormat('MMMM dd, yyyy').format(normalizedYesterday);
+    String formattedDayBeforeYesterday = DateFormat('MMMM dd, yyyy').format(normalizedDayBeforeYesterday);
 
-  // Format dates for display
-  String formattedYesterday = DateFormat('MMMM dd, yyyy').format(normalizedYesterday);
-  String formattedDayBeforeYesterday = DateFormat('MMMM dd, yyyy').format(normalizedDayBeforeYesterday);
+    bool hasEntryForYesterday = box.values.any((log) {
+      DateTime normalizedLogDate = DateTime(log.date.year, log.date.month, log.date.day);
+      return normalizedLogDate.isAtSameMomentAs(normalizedYesterday);
+    });
 
-  // Check if there's an entry for yesterday or day before yesterday
-  bool hasEntryForYesterday = box.values.any((log) {
-    DateTime normalizedLogDate = DateTime(log.date.year, log.date.month, log.date.day);
-    return normalizedLogDate.isAtSameMomentAs(normalizedYesterday);
-  });
+    bool hasEntryForDayBeforeYesterday = box.values.any((log) {
+      DateTime normalizedLogDate = DateTime(log.date.year, log.date.month, log.date.day);
+      return normalizedLogDate.isAtSameMomentAs(normalizedDayBeforeYesterday);
+    });
 
-  bool hasEntryForDayBeforeYesterday = box.values.any((log) {
-    DateTime normalizedLogDate = DateTime(log.date.year, log.date.month, log.date.day);
-    return normalizedLogDate.isAtSameMomentAs(normalizedDayBeforeYesterday);
-  });
+    if (!hasEntryForYesterday && !hasEntryForDayBeforeYesterday) {
+      pendingDate = 'Both $formattedYesterday and $formattedDayBeforeYesterday updates are pending';
+    } else if (!hasEntryForYesterday) {
+      pendingDate = 'Update for $formattedYesterday is pending';
+    } else if (!hasEntryForDayBeforeYesterday) {
+      pendingDate = 'Update for $formattedDayBeforeYesterday is pending';
+    } else {
+      pendingDate = 'No pending updates'; // No pending updates message
+    }
 
-  // Determine the pending status for both dates
-  if (!hasEntryForYesterday && !hasEntryForDayBeforeYesterday) {
-    pendingDate = 'Both $formattedYesterday and $formattedDayBeforeYesterday updates are pending';
-  } else if (!hasEntryForYesterday) {
-    pendingDate = 'Update for $formattedYesterday is pending';
-  } else if (!hasEntryForDayBeforeYesterday) {
-    pendingDate = 'Update for $formattedDayBeforeYesterday is pending';
-  } else {
-    pendingDate = null; // No pending updates
+    hasPendingUpdate = pendingDate != 'No pending updates';
+    setState(() {});
   }
-
-  // Set the pending update status
-  hasPendingUpdate = pendingDate != null;
-
-  setState(() {});
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -99,38 +90,50 @@ void _checkPendingUpdates() async {
                       color: Colors.redAccent,
                       fontWeight: FontWeight.w500),
                 ),
+              )
+            else
+              Column(mainAxisAlignment: MainAxisAlignment.center,
+                children: [kheight40,kheight40,kheight40,
+                  Center(
+                    child: Text(
+                      'No update pending, you can update tomorrow.',
+                      style: GoogleFonts.roboto(
+                          fontSize: 20.sp,
+                          color: Colors.green,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
               ),
-            Text(
-              'Update your activities for the day before yesterday to keep track of your daily progress.',
-              style:
-                  GoogleFonts.roboto(fontSize: 16.sp, color: Colors.grey[700]),
-            ),
-            SizedBox(height: 20.h),
-            _buildDateSelector(),
-            _buildActivityCard(
-                'Sleep', 'Hours of sleep', 'hours', sleepController),
-            _buildActivityCard(
-                'Walking', 'Hours walked', 'hours', walkingController),
-            _buildActivityCard(
-                'Water Intake', 'Liters of water', 'liters', waterController),
-            Spacer(),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: saveActivityLog,
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 14.h),
-                  backgroundColor: Colors.blueAccent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
+            if (hasPendingUpdate) ...[
+              Text(
+                'Update your yesterday activities to keep track of your daily progress.',
+                style: GoogleFonts.roboto(fontSize: 16.sp, color: Colors.grey[700]),
+              ),
+              SizedBox(height: 20.h),
+              _buildDateSelector(),
+              _buildActivityCard('Sleep', 'Hours of sleep', 'hours', sleepController),
+              _buildActivityCard('Walking', 'Hours walked', 'hours', walkingController),
+              _buildActivityCard('Water Intake', 'Liters of water', 'liters', waterController),
+              Spacer(),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: saveActivityLog,
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    backgroundColor: Colors.blueAccent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                  ),
+                  child: Text(
+                    'Update Activities',
+                    style: GoogleFonts.lato(fontSize: 18.sp, color: Colors.white),
                   ),
                 ),
-                child: Text(
-                  'Update Activities',
-                  style: GoogleFonts.lato(fontSize: 18.sp, color: Colors.white),
-                ),
               ),
-            ),
+            ]
           ],
         ),
       ),
@@ -252,7 +255,7 @@ void _checkPendingUpdates() async {
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 contentPadding:
-                    EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
+                    EdgeInsets.symmetric(vertical: 12.h, horizontal: 12.w),
               ),
             ),
           ],
