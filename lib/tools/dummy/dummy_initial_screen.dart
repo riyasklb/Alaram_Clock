@@ -58,7 +58,7 @@ class DummyHomeScreen extends StatelessWidget {
                         ),
                         InkWell(
                           onTap: () {
-                            Get.to(DailyActivitySleepUpdateScreen());
+                         //   Get.to(DailyActivitySleepUpdateScreen());
                           },
                           child: Icon(
                             Icons.task,

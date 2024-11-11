@@ -305,7 +305,7 @@ final activitylog= Hive.box<ActivityLog>('activityLogs');
         settingsBox.clear();
         activityLogsBox.clear(); // Clear the activityLogs box
         dailyActivitiesBox.clear(); // Clear the dailyActivities box
-        Get.to(RegisterScreen());
+        Get.offAll(RegisterScreen());
       },
       style: ElevatedButton.styleFrom(
         padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 15.h),
