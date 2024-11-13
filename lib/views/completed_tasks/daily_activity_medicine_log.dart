@@ -87,123 +87,242 @@ class _DailyMedicineActivityLogState extends State<DailyMedicineActivityLog> {
               return isSameDay(_selectedDate, day);
             },
           ),
-   Expanded(
-  child: activityMedicineBox == null || activitySleepBox == null
-      ? Center(child: CircularProgressIndicator())
-      : ValueListenableBuilder(
-          valueListenable: activityMedicineBox!.listenable(),
-          builder: (context, Box<DailyActivityModel> box, _) {
-            final activities = _getActivitiesForSelectedDate();
-            final activityLog = _getActivityLogForSelectedDate();
 
-            print('activities: $activities');
-            print('activityLog: $activityLog');
+          Expanded(
+            child: activityMedicineBox == null || activitySleepBox == null
+                ? Center(child: CircularProgressIndicator())
+                : ValueListenableBuilder(
+                    valueListenable: activityMedicineBox!.listenable(),
+                    builder: (context, Box<DailyActivityModel> box, _) {
+                      final activities = _getActivitiesForSelectedDate();
+                      final activityLog = _getActivityLogForSelectedDate();
 
-            // Checking for the scenario where activityLog is not empty but activities is empty or null
-            if ((activities.isEmpty || activities == null) && activityLog == null) {
-              print('-------------------------1-------------');
-              return Center(
-                child: Text(
-                  "No activity data available for the selected date.",
-                  style: GoogleFonts.lato(
-                      fontSize: 16, color: Colors.blueGrey),
-                ),
-              );
-            } else if (activities.isNotEmpty && activityLog == null) {
-              print('----------------------2----------------');
-              return ListView(
-                children: [
-                  Text(
-                    "You didn’t update your activity for this day.",
-                    style: GoogleFonts.lato(
-                      fontSize: 16,
-                      color: Colors.red,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
+                      print('activities: $activities');
+                      print('activityLog: $activityLog');
+
+                      // Checking for the scenario where activityLog is not empty but activities is empty or null
+                      if ((activities.isEmpty || activities == null) &&
+                          activityLog == null) {
+                        print('-------------------------1-------------');
+                        return Center(
+                          child: Container(
+                            padding: EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 10,
+                                  offset: Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.warning_amber_outlined,
+                                  size: 40,
+                                  color: Colors.orange,
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  "No activity data available for the selected date.",
+                                  style: GoogleFonts.lato(
+                                      fontSize: 16, color: Colors.blueGrey),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      } else if (activities.isNotEmpty && activityLog == null) {
+                        print('----------------------2----------------');
+                        return ListView(
+                          children: [
+                            Center(
+                              child: Container(
+                                padding: EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: Colors.red[50],
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 10,
+                                      offset: Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.cancel_outlined,
+                                      size: 40,
+                                      color: Colors.red,
+                                    ),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      "You didn’t update your Sleep,walking and water intake for this day.",
+                                      style: GoogleFonts.lato(
+                                        fontSize: 16,
+                                        color: Colors.red[800],
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            ...activities
+                                .map((activity) => _buildActivityCard(activity))
+                                .toList(),
+                          ],
+                        );
+                      } else if (activityLog != null &&
+                          (activities.isEmpty || activities == null)) {
+                        print('---------------------3-----------------');
+                        return ListView(
+                          children: [
+                            Center(
+                              child: Container(
+                                padding: EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange[50],
+                                  borderRadius: BorderRadius.circular(10),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 10,
+                                      offset: Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.history,
+                                      size: 40,
+                                      color: Colors.orange,
+                                    ),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      "You have activity logs but no updated Medicine Goals",
+                                      style: GoogleFonts.lato(
+                                        fontSize: 16,
+                                        color: Colors.orange[800],
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            // Display the activity log here, if activityLog is a single object.
+                            _buildActivityLogCard(activityLog),
+                          ],
+                        );
+                      } else {
+                        print('------------------------------4-------------');
+                        return ListView(
+                          children: [
+                            if (activityLog != null)
+                              _buildActivityLogCard(activityLog),
+                            ...activities
+                                .map((activity) => _buildActivityCard(activity))
+                                .toList(),
+                          ],
+                        );
+                      }
+                    },
                   ),
-                  ...activities
-                      .map((activity) => _buildActivityCard(activity))
-                      .toList(),
-                ],
-              );
-            } else if (activityLog != null && (activities.isEmpty || activities == null)) {
-              print('---------------------3-----------------');
-              return ListView(
-                children: [
-                  Text(
-                    "You have activity logs but no updated activities.",
-                    style: GoogleFonts.lato(
-                      fontSize: 16,
-                      color: Colors.orange,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  // Display the activity log here, if activityLog is a single object.
-                  _buildActivityLogCard(activityLog),
-                ],
-              );
-            } else {
-              print('------------------------------4-------------');
-              return ListView(
-                children: [
-                  if (activityLog != null)
-                    _buildActivityLogCard(activityLog),
-                  ...activities
-                      .map((activity) => _buildActivityCard(activity))
-                      .toList(),
-                ],
-              );
-            }
-          },
-        ),
-)
-
-
-
+          )
         ],
       ),
     );
   }
 
-  Widget _buildActivityLogCard(ActivityLog activityLog) {
-    return Card(
-      elevation: 4,
-      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+Widget _buildActivityLogCard(ActivityLog activityLog) {
+  return Card(
+    elevation: 6,
+    margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(15),
+    ),
+    color: Colors.white,
+    child: Padding(
+      padding: EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Daily Summary",
+            style: GoogleFonts.lato(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.blueGrey[800],
+            ),
+          ),
+          Divider(color: Colors.blueGrey[200]),
+          SizedBox(height: 10),
+          _buildDetailRow(
+            icon: Icons.bedtime_outlined,
+            label: "Sleep Hours",
+            value: "${activityLog.sleepHours} hrs",
+            color: Colors.blue,
+          ),
+          _buildDetailRow(
+            icon: Icons.directions_walk_outlined,
+            label: "Walking Hours",
+            value: "${activityLog.walkingHours} hrs",
+            color: Colors.green,
+          ),
+          _buildDetailRow(
+            icon: Icons.local_drink_outlined,
+            label: "Water Intake",
+            value: "${activityLog.waterIntake} liters",
+            color: Colors.teal,
+          ),
+        ],
       ),
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Daily Summary",
-              style: GoogleFonts.lato(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blueGrey[800]),
-            ),
-            Divider(color: Colors.blueGrey[200]),
-            Text(
-              "Sleep Hours: ${activityLog.sleepHours} hrs",
-              style: GoogleFonts.lato(fontSize: 16),
-            ),
-            Text(
-              "Walking Hours: ${activityLog.walkingHours} hrs",
-              style: GoogleFonts.lato(fontSize: 16),
-            ),
-            Text(
-              "Water Intake: ${activityLog.waterIntake} liters",
-              style: GoogleFonts.lato(fontSize: 16),
-            ),
-          ],
+    ),
+  );
+}
+
+Widget _buildDetailRow({
+  required IconData icon,
+  required String label,
+  required String value,
+  required Color color,
+}) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: Row(
+      children: [
+        Icon(
+          icon,
+          color: color,
+          size: 24,
         ),
-      ),
-    );
-  }
+        SizedBox(width: 10),
+        Text(
+          "$label: $value",
+          style: GoogleFonts.lato(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Colors.blueGrey[700],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 
   Widget _buildActivityCard(DailyActivityModel activity) {
     return Card(
@@ -221,7 +340,7 @@ class _DailyMedicineActivityLogState extends State<DailyMedicineActivityLog> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  activity.activityName,
+                  'Medicine Activity',
                   style: GoogleFonts.lato(
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
