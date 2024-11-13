@@ -2,6 +2,7 @@ import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/model/activity_log.dart';
 import 'package:alaram/tools/test.dart';
 import 'package:alaram/views/chart/chart_screen.dart';
+import 'package:alaram/views/chart/line_chart.dart';
 
 import 'package:alaram/views/daily_activity_updation/daily_actitivity_sleep_update_screen.dart';
 import 'package:flutter/material.dart';
@@ -124,7 +125,7 @@ class BottumNavBar extends StatelessWidget {
                   color: Colors.blueGrey,
                   onTap: () {
                     Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => ActivityPieChartScreen()));
+                        MaterialPageRoute(builder: (_) => ActivityLineChartScreen()));
                   },
                 ),
                 _buildGridItem(

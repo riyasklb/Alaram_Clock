@@ -1,18 +1,22 @@
 import 'package:alaram/tools/constans/color.dart';
+import 'package:alaram/tools/model/daily_activity_model.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:fl_chart/fl_chart.dart'; // Import the fl_chart package
+import 'package:fl_chart/fl_chart.dart';
 import 'package:alaram/tools/model/activity_log.dart';
+import 'package:intl/intl.dart';
 
-class ActivityPieChartScreen extends StatefulWidget {
+class ActivityLineChartScreen extends StatefulWidget {
   @override
-  _ActivityPieChartScreenState createState() => _ActivityPieChartScreenState();
+  _ActivityLineChartScreenState createState() =>
+      _ActivityLineChartScreenState();
 }
 
-class _ActivityPieChartScreenState extends State<ActivityPieChartScreen> {
+class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
   List<ActivityLog> _activityLogs = [];
+  List<DailyActivityModel> _dailyActivities = []; // Add DailyActivityModel list
 
   @override
   void initState() {
@@ -21,18 +25,23 @@ class _ActivityPieChartScreenState extends State<ActivityPieChartScreen> {
   }
 
   Future<void> _loadActivityLogs() async {
-    var box = await Hive.openBox<ActivityLog>(sleepactivitys);
+    var activityBox = await Hive.openBox<ActivityLog>('activityLogs');
+    var dailyActivityBox =
+        await Hive.openBox<DailyActivityModel>('dailyActivities');
+
     setState(() {
-      _activityLogs = box.values.toList();
+      _activityLogs = activityBox.values.toList();
+      _dailyActivities = dailyActivityBox.values.toList();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(automaticallyImplyLeading: false,
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text(
-          'Activity Pie Chart',
+          'Activity Line Chart',
           style: GoogleFonts.lato(
             fontSize: 22.sp,
             fontWeight: FontWeight.bold,
@@ -42,81 +51,99 @@ class _ActivityPieChartScreenState extends State<ActivityPieChartScreen> {
         backgroundColor: kblue,
         elevation: 0,
       ),
-      body: Column(
+      body: ListView(
         children: [
-          _buildPieChart(),
-          _buildActivityData(),
+          Column(
+            children: [
+              _buildLineChart(),
+              _buildActivityData(),
+              _buildDailyActivities(), // Display the DailyActivityModel data
+            ],
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildPieChart() {
-    // Calculate total activity data for all previous days combined
-    double totalSleep = 0;
-    double totalWalking = 0;
-    double totalWaterIntake = 0;
-
-    for (var log in _activityLogs) {
-      totalSleep += log.sleepHours;
-      totalWalking += log.walkingHours;
-      totalWaterIntake += log.waterIntake;
+  Widget _buildLineChart() {
+    if (_activityLogs.isEmpty) {
+      return Center(
+        child: Text("No activity data available to display the chart."),
+      );
     }
 
-    final total = totalSleep + totalWalking + totalWaterIntake;
+    List<FlSpot> sleepSpots = [];
+    List<FlSpot> walkingSpots = [];
+    List<FlSpot> waterIntakeSpots = [];
 
-    // Avoid division by zero
-    if (total == 0) {
-      return Center(child: Text("No activity recorded for the previous days."));
+    for (int i = 0; i < _activityLogs.length; i++) {
+      sleepSpots.add(FlSpot(i.toDouble(), _activityLogs[i].sleepHours));
+      walkingSpots.add(FlSpot(i.toDouble(), _activityLogs[i].walkingHours));
+      waterIntakeSpots.add(FlSpot(i.toDouble(), _activityLogs[i].waterIntake));
     }
-
-    final sleepPercentage = (totalSleep / total) * 100;
-    final walkingPercentage = (totalWalking / total) * 100;
-    final waterPercentage = (totalWaterIntake / total) * 100;
 
     return Padding(
       padding: EdgeInsets.all(16.w),
       child: Container(
-        height: 250.h, // Specify a fixed height
-        child: PieChart(
-          PieChartData(
-            sectionsSpace: 0, // Space between sections
-            centerSpaceRadius: 40, // Radius of the center space
-            sections: [
-              if (sleepPercentage > 0) PieChartSectionData(
-                value: sleepPercentage,
+        height: 300.h,
+        child: LineChart(
+          LineChartData(
+            minY: 1,
+            maxY: 15,
+            titlesData: FlTitlesData(
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 22,
+                  interval: 1,
+                ),
+              ),
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 40,
+                  interval: 1,
+                  getTitlesWidget: (value, meta) {
+                    if (value >= 1 && value <= 15) {
+                      return Text(value.toInt().toString());
+                    }
+                    return Container();
+                  },
+                ),
+              ),
+              rightTitles:
+                  AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            ),
+            borderData: FlBorderData(
+                show: true, border: Border.all(color: Colors.black)),
+            lineBarsData: [
+              LineChartBarData(
+                spots: sleepSpots,
+                isCurved: true,
                 color: Colors.blue,
-                title: '${sleepPercentage.toStringAsFixed(1)}%',
-                radius: 60,
-                titleStyle: GoogleFonts.roboto(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+                barWidth: 3,
+                belowBarData: BarAreaData(show: false),
+                dotData: FlDotData(show: false),
               ),
-              if (walkingPercentage > 0) PieChartSectionData(
-                value: walkingPercentage,
+              LineChartBarData(
+                spots: walkingSpots,
+                isCurved: true,
                 color: Colors.green,
-                title: '${walkingPercentage.toStringAsFixed(1)}%',
-                radius: 60,
-                titleStyle: GoogleFonts.roboto(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+                barWidth: 3,
+                belowBarData: BarAreaData(show: false),
+                dotData: FlDotData(show: false),
               ),
-              if (waterPercentage > 0) PieChartSectionData(
-                value: waterPercentage,
+              LineChartBarData(
+                spots: waterIntakeSpots,
+                isCurved: true,
                 color: Colors.teal,
-                title: '${waterPercentage.toStringAsFixed(1)}%',
-                radius: 60,
-                titleStyle: GoogleFonts.roboto(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+                barWidth: 3,
+                belowBarData: BarAreaData(show: false),
+                dotData: FlDotData(show: false),
               ),
             ],
+            gridData: FlGridData(show: false),
           ),
         ),
       ),
@@ -124,7 +151,6 @@ class _ActivityPieChartScreenState extends State<ActivityPieChartScreen> {
   }
 
   Widget _buildActivityData() {
-    // Calculate total activity data for all previous days combined
     double totalSleep = 0;
     double totalWalking = 0;
     double totalWaterIntake = 0;
@@ -135,16 +161,9 @@ class _ActivityPieChartScreenState extends State<ActivityPieChartScreen> {
       totalWaterIntake += log.waterIntake;
     }
 
-    final total = totalSleep + totalWalking + totalWaterIntake;
-
-    // Avoid division by zero
-    if (total == 0) {
+    if (_activityLogs.isEmpty) {
       return Center(child: Text("No activity recorded for the previous days."));
     }
-
-    final sleepPercentage = (totalSleep / total) * 100;
-    final walkingPercentage = (totalWalking / total) * 100;
-    final waterPercentage = (totalWaterIntake / total) * 100;
 
     return Padding(
       padding: EdgeInsets.all(16.w),
@@ -153,27 +172,254 @@ class _ActivityPieChartScreenState extends State<ActivityPieChartScreen> {
           _buildActivityRow(
             icon: Icons.nightlight_round,
             color: Colors.blue,
-            label: 'Sleep',
-            value: '${sleepPercentage.toStringAsFixed(1)}%',
+            label: 'Total Sleep',
+            value: '${totalSleep.toStringAsFixed(1)} hrs',
           ),
           _buildActivityRow(
             icon: Icons.directions_walk,
             color: Colors.green,
-            label: 'Walking',
-            value: '${walkingPercentage.toStringAsFixed(1)}%',
+            label: 'Total Walking',
+            value: '${totalWalking.toStringAsFixed(1)} hrs',
           ),
           _buildActivityRow(
             icon: Icons.local_drink,
             color: Colors.teal,
-            label: 'Water Intake',
-            value: '${waterPercentage.toStringAsFixed(1)}%',
+            label: 'Total Water Intake',
+            value: '${totalWaterIntake.toStringAsFixed(1)} L',
           ),
         ],
       ),
     );
   }
 
-  Widget _buildActivityRow({required IconData icon, required Color color, required String label, required String value}) {
+  Widget _buildDailyActivities() {
+    if (_dailyActivities.isEmpty) {
+      return Center(child: Text("No daily activities recorded."));
+    }
+
+    return Padding(
+      padding: EdgeInsets.all(16.w),
+      child: Column(
+        children: _dailyActivities.map((activity) {
+          DateTime date = DateTime.parse(activity.date.toString());
+          String formattedDate = DateFormat('MMMM d, yyyy').format(date);
+
+          return Card(
+            child: Padding(
+              padding: EdgeInsets.all(8.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ListTile(
+                    title: Text(
+                      'Task Date: $formattedDate',
+                      style: GoogleFonts.roboto(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+
+                  // Frequency
+                  Text(
+                    "Frequency: ${activity.frequency}",
+                    style: GoogleFonts.roboto(fontSize: 14.sp),
+                  ),
+
+                  // Medicines Section
+                  if (activity.medicines != null &&
+                      activity.medicines!.isNotEmpty)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 8.h),
+                        Text("Medicines:",
+                            style: GoogleFonts.roboto(
+                                fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                        ...activity.medicines!.map((medicine) => Padding(
+                              padding: EdgeInsets.symmetric(vertical: 4.h),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "  • ${medicine.name}",
+                                    style: GoogleFonts.roboto(fontSize: 14.sp),
+                                  ),
+                                  Text(
+                                    "    - Frequency: ${medicine.frequency}",
+                                    style: GoogleFonts.roboto(fontSize: 14.sp),
+                                  ),
+                                  Text(
+                                    "    - Times: ${medicine.selectedTimes.join(", ")}",
+                                    style: GoogleFonts.roboto(fontSize: 14.sp),
+                                  ),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        "  Completion Status: ${medicine.taskCompletionStatus.values.every((status) => status) ? "Taken Properly" : "Not Taken"}",
+                                        style: GoogleFonts.lato(
+                                          fontSize: 12,
+                                          color: medicine
+                                                  .taskCompletionStatus.values
+                                                  .every((status) => status)
+                                              ? Colors.green
+                                              : Colors.red,
+                                        ),
+                                      ),
+                                      Icon(
+                                        medicine.taskCompletionStatus.values
+                                                .every((status) => status)
+                                            ? Icons.check_circle
+                                            : Icons.cancel,
+                                        color: medicine
+                                                .taskCompletionStatus.values
+                                                .every((status) => status)
+                                            ? Colors.green
+                                            : Colors.red,
+                                        size: 16,
+                                      ),
+                                    ],
+                                  ),
+                                  if (medicine.taskCompletionStatus.values
+                                      .any((status) => !status))
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 8.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "Skipped Times:",
+                                            style: GoogleFonts.lato(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.red,
+                                            ),
+                                          ),
+                                          ...medicine
+                                              .taskCompletionStatus.entries
+                                              .where((entry) => !entry
+                                                  .value) // Filter for skipped times
+                                              .map((entry) => Text(
+                                                    "• ${entry.key}", // Display each skipped time
+                                                    style: GoogleFonts.lato(
+                                                      fontSize: 12,
+                                                      color: Colors.red[700],
+                                                    ),
+                                                  ))
+                                              .toList(),
+                                        ],
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            )),
+                      ],
+                    ),
+
+                  // Meal Section
+                  if (activity.mealValue != null)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 8.h),
+                        Text("Meal Times:",
+                            style: GoogleFonts.roboto(
+                                fontSize: 16.sp, fontWeight: FontWeight.bold)),
+                        Row(
+                          children: [
+                            Icon(
+                              activity.mealValue!.morning
+                                  ? Icons.check_circle
+                                  : Icons.cancel,
+                              color: activity.mealValue!.morning
+                                  ? Colors.green
+                                  : Colors.red,
+                              size: 16.sp,
+                            ),
+                            SizedBox(width: 8.w),
+                            Text("Morning",
+                                style: GoogleFonts.roboto(fontSize: 14.sp)),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Icon(
+                              activity.mealValue!.afternoon
+                                  ? Icons.check_circle
+                                  : Icons.cancel,
+                              color: activity.mealValue!.afternoon
+                                  ? Colors.green
+                                  : Colors.red,
+                              size: 16.sp,
+                            ),
+                            SizedBox(width: 8.w),
+                            Text("Afternoon",
+                                style: GoogleFonts.roboto(fontSize: 14.sp)),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Icon(
+                              activity.mealValue!.night
+                                  ? Icons.check_circle
+                                  : Icons.cancel,
+                              color: activity.mealValue!.night
+                                  ? Colors.green
+                                  : Colors.red,
+                              size: 16.sp,
+                            ),
+                            SizedBox(width: 8.w),
+                            Text("Night",
+                                style: GoogleFonts.roboto(fontSize: 14.sp)),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Icon(
+                              activity.mealValue!.morning &&
+                                      activity.mealValue!.afternoon &&
+                                      activity.mealValue!.night
+                                  ? Icons.check_circle
+                                  : Icons.cancel,
+                              color: activity.mealValue!.morning &&
+                                      activity.mealValue!.afternoon &&
+                                      activity.mealValue!.night
+                                  ? Colors.green
+                                  : Colors.red,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              "Food taken properly",
+                              style: GoogleFonts.lato(
+                                fontSize: 14,
+                                color: activity.mealValue!.morning &&
+                                        activity.mealValue!.afternoon &&
+                                        activity.mealValue!.night
+                                    ? Colors.green
+                                    : Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildActivityRow({
+    required IconData icon,
+    required Color color,
+    required String label,
+    required String value,
+  }) {
     return Row(
       children: [
         Icon(icon, color: color, size: 30.sp),

@@ -103,7 +103,7 @@ class _ActivityMainPageState extends State<ActivityMainPage> {
       Color categoryColor, String date) {
     return GestureDetector(
       onTap: () {
-        Get.to(ActivityPieChartScreen());
+      //  Get.to(ActivityPieChartScreen());
         // Handle activity card tap
       },
       child: AnimatedContainer(
