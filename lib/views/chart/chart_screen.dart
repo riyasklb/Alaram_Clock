@@ -204,6 +204,16 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
           DateTime date = DateTime.parse(activity.date.toString());
           String formattedDate = DateFormat('MMMM d, yyyy').format(date);
 
+          // Find the matching ActivityLog entry by date
+          ActivityLog? matchingLog = _activityLogs.firstWhere(
+            (log) =>
+                log.date.year == date.year &&
+                log.date.month == date.month &&
+                log.date.day == date.day,
+            orElse: () => ActivityLog(
+                date: date, sleepHours: 0, walkingHours: 0, waterIntake: 0),
+          );
+
           return Card(
             child: Padding(
               padding: EdgeInsets.all(8.w),
@@ -225,6 +235,27 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
                   Text(
                     "Frequency: ${activity.frequency}",
                     style: GoogleFonts.roboto(fontSize: 14.sp),
+                  ),
+
+                  // Display sleep, walking, and water intake from matching ActivityLog
+                  SizedBox(height: 8.h),
+                  _buildActivityRow(
+                    icon: Icons.nightlight_round,
+                    color: Colors.blue,
+                    label: 'Sleep',
+                    value: '${matchingLog.sleepHours.toStringAsFixed(1)} hrs',
+                  ),
+                  _buildActivityRow(
+                    icon: Icons.directions_walk,
+                    color: Colors.green,
+                    label: 'Walking',
+                    value: '${matchingLog.walkingHours.toStringAsFixed(1)} hrs',
+                  ),
+                  _buildActivityRow(
+                    icon: Icons.local_drink,
+                    color: Colors.teal,
+                    label: 'Water Intake',
+                    value: '${matchingLog.waterIntake.toStringAsFixed(1)} L',
                   ),
 
                   // Medicines Section
@@ -277,10 +308,10 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
                                                 .every((status) => status)
                                             ? Colors.green
                                             : Colors.red,
-                                        size: 16,
                                       ),
                                     ],
                                   ),
+
                                   if (medicine.taskCompletionStatus.values
                                       .any((status) => !status))
                                     Padding(
@@ -312,97 +343,111 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
                                         ],
                                       ),
                                     ),
+
+                                  // Meal Section
+                                  if (activity.mealValue != null)
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(height: 8.h),
+                                        Text("Meal Times:",
+                                            style: GoogleFonts.roboto(
+                                                fontSize: 16.sp,
+                                                fontWeight: FontWeight.bold)),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              activity.mealValue!.morning
+                                                  ? Icons.check_circle
+                                                  : Icons.cancel,
+                                              color: activity.mealValue!.morning
+                                                  ? Colors.green
+                                                  : Colors.red,
+                                              size: 16.sp,
+                                            ),
+                                            SizedBox(width: 8.w),
+                                            Text("Morning",
+                                                style: GoogleFonts.roboto(
+                                                    fontSize: 14.sp)),
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              activity.mealValue!.afternoon
+                                                  ? Icons.check_circle
+                                                  : Icons.cancel,
+                                              color:
+                                                  activity.mealValue!.afternoon
+                                                      ? Colors.green
+                                                      : Colors.red,
+                                              size: 16.sp,
+                                            ),
+                                            SizedBox(width: 8.w),
+                                            Text("Afternoon",
+                                                style: GoogleFonts.roboto(
+                                                    fontSize: 14.sp)),
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              activity.mealValue!.night
+                                                  ? Icons.check_circle
+                                                  : Icons.cancel,
+                                              color: activity.mealValue!.night
+                                                  ? Colors.green
+                                                  : Colors.red,
+                                              size: 16.sp,
+                                            ),
+                                            SizedBox(width: 8.w),
+                                            Text("Night",
+                                                style: GoogleFonts.roboto(
+                                                    fontSize: 14.sp)),
+                                          ],
+                                        ),
+                                        kheight10,
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              activity.mealValue!.morning &&
+                                                      activity.mealValue!
+                                                          .afternoon &&
+                                                      activity.mealValue!.night
+                                                  ? Icons.check_circle
+                                                  : Icons.cancel,
+                                              color: activity
+                                                          .mealValue!.morning &&
+                                                      activity.mealValue!
+                                                          .afternoon &&
+                                                      activity.mealValue!.night
+                                                  ? Colors.green
+                                                  : Colors.red,
+                                            ),
+                                            SizedBox(width: 8),
+                                            kheight10,
+                                            Text(
+                                              "Food taken properly",
+                                              style: GoogleFonts.lato(
+                                                fontSize: 14,
+                                                color: activity.mealValue!
+                                                            .morning &&
+                                                        activity.mealValue!
+                                                            .afternoon &&
+                                                        activity
+                                                            .mealValue!.night
+                                                    ? Colors.green
+                                                    : Colors.red,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                 ],
                               ),
                             )),
-                      ],
-                    ),
-
-                  // Meal Section
-                  if (activity.mealValue != null)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(height: 8.h),
-                        Text("Meal Times:",
-                            style: GoogleFonts.roboto(
-                                fontSize: 16.sp, fontWeight: FontWeight.bold)),
-                        Row(
-                          children: [
-                            Icon(
-                              activity.mealValue!.morning
-                                  ? Icons.check_circle
-                                  : Icons.cancel,
-                              color: activity.mealValue!.morning
-                                  ? Colors.green
-                                  : Colors.red,
-                              size: 16.sp,
-                            ),
-                            SizedBox(width: 8.w),
-                            Text("Morning",
-                                style: GoogleFonts.roboto(fontSize: 14.sp)),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Icon(
-                              activity.mealValue!.afternoon
-                                  ? Icons.check_circle
-                                  : Icons.cancel,
-                              color: activity.mealValue!.afternoon
-                                  ? Colors.green
-                                  : Colors.red,
-                              size: 16.sp,
-                            ),
-                            SizedBox(width: 8.w),
-                            Text("Afternoon",
-                                style: GoogleFonts.roboto(fontSize: 14.sp)),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Icon(
-                              activity.mealValue!.night
-                                  ? Icons.check_circle
-                                  : Icons.cancel,
-                              color: activity.mealValue!.night
-                                  ? Colors.green
-                                  : Colors.red,
-                              size: 16.sp,
-                            ),
-                            SizedBox(width: 8.w),
-                            Text("Night",
-                                style: GoogleFonts.roboto(fontSize: 14.sp)),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Icon(
-                              activity.mealValue!.morning &&
-                                      activity.mealValue!.afternoon &&
-                                      activity.mealValue!.night
-                                  ? Icons.check_circle
-                                  : Icons.cancel,
-                              color: activity.mealValue!.morning &&
-                                      activity.mealValue!.afternoon &&
-                                      activity.mealValue!.night
-                                  ? Colors.green
-                                  : Colors.red,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              "Food taken properly",
-                              style: GoogleFonts.lato(
-                                fontSize: 14,
-                                color: activity.mealValue!.morning &&
-                                        activity.mealValue!.afternoon &&
-                                        activity.mealValue!.night
-                                    ? Colors.green
-                                    : Colors.red,
-                              ),
-                            ),
-                          ],
-                        ),
                       ],
                     ),
                 ],
@@ -420,26 +465,28 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
     required String label,
     required String value,
   }) {
-    return Row(
-      children: [
-        Icon(icon, color: color, size: 30.sp),
-        SizedBox(width: 12.w),
-        Text(
-          label,
-          style: GoogleFonts.roboto(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.bold,
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color),
+              SizedBox(width: 8.w),
+              Text(
+                label,
+                style: GoogleFonts.roboto(fontSize: 14.sp),
+              ),
+            ],
           ),
-        ),
-        Spacer(),
-        Text(
-          value,
-          style: GoogleFonts.roboto(
-            fontSize: 16.sp,
-            color: color,
+          Text(
+            value,
+            style: GoogleFonts.roboto(
+                fontSize: 14.sp, fontWeight: FontWeight.bold),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
