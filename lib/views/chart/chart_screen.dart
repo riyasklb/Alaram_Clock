@@ -1,39 +1,36 @@
 import 'package:alaram/tools/constans/color.dart';
-import 'package:alaram/tools/model/daily_activity_model.dart';
+import 'package:alaram/tools/controllers/activity_controller.dart';
+import 'package:alaram/tools/model/activity_log.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:alaram/tools/model/activity_log.dart';
 import 'package:intl/intl.dart';
+
 
 class ActivityLineChartScreen extends StatefulWidget {
   @override
-  _ActivityLineChartScreenState createState() =>
-      _ActivityLineChartScreenState();
+  State<ActivityLineChartScreen> createState() => _ActivityLineChartScreenState();
 }
 
 class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
-  List<ActivityLog> _activityLogs = [];
-  List<DailyActivityModel> _dailyActivities = []; // Add DailyActivityModel list
+  final ActivityController _activityController = Get.put(ActivityController());
 
-  @override
+ // Default selected filter
+    late Map<String, dynamic> _selectedFilter;
+@override
   void initState() {
+    // TODO: implement initState
     super.initState();
-    _loadActivityLogs();
+        _selectedFilter = _filterOptions[0];
   }
-
-  Future<void> _loadActivityLogs() async {
-    var activityBox = await Hive.openBox<ActivityLog>('activityLogs');
-    var dailyActivityBox =
-        await Hive.openBox<DailyActivityModel>('dailyActivities');
-
-    setState(() {
-      _activityLogs = activityBox.values.toList();
-      _dailyActivities = dailyActivityBox.values.toList();
-    });
-  }
+  final List<Map<String, dynamic>> _filterOptions = [
+    {'label': 'All Time', 'days': 0},
+    {'label': 'Last 7 Days', 'days': 7},
+    {'label': 'Last 30 Days', 'days': 30},
+    {'label': 'Last 90 Days', 'days': 90},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -51,22 +48,61 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
         backgroundColor: kblue,
         elevation: 0,
       ),
-      body: ListView(
-        children: [
-          Column(
-            children: [
-              _buildLineChart(),
-              _buildActivityData(),
-              _buildDailyActivities(), // Display the DailyActivityModel data
-            ],
+      body: Obx(() {
+        return ListView(
+          children: [
+            _buildFilterDropdown(),
+            Column(
+              children: [
+                _buildLineChart(),
+                _buildActivityData(),
+                _buildDailyActivities(),
+              ],
+            ),
+          ],
+        );
+      }),
+    );
+  }
+
+
+  Widget _buildFilterDropdown() {
+    return GetBuilder<ActivityController>(
+      builder: (controller) {
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+          child: DropdownButton<Map<String, dynamic>>(
+            value: _selectedFilter,
+            onChanged: (selectedOption) {
+              if (selectedOption != null) {
+                setState(() {
+                  _selectedFilter = selectedOption;
+                });
+
+                int days = selectedOption['days'];
+                if (days == 0) {
+                  _activityController.filteredActivityLogs.assignAll(_activityController.activityLogs);
+                } else {
+                  _activityController.filterByDateRange(days);
+                }
+                
+                _activityController.update();
+              }
+            },
+            items: _filterOptions.map((option) {
+              return DropdownMenuItem<Map<String, dynamic>>(
+                value: option,
+                child: Text(option['label']),
+              );
+            }).toList(),
           ),
-        ],
-      ),
+        );
+      }
     );
   }
 
   Widget _buildLineChart() {
-    if (_activityLogs.isEmpty) {
+    if (_activityController.filteredActivityLogs.isEmpty) {
       return Center(
         child: Text("No activity data available to display the chart."),
       );
@@ -76,10 +112,10 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
     List<FlSpot> walkingSpots = [];
     List<FlSpot> waterIntakeSpots = [];
 
-    for (int i = 0; i < _activityLogs.length; i++) {
-      sleepSpots.add(FlSpot(i.toDouble(), _activityLogs[i].sleepHours));
-      walkingSpots.add(FlSpot(i.toDouble(), _activityLogs[i].walkingHours));
-      waterIntakeSpots.add(FlSpot(i.toDouble(), _activityLogs[i].waterIntake));
+    for (int i = 0; i < _activityController.filteredActivityLogs.length; i++) {
+      sleepSpots.add(FlSpot(i.toDouble(), _activityController.filteredActivityLogs[i].sleepHours));
+      walkingSpots.add(FlSpot(i.toDouble(), _activityController.filteredActivityLogs[i].walkingHours));
+      waterIntakeSpots.add(FlSpot(i.toDouble(), _activityController.filteredActivityLogs[i].waterIntake));
     }
 
     return Padding(
@@ -111,12 +147,10 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
                   },
                 ),
               ),
-              rightTitles:
-                  AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
               topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
             ),
-            borderData: FlBorderData(
-                show: true, border: Border.all(color: Colors.black)),
+            borderData: FlBorderData(show: true, border: Border.all(color: Colors.black)),
             lineBarsData: [
               LineChartBarData(
                 spots: sleepSpots,
@@ -155,14 +189,14 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
     double totalWalking = 0;
     double totalWaterIntake = 0;
 
-    for (var log in _activityLogs) {
+    for (var log in _activityController.filteredActivityLogs) {
       totalSleep += log.sleepHours;
       totalWalking += log.walkingHours;
       totalWaterIntake += log.waterIntake;
     }
 
-    if (_activityLogs.isEmpty) {
-      return Center(child: Text("No activity recorded for the previous days."));
+    if (_activityController.filteredActivityLogs.isEmpty) {
+      return Center(child: Text("No activity recorded for the selected period."));
     }
 
     return Padding(
@@ -193,19 +227,20 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
   }
 
   Widget _buildDailyActivities() {
-    if (_dailyActivities.isEmpty) {
+ //  final ActivityController _activityController = Get.put(ActivityController());
+    if (_activityController.dailyActivities.isEmpty) {
       return Center(child: Text("No daily activities recorded."));
     }
 
     return Padding(
       padding: EdgeInsets.all(16.w),
       child: Column(
-        children: _dailyActivities.map((activity) {
+        children: _activityController.dailyActivities.map((activity) {
           DateTime date = DateTime.parse(activity.date.toString());
           String formattedDate = DateFormat('MMMM d, yyyy').format(date);
 
           // Find the matching ActivityLog entry by date
-          ActivityLog? matchingLog = _activityLogs.firstWhere(
+          ActivityLog? matchingLog =_activityController. activityLogs.firstWhere(
             (log) =>
                 log.date.year == date.year &&
                 log.date.month == date.month &&
@@ -482,8 +517,7 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
           ),
           Text(
             value,
-            style: GoogleFonts.roboto(
-                fontSize: 14.sp, fontWeight: FontWeight.bold),
+            style: GoogleFonts.roboto(fontSize: 14.sp, fontWeight: FontWeight.bold),
           ),
         ],
       ),
