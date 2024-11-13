@@ -24,15 +24,15 @@ class OptionalGoalSettingScreen extends StatelessWidget {
           ),
         ),
         backgroundColor: kblue,
-        actions: [
-          TextButton(
-            onPressed: () {},
-            child: Text(
-              'Skip',
-              style: TextStyle(color: kwhite, fontSize: 16.sp),
-            ),
-          ),
-        ],
+        // actions: [
+        //   TextButton(
+        //     onPressed: () {},
+        //     child: Text(
+        //       'Skip',
+        //       style: TextStyle(color: kwhite, fontSize: 16.sp),
+        //     ),
+        //   ),
+        // ],
       ),
       body: GetBuilder<OptionalGoalSettingController>(
         builder: (_) {
