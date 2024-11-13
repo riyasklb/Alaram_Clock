@@ -1,6 +1,7 @@
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/model/activity_log.dart';
 import 'package:alaram/tools/test.dart';
+import 'package:alaram/views/chart/chart_screen.dart';
 
 import 'package:alaram/views/daily_activity_updation/daily_actitivity_sleep_update_screen.dart';
 import 'package:flutter/material.dart';
@@ -117,7 +118,15 @@ class BottumNavBar extends StatelessWidget {
               crossAxisSpacing: 16.w,
               mainAxisSpacing: 16.h,
               padding: EdgeInsets.all(16.w),
-              children: [
+              children: [  _buildGridItem(
+                  title: 'Chart',
+                  icon: Icons.line_axis,
+                  color: Colors.blueGrey,
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => ActivityPieChartScreen()));
+                  },
+                ),
                 _buildGridItem(
                   title: 'Profile',
                   icon: Icons.person,

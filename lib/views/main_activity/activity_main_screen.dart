@@ -36,11 +36,18 @@ class _ActivityMainPageState extends State<ActivityMainPage> {
             children: [
               InkWell(onTap: () {}, child: _buildProfileCard()), // Profile card
               SizedBox(height: 20.h),
-              _buildActivityCategoryList('Walking', 'Walking Hours', (log) => log.walkingHours, Icons.directions_walk, Colors.blue),
+              _buildActivityCategoryList(
+                  'Walking',
+                  'Walking Hours',
+                  (log) => log.walkingHours,
+                  Icons.directions_walk,
+                  Colors.blue),
               SizedBox(height: 20.h),
-              _buildActivityCategoryList('Sleeping', 'Sleep Hours', (log) => log.sleepHours, Icons.bed, Colors.orange),
+              _buildActivityCategoryList('Sleeping', 'Sleep Hours',
+                  (log) => log.sleepHours, Icons.bed, Colors.orange),
               SizedBox(height: 20.h),
-              _buildActivityCategoryList('Water Intake', 'Water Intake', (log) => log.waterIntake, Icons.local_drink, Colors.green),
+              _buildActivityCategoryList('Water Intake', 'Water Intake',
+                  (log) => log.waterIntake, Icons.local_drink, Colors.green),
               SizedBox(height: 20.h),
             ],
           ),
@@ -49,14 +56,20 @@ class _ActivityMainPageState extends State<ActivityMainPage> {
     );
   }
 
-  Widget _buildActivityCategoryList(String category, String label, double Function(ActivityLog) valueExtractor, IconData icon, Color categoryColor) {
+  Widget _buildActivityCategoryList(
+      String category,
+      String label,
+      double Function(ActivityLog) valueExtractor,
+      IconData icon,
+      Color categoryColor) {
     return ValueListenableBuilder(
       valueListenable: _activityLogBox.listenable(),
       builder: (context, Box<ActivityLog> box, _) {
         List<ActivityLog> activityLogs = box.values.toList();
-        
+
         // Sort logs by date and get the latest
-        activityLogs.sort((a, b) => b.date.compareTo(a.date)); // assuming `date` is a field in ActivityLog
+        activityLogs.sort((a, b) => b.date
+            .compareTo(a.date)); // assuming `date` is a field in ActivityLog
 
         if (activityLogs.isEmpty) {
           return SizedBox.shrink();
@@ -64,7 +77,8 @@ class _ActivityMainPageState extends State<ActivityMainPage> {
 
         ActivityLog latestLog = activityLogs.first;
         double value = valueExtractor(latestLog);
-        String formattedDate = DateFormat('yyyy-MM-dd HH:mm').format(latestLog.date);
+        String formattedDate =
+            DateFormat('yyyy-MM-dd HH:mm').format(latestLog.date);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -77,20 +91,23 @@ class _ActivityMainPageState extends State<ActivityMainPage> {
               ),
             ),
             SizedBox(height: 10.h),
-            _buildActivityCard(label, value, icon, categoryColor, formattedDate),
+            _buildActivityCard(
+                label, value, icon, categoryColor, formattedDate),
           ],
         );
       },
     );
   }
 
-  Widget _buildActivityCard(String label, double value, IconData icon, Color categoryColor, String date) {
+  Widget _buildActivityCard(String label, double value, IconData icon,
+      Color categoryColor, String date) {
     return GestureDetector(
       onTap: () {
         Get.to(ActivityPieChartScreen());
         // Handle activity card tap
       },
-      child: AnimatedContainer(width: double.infinity,
+      child: AnimatedContainer(
+        width: double.infinity,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
         decoration: BoxDecoration(
@@ -152,7 +169,8 @@ class _ActivityMainPageState extends State<ActivityMainPage> {
   }
 
   AppBar _buildCustomAppBar() {
-    return AppBar(automaticallyImplyLeading: false,
+    return AppBar(
+      automaticallyImplyLeading: false,
       flexibleSpace: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -199,8 +217,19 @@ class _ActivityMainPageState extends State<ActivityMainPage> {
           bottomRight: Radius.circular(30.r),
         ),
       ),
-      actions: [InkWell(onTap: (){Get.to(DailyMedicineActivityLog());},
-        child: Icon(Icons.medical_information,color: kwhite,)),SizedBox(width: 50,)],
+      actions: [
+        InkWell(
+            onTap: () {
+              Get.to(DailyMedicineActivityLog());
+            },
+            child: Icon(
+              Icons.medical_information,
+              color: kwhite,
+            )),
+        SizedBox(
+          width: 50,
+        )
+      ],
     );
   }
 
@@ -210,7 +239,7 @@ class _ActivityMainPageState extends State<ActivityMainPage> {
 
     return GestureDetector(
       onTap: () {
-        Get.to(ActivitySleeplog());
+        Get.to(DailyMedicineActivityLog());
         // Handle profile card tap
       },
       child: AnimatedContainer(
@@ -274,11 +303,18 @@ class _ActivityMainPageState extends State<ActivityMainPage> {
                 ),
               ),
               SizedBox(height: 10.h),
-              _buildGoalCard('Water Intake', profileData?.waterIntakeGoal.toString() ?? 'No data', Icons.local_drink),
+              _buildGoalCard(
+                  'Water Intake',
+                  profileData?.waterIntakeGoal.toString() ?? 'No data',
+                  Icons.local_drink),
               SizedBox(height: 10.h),
-              _buildGoalCard('Sleep Goal', profileData?.sleepGoal.toString() ?? 'No data', Icons.bed),
+              _buildGoalCard('Sleep Goal',
+                  profileData?.sleepGoal.toString() ?? 'No data', Icons.bed),
               SizedBox(height: 10.h),
-              _buildGoalCard('Walking Goal', profileData?.walkingGoal.toString() ?? 'No data', Icons.directions_walk),
+              _buildGoalCard(
+                  'Walking Goal',
+                  profileData?.walkingGoal.toString() ?? 'No data',
+                  Icons.directions_walk),
             ],
           ),
         ),
