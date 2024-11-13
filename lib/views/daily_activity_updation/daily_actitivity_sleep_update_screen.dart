@@ -15,12 +15,14 @@ class DailyActivitySleepUpdateScreen extends StatefulWidget {
       _DailyActivitySleepUpdateScreenState();
 }
 
-class _DailyActivitySleepUpdateScreenState extends State<DailyActivitySleepUpdateScreen> {
+class _DailyActivitySleepUpdateScreenState
+    extends State<DailyActivitySleepUpdateScreen> {
   final TextEditingController sleepController = TextEditingController();
   final TextEditingController walkingController = TextEditingController();
   final TextEditingController waterController = TextEditingController();
 
-  DateTime selectedDate = DateTime.now().subtract(Duration(days: 1)); // Default to yesterday's date
+  DateTime selectedDate =
+      DateTime.now().subtract(Duration(days: 1)); // Default to yesterday's date
   bool hasPendingUpdate = false;
   String? pendingDate;
 
@@ -33,31 +35,63 @@ class _DailyActivitySleepUpdateScreenState extends State<DailyActivitySleepUpdat
   void _checkPendingUpdates() async {
     var box = Hive.box<ActivityLog>('activityLogs');
 
-    DateTime yesterday = DateTime.now().subtract(Duration(days: 1));
-    DateTime dayBeforeYesterday = DateTime.now().subtract(Duration(days: 2));
+    DateTime now = DateTime.now();
+    DateTime yesterday = now.subtract(Duration(days: 1));
+    DateTime dayBeforeYesterday = now.subtract(Duration(days: 2));
+    DateTime threeDaysAgo = now.subtract(Duration(days: 3));
 
-    DateTime normalizedYesterday = DateTime(yesterday.year, yesterday.month, yesterday.day);
-    DateTime normalizedDayBeforeYesterday = DateTime(dayBeforeYesterday.year, dayBeforeYesterday.month, dayBeforeYesterday.day);
+    DateTime normalizedYesterday =
+        DateTime(yesterday.year, yesterday.month, yesterday.day);
+    DateTime normalizedDayBeforeYesterday = DateTime(dayBeforeYesterday.year,
+        dayBeforeYesterday.month, dayBeforeYesterday.day);
+    DateTime normalizedThreeDaysAgo =
+        DateTime(threeDaysAgo.year, threeDaysAgo.month, threeDaysAgo.day);
 
-    String formattedYesterday = DateFormat('MMMM dd, yyyy').format(normalizedYesterday);
-    String formattedDayBeforeYesterday = DateFormat('MMMM dd, yyyy').format(normalizedDayBeforeYesterday);
+    String formattedYesterday =
+        DateFormat('MMMM dd, yyyy').format(normalizedYesterday);
+    String formattedDayBeforeYesterday =
+        DateFormat('MMMM dd, yyyy').format(normalizedDayBeforeYesterday);
+    String formattedThreeDaysAgo =
+        DateFormat('MMMM dd, yyyy').format(normalizedThreeDaysAgo);
 
     bool hasEntryForYesterday = box.values.any((log) {
-      DateTime normalizedLogDate = DateTime(log.date.year, log.date.month, log.date.day);
+      DateTime normalizedLogDate =
+          DateTime(log.date.year, log.date.month, log.date.day);
       return normalizedLogDate.isAtSameMomentAs(normalizedYesterday);
     });
 
     bool hasEntryForDayBeforeYesterday = box.values.any((log) {
-      DateTime normalizedLogDate = DateTime(log.date.year, log.date.month, log.date.day);
+      DateTime normalizedLogDate =
+          DateTime(log.date.year, log.date.month, log.date.day);
       return normalizedLogDate.isAtSameMomentAs(normalizedDayBeforeYesterday);
     });
 
-    if (!hasEntryForYesterday && !hasEntryForDayBeforeYesterday) {
-      pendingDate = 'Both $formattedYesterday and $formattedDayBeforeYesterday updates are pending';
+    bool hasEntryForThreeDaysAgo = box.values.any((log) {
+      DateTime normalizedLogDate =
+          DateTime(log.date.year, log.date.month, log.date.day);
+      return normalizedLogDate.isAtSameMomentAs(normalizedThreeDaysAgo);
+    });
+
+    if (!hasEntryForYesterday &&
+        !hasEntryForDayBeforeYesterday &&
+        !hasEntryForThreeDaysAgo) {
+      pendingDate =
+          'Updates for $formattedYesterday, $formattedDayBeforeYesterday, and $formattedThreeDaysAgo are pending';
+    } else if (!hasEntryForYesterday && !hasEntryForDayBeforeYesterday) {
+      pendingDate =
+          'Updates for $formattedYesterday and $formattedDayBeforeYesterday are pending';
+    } else if (!hasEntryForYesterday && !hasEntryForThreeDaysAgo) {
+      pendingDate =
+          'Updates for $formattedYesterday and $formattedThreeDaysAgo are pending';
+    } else if (!hasEntryForDayBeforeYesterday && !hasEntryForThreeDaysAgo) {
+      pendingDate =
+          'Updates for $formattedDayBeforeYesterday and $formattedThreeDaysAgo are pending';
     } else if (!hasEntryForYesterday) {
       pendingDate = 'Update for $formattedYesterday is pending';
     } else if (!hasEntryForDayBeforeYesterday) {
       pendingDate = 'Update for $formattedDayBeforeYesterday is pending';
+    } else if (!hasEntryForThreeDaysAgo) {
+      pendingDate = 'Update for $formattedThreeDaysAgo is pending';
     } else {
       pendingDate = 'No pending updates'; // No pending updates message
     }
@@ -92,8 +126,12 @@ class _DailyActivitySleepUpdateScreenState extends State<DailyActivitySleepUpdat
                 ),
               )
             else
-              Column(mainAxisAlignment: MainAxisAlignment.center,
-                children: [kheight40,kheight40,kheight40,
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  kheight40,
+                  kheight40,
+                  kheight40,
                   Center(
                     child: Text(
                       'No update pending, you can update tomorrow.',
@@ -108,13 +146,17 @@ class _DailyActivitySleepUpdateScreenState extends State<DailyActivitySleepUpdat
             if (hasPendingUpdate) ...[
               Text(
                 'Update your yesterday activities to keep track of your daily progress.',
-                style: GoogleFonts.roboto(fontSize: 16.sp, color: Colors.grey[700]),
+                style: GoogleFonts.roboto(
+                    fontSize: 16.sp, color: Colors.grey[700]),
               ),
               SizedBox(height: 20.h),
               _buildDateSelector(),
-              _buildActivityCard('Sleep', 'Hours of sleep', 'hours', sleepController),
-              _buildActivityCard('Walking', 'Hours walked', 'hours', walkingController),
-              _buildActivityCard('Water Intake', 'Liters of water', 'liters', waterController),
+              _buildActivityCard(
+                  'Sleep', 'Hours of sleep', 'hours', sleepController),
+              _buildActivityCard(
+                  'Walking', 'Hours walked', 'hours', walkingController),
+              _buildActivityCard(
+                  'Water Intake', 'Liters of water', 'liters', waterController),
               Spacer(),
               SizedBox(
                 width: double.infinity,
@@ -129,7 +171,8 @@ class _DailyActivitySleepUpdateScreenState extends State<DailyActivitySleepUpdat
                   ),
                   child: Text(
                     'Update Activities',
-                    style: GoogleFonts.lato(fontSize: 18.sp, color: Colors.white),
+                    style:
+                        GoogleFonts.lato(fontSize: 18.sp, color: Colors.white),
                   ),
                 ),
               ),
