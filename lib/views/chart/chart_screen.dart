@@ -1,30 +1,33 @@
+import 'dart:io';
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/controllers/activity_controller.dart';
-import 'package:alaram/tools/model/activity_log.dart';
+import 'package:alaram/tools/model/profile_model.dart';
+import 'package:alaram/views/chart/widgets/daily_activity_widget.dart';
+import 'package:alaram/views/chart/widgets/line_chart_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:intl/intl.dart';
-
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
 
 class ActivityLineChartScreen extends StatefulWidget {
   @override
-  State<ActivityLineChartScreen> createState() => _ActivityLineChartScreenState();
+  State<ActivityLineChartScreen> createState() =>
+      _ActivityLineChartScreenState();
 }
 
 class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
   final ActivityController _activityController = Get.put(ActivityController());
 
- // Default selected filter
-    late Map<String, dynamic> _selectedFilter;
-@override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-        _selectedFilter = _filterOptions[0];
-  }
+  late Map<String, dynamic> _selectedFilter;
+
+  double totalSleep = 0;
+  double totalWalking = 0;
+  double totalWaterIntake = 0;
+
   final List<Map<String, dynamic>> _filterOptions = [
     {'label': 'All Time', 'days': 0},
     {'label': 'Last 7 Days', 'days': 7},
@@ -33,9 +36,34 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _selectedFilter = _filterOptions[0];
+    _calculateTotals();
+  }
+
+  void _calculateTotals() {
+    totalSleep = 0;
+    totalWalking = 0;
+    totalWaterIntake = 0;
+
+    for (var log in _activityController.filteredActivityLogs) {
+      totalSleep += log.sleepHours;
+      totalWalking += log.walkingHours;
+      totalWaterIntake += log.waterIntake;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        actions: [
+          InkWell(
+            onTap: _sharePdf,
+            child: Icon(Icons.print, color: kwhite),
+          )
+        ],
         automaticallyImplyLeading: false,
         title: Text(
           'Activity Line Chart',
@@ -49,6 +77,7 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
         elevation: 0,
       ),
       body: Obx(() {
+        _calculateTotals();
         return ListView(
           children: [
             _buildFilterDropdown(),
@@ -56,7 +85,7 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
               children: [
                 _buildLineChart(),
                 _buildActivityData(),
-                _buildDailyActivities(),
+                DailyActivitiesWidget(activityController: _activityController),
               ],
             ),
           ],
@@ -65,40 +94,38 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
     );
   }
 
-
   Widget _buildFilterDropdown() {
-    return GetBuilder<ActivityController>(
-      builder: (controller) {
-        return Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-          child: DropdownButton<Map<String, dynamic>>(
-            value: _selectedFilter,
-            onChanged: (selectedOption) {
-              if (selectedOption != null) {
-                setState(() {
-                  _selectedFilter = selectedOption;
-                });
+    return GetBuilder<ActivityController>(builder: (controller) {
+      return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+        child: DropdownButton<Map<String, dynamic>>(
+          value: _selectedFilter,
+          onChanged: (selectedOption) {
+            if (selectedOption != null) {
+              setState(() {
+                _selectedFilter = selectedOption;
+              });
 
-                int days = selectedOption['days'];
-                if (days == 0) {
-                  _activityController.filteredActivityLogs.assignAll(_activityController.activityLogs);
-                } else {
-                  _activityController.filterByDateRange(days);
-                }
-                
-                _activityController.update();
+              int days = selectedOption['days'];
+              if (days == 0) {
+                _activityController.filteredActivityLogs
+                    .assignAll(_activityController.activityLogs);
+              } else {
+                _activityController.filterByDateRange(days);
               }
-            },
-            items: _filterOptions.map((option) {
-              return DropdownMenuItem<Map<String, dynamic>>(
-                value: option,
-                child: Text(option['label']),
-              );
-            }).toList(),
-          ),
-        );
-      }
-    );
+
+              _activityController.update();
+            }
+          },
+          items: _filterOptions.map((option) {
+            return DropdownMenuItem<Map<String, dynamic>>(
+              value: option,
+              child: Text(option['label']),
+            );
+          }).toList(),
+        ),
+      );
+    });
   }
 
   Widget _buildLineChart() {
@@ -108,95 +135,27 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
       );
     }
 
-    List<FlSpot> sleepSpots = [];
-    List<FlSpot> walkingSpots = [];
-    List<FlSpot> waterIntakeSpots = [];
+    List<double> sleepData = _activityController.filteredActivityLogs
+        .map((log) => log.sleepHours)
+        .toList();
+    List<double> walkingData = _activityController.filteredActivityLogs
+        .map((log) => log.walkingHours)
+        .toList();
+    List<double> waterIntakeData = _activityController.filteredActivityLogs
+        .map((log) => log.waterIntake)
+        .toList();
 
-    for (int i = 0; i < _activityController.filteredActivityLogs.length; i++) {
-      sleepSpots.add(FlSpot(i.toDouble(), _activityController.filteredActivityLogs[i].sleepHours));
-      walkingSpots.add(FlSpot(i.toDouble(), _activityController.filteredActivityLogs[i].walkingHours));
-      waterIntakeSpots.add(FlSpot(i.toDouble(), _activityController.filteredActivityLogs[i].waterIntake));
-    }
-
-    return Padding(
-      padding: EdgeInsets.all(16.w),
-      child: Container(
-        height: 300.h,
-        child: LineChart(
-          LineChartData(
-            minY: 1,
-            maxY: 15,
-            titlesData: FlTitlesData(
-              bottomTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  reservedSize: 22,
-                  interval: 1,
-                ),
-              ),
-              leftTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  reservedSize: 40,
-                  interval: 1,
-                  getTitlesWidget: (value, meta) {
-                    if (value >= 1 && value <= 15) {
-                      return Text(value.toInt().toString());
-                    }
-                    return Container();
-                  },
-                ),
-              ),
-              rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-              topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            ),
-            borderData: FlBorderData(show: true, border: Border.all(color: Colors.black)),
-            lineBarsData: [
-              LineChartBarData(
-                spots: sleepSpots,
-                isCurved: true,
-                color: Colors.blue,
-                barWidth: 3,
-                belowBarData: BarAreaData(show: false),
-                dotData: FlDotData(show: false),
-              ),
-              LineChartBarData(
-                spots: walkingSpots,
-                isCurved: true,
-                color: Colors.green,
-                barWidth: 3,
-                belowBarData: BarAreaData(show: false),
-                dotData: FlDotData(show: false),
-              ),
-              LineChartBarData(
-                spots: waterIntakeSpots,
-                isCurved: true,
-                color: Colors.teal,
-                barWidth: 3,
-                belowBarData: BarAreaData(show: false),
-                dotData: FlDotData(show: false),
-              ),
-            ],
-            gridData: FlGridData(show: false),
-          ),
-        ),
-      ),
+    return ActivityLineChart(
+      sleepData: sleepData,
+      walkingData: walkingData,
+      waterIntakeData: waterIntakeData,
     );
   }
 
   Widget _buildActivityData() {
-    double totalSleep = 0;
-    double totalWalking = 0;
-    double totalWaterIntake = 0;
-
-    for (var log in _activityController.filteredActivityLogs) {
-      totalSleep += log.sleepHours;
-      totalWalking += log.walkingHours;
-      totalWaterIntake += log.waterIntake;
-    }
-
     if (_activityController.filteredActivityLogs.isEmpty) {
-      return Center(child: Text("No activity recorded for the selected period."));
+      return Center(
+          child: Text("No activity recorded for the selected period."));
     }
 
     return Padding(
@@ -226,274 +185,6 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
     );
   }
 
-  Widget _buildDailyActivities() {
- //  final ActivityController _activityController = Get.put(ActivityController());
-    if (_activityController.dailyActivities.isEmpty) {
-      return Center(child: Text("No daily activities recorded."));
-    }
-
-    return Padding(
-      padding: EdgeInsets.all(16.w),
-      child: Column(
-        children: _activityController.dailyActivities.map((activity) {
-          DateTime date = DateTime.parse(activity.date.toString());
-          String formattedDate = DateFormat('MMMM d, yyyy').format(date);
-
-          // Find the matching ActivityLog entry by date
-          ActivityLog? matchingLog =_activityController. activityLogs.firstWhere(
-            (log) =>
-                log.date.year == date.year &&
-                log.date.month == date.month &&
-                log.date.day == date.day,
-            orElse: () => ActivityLog(
-                date: date, sleepHours: 0, walkingHours: 0, waterIntake: 0),
-          );
-
-          return Card(
-            child: Padding(
-              padding: EdgeInsets.all(8.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ListTile(
-                    title: Text(
-                      'Task Date: $formattedDate',
-                      style: GoogleFonts.roboto(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-
-                  // Frequency
-                  Text(
-                    "Frequency: ${activity.frequency}",
-                    style: GoogleFonts.roboto(fontSize: 14.sp),
-                  ),
-
-                  // Display sleep, walking, and water intake from matching ActivityLog
-                  SizedBox(height: 8.h),
-                  _buildActivityRow(
-                    icon: Icons.nightlight_round,
-                    color: Colors.blue,
-                    label: 'Sleep',
-                    value: '${matchingLog.sleepHours.toStringAsFixed(1)} hrs',
-                  ),
-                  _buildActivityRow(
-                    icon: Icons.directions_walk,
-                    color: Colors.green,
-                    label: 'Walking',
-                    value: '${matchingLog.walkingHours.toStringAsFixed(1)} hrs',
-                  ),
-                  _buildActivityRow(
-                    icon: Icons.local_drink,
-                    color: Colors.teal,
-                    label: 'Water Intake',
-                    value: '${matchingLog.waterIntake.toStringAsFixed(1)} L',
-                  ),
-
-                  // Medicines Section
-                  if (activity.medicines != null &&
-                      activity.medicines!.isNotEmpty)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(height: 8.h),
-                        Text("Medicines:",
-                            style: GoogleFonts.roboto(
-                                fontSize: 16.sp, fontWeight: FontWeight.bold)),
-                        ...activity.medicines!.map((medicine) => Padding(
-                              padding: EdgeInsets.symmetric(vertical: 4.h),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "  • ${medicine.name}",
-                                    style: GoogleFonts.roboto(fontSize: 14.sp),
-                                  ),
-                                  Text(
-                                    "    - Frequency: ${medicine.frequency}",
-                                    style: GoogleFonts.roboto(fontSize: 14.sp),
-                                  ),
-                                  Text(
-                                    "    - Times: ${medicine.selectedTimes.join(", ")}",
-                                    style: GoogleFonts.roboto(fontSize: 14.sp),
-                                  ),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        "  Completion Status: ${medicine.taskCompletionStatus.values.every((status) => status) ? "Taken Properly" : "Not Taken"}",
-                                        style: GoogleFonts.lato(
-                                          fontSize: 12,
-                                          color: medicine
-                                                  .taskCompletionStatus.values
-                                                  .every((status) => status)
-                                              ? Colors.green
-                                              : Colors.red,
-                                        ),
-                                      ),
-                                      Icon(
-                                        medicine.taskCompletionStatus.values
-                                                .every((status) => status)
-                                            ? Icons.check_circle
-                                            : Icons.cancel,
-                                        color: medicine
-                                                .taskCompletionStatus.values
-                                                .every((status) => status)
-                                            ? Colors.green
-                                            : Colors.red,
-                                      ),
-                                    ],
-                                  ),
-
-                                  if (medicine.taskCompletionStatus.values
-                                      .any((status) => !status))
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "Skipped Times:",
-                                            style: GoogleFonts.lato(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.red,
-                                            ),
-                                          ),
-                                          ...medicine
-                                              .taskCompletionStatus.entries
-                                              .where((entry) => !entry
-                                                  .value) // Filter for skipped times
-                                              .map((entry) => Text(
-                                                    "• ${entry.key}", // Display each skipped time
-                                                    style: GoogleFonts.lato(
-                                                      fontSize: 12,
-                                                      color: Colors.red[700],
-                                                    ),
-                                                  ))
-                                              .toList(),
-                                        ],
-                                      ),
-                                    ),
-
-                                  // Meal Section
-                                  if (activity.mealValue != null)
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        SizedBox(height: 8.h),
-                                        Text("Meal Times:",
-                                            style: GoogleFonts.roboto(
-                                                fontSize: 16.sp,
-                                                fontWeight: FontWeight.bold)),
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              activity.mealValue!.morning
-                                                  ? Icons.check_circle
-                                                  : Icons.cancel,
-                                              color: activity.mealValue!.morning
-                                                  ? Colors.green
-                                                  : Colors.red,
-                                              size: 16.sp,
-                                            ),
-                                            SizedBox(width: 8.w),
-                                            Text("Morning",
-                                                style: GoogleFonts.roboto(
-                                                    fontSize: 14.sp)),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              activity.mealValue!.afternoon
-                                                  ? Icons.check_circle
-                                                  : Icons.cancel,
-                                              color:
-                                                  activity.mealValue!.afternoon
-                                                      ? Colors.green
-                                                      : Colors.red,
-                                              size: 16.sp,
-                                            ),
-                                            SizedBox(width: 8.w),
-                                            Text("Afternoon",
-                                                style: GoogleFonts.roboto(
-                                                    fontSize: 14.sp)),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              activity.mealValue!.night
-                                                  ? Icons.check_circle
-                                                  : Icons.cancel,
-                                              color: activity.mealValue!.night
-                                                  ? Colors.green
-                                                  : Colors.red,
-                                              size: 16.sp,
-                                            ),
-                                            SizedBox(width: 8.w),
-                                            Text("Night",
-                                                style: GoogleFonts.roboto(
-                                                    fontSize: 14.sp)),
-                                          ],
-                                        ),
-                                        kheight10,
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              activity.mealValue!.morning &&
-                                                      activity.mealValue!
-                                                          .afternoon &&
-                                                      activity.mealValue!.night
-                                                  ? Icons.check_circle
-                                                  : Icons.cancel,
-                                              color: activity
-                                                          .mealValue!.morning &&
-                                                      activity.mealValue!
-                                                          .afternoon &&
-                                                      activity.mealValue!.night
-                                                  ? Colors.green
-                                                  : Colors.red,
-                                            ),
-                                            SizedBox(width: 8),
-                                            kheight10,
-                                            Text(
-                                              "Food taken properly",
-                                              style: GoogleFonts.lato(
-                                                fontSize: 14,
-                                                color: activity.mealValue!
-                                                            .morning &&
-                                                        activity.mealValue!
-                                                            .afternoon &&
-                                                        activity
-                                                            .mealValue!.night
-                                                    ? Colors.green
-                                                    : Colors.red,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                ],
-                              ),
-                            )),
-                      ],
-                    ),
-                ],
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
   Widget _buildActivityRow({
     required IconData icon,
     required Color color,
@@ -517,10 +208,55 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
           ),
           Text(
             value,
-            style: GoogleFonts.roboto(fontSize: 14.sp, fontWeight: FontWeight.bold),
+            style: GoogleFonts.roboto(
+                fontSize: 14.sp, fontWeight: FontWeight.bold),
           ),
         ],
       ),
     );
   }
+
+ Future<void> _sharePdf() async {
+  final pdf = pw.Document();
+
+  pdf.addPage(
+    pw.Page(
+      build: (pw.Context context) {
+        return pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text('Activity Report', style: pw.TextStyle(fontSize: 24)),
+            pw.SizedBox(height: 16),
+            pw.Text('Total Sleep: ${totalSleep.toStringAsFixed(1)} hrs'),
+            pw.Text('Total Walking: ${totalWalking.toStringAsFixed(1)} hrs'),
+            pw.Text('Total Water Intake: ${totalWaterIntake.toStringAsFixed(1)} L'),
+            pw.SizedBox(height: 16),
+            pw.Text('Detailed Activity Logs:', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 8),
+            pw.ListView.builder(
+              itemCount: _activityController.filteredActivityLogs.length,
+              itemBuilder: (context, index) {
+                final log = _activityController.filteredActivityLogs[index];
+                return pw.Padding(
+                  padding: const pw.EdgeInsets.symmetric(vertical: 4),
+                  child: pw.Text(
+                    'Date: ${log.date} | Sleep: ${log.sleepHours} hrs | Walking: ${log.walkingHours} hrs | Water Intake: ${log.waterIntake} L',
+                    style: pw.TextStyle(fontSize: 14),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    ),
+  );
+
+  final output = await getTemporaryDirectory();
+  final file = File("${output.path}/activity_report.pdf");
+  await file.writeAsBytes(await pdf.save());
+
+  await Share.shareXFiles([XFile(file.path)], text: 'Here is my detailed activity report');
+}
+
 }

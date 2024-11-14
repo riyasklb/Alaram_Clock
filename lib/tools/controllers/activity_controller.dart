@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:alaram/tools/model/daily_activity_model.dart';
 import 'package:alaram/tools/model/activity_log.dart';
 import 'package:intl/intl.dart';
-
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:share_plus/share_plus.dart';
 class ActivityController extends GetxController {
   var activityLogs = <ActivityLog>[].obs;
   var filteredActivityLogs = <ActivityLog>[].obs;
@@ -30,4 +34,10 @@ class ActivityController extends GetxController {
       activityLogs.where((log) => log.date.isAfter(startDate)).toList(),
     );
   }
+
+
+
+
+
+
 }

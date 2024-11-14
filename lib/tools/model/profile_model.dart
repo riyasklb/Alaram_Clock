@@ -28,11 +28,15 @@ class ProfileModel extends HiveObject {
   @HiveField(7)
   double? waterIntakeGoal; // Liters
 
+
   @HiveField(8)
   double? sleepGoal; // Hours
 
+
   @HiveField(9)
   double? walkingGoal;
+
+
     @HiveField(10)
   String? medicineGoal; // Morning, Afternoon, Night
 
@@ -42,7 +46,7 @@ class ProfileModel extends HiveObject {
   @HiveField(12)
   String? injectionGoal;
 
-    // New fields to track actual progress
+
   @HiveField(13)
   double? actualWaterIntake;
 
