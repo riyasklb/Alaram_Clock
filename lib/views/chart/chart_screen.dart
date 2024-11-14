@@ -215,8 +215,7 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
       ),
     );
   }
-
- Future<void> _sharePdf() async {
+Future<void> _sharePdf() async {
   final pdf = pw.Document();
 
   pdf.addPage(
@@ -237,10 +236,45 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
               itemCount: _activityController.filteredActivityLogs.length,
               itemBuilder: (context, index) {
                 final log = _activityController.filteredActivityLogs[index];
+                
+                // Format the date properly (e.g., MM/dd/yyyy)
+                String formattedDate = "${log.date.month}/${log.date.day}/${log.date.year}";
+
                 return pw.Padding(
                   padding: const pw.EdgeInsets.symmetric(vertical: 4),
                   child: pw.Text(
-                    'Date: ${log.date} | Sleep: ${log.sleepHours} hrs | Walking: ${log.walkingHours} hrs | Water Intake: ${log.waterIntake} L',
+                    'Date: $formattedDate | Sleep: ${log.sleepHours} hrs | Walking: ${log.walkingHours} hrs | Water Intake: ${log.waterIntake} L',
+                    style: pw.TextStyle(fontSize: 14),
+                  ),
+                );
+              },
+            ),
+            pw.SizedBox(height: 16),
+            pw.Text('Daily Medicine', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 8),
+            pw.ListView.builder(
+              itemCount: _activityController.dailyActivities.length,
+              itemBuilder: (context, index) {
+                final activity = _activityController.dailyActivities[index];
+
+                // Format medicines list and meal values for display
+                String medicinesStr = activity.medicines != null
+                    ? activity.medicines!.map((medicine) => "${medicine.name} (${medicine.selectedTimes.join(', ')})").join('; ')
+                    : 'No medicines';
+
+                String mealValueStr = activity.mealValue != null
+                    ? 'Morning: ${activity.mealValue!.morning ? "Taken" : "Not Taken"}, '
+                      'Afternoon: ${activity.mealValue!.afternoon ? "Taken" : "Not Taken"}, '
+                      'Night: ${activity.mealValue!.night ? "Taken" : "Not Taken"}'
+                    : 'No meal value';
+
+                // Format the date for each daily activity
+                String activityDate = "${activity.date.month}/${activity.date.day}/${activity.date.year}";
+
+                return pw.Padding(
+                  padding: const pw.EdgeInsets.symmetric(vertical: 4),
+                  child: pw.Text(
+                    'Date: $activityDate | Activity: ${activity.activityName} | Medicines: $medicinesStr | Meal Value: $mealValueStr | Frequency: ${activity.frequency}',
                     style: pw.TextStyle(fontSize: 14),
                   ),
                 );
@@ -258,5 +292,7 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
 
   await Share.shareXFiles([XFile(file.path)], text: 'Here is my detailed activity report');
 }
+
+
 
 }

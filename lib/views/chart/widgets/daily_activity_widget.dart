@@ -49,11 +49,7 @@ class DailyActivitiesWidget extends StatelessWidget {
                   ),
                   SizedBox(height: 8.h),
 
-                  // Frequency
-                  Text(
-                    "Frequency: ${activity.frequency}",
-                    style: GoogleFonts.roboto(fontSize: 14.sp),
-                  ),
+                
 
                   // Display sleep, walking, and water intake from matching ActivityLog
                   SizedBox(height: 8.h),
