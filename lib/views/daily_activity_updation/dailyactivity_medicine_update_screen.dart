@@ -1,7 +1,10 @@
 import 'package:alaram/tools/constans/color.dart';
+import 'package:alaram/tools/controllers/activity_controller.dart';
 import 'package:alaram/tools/model/daily_activity_model.dart';
 import 'package:alaram/tools/model/goal_model.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 
@@ -16,6 +19,7 @@ class DailyActivityUpdateMedicineScreen extends StatefulWidget {
 }
 
 class _DailyActivityUpdateMedicineScreenState extends State<DailyActivityUpdateMedicineScreen> {
+       final ActivityController _activityController = Get.put(ActivityController());
   late List<bool> goalCompletionStatus;
   late Map<int, List<bool>> medicineCompletionStatus;
   late Map<int, Map<int, Map<int, bool>>> medicineTimingCompletionStatus;
@@ -138,6 +142,7 @@ class _DailyActivityUpdateMedicineScreenState extends State<DailyActivityUpdateM
     setState(() {
       isAlreadyUpdated = true;
     });
+    _activityController.update();
   }
 
   @override
