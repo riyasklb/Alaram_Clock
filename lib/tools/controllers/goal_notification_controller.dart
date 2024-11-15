@@ -18,6 +18,7 @@ class NotificationController extends GetxController {
 
   NotificationController() {
     tz.initializeTimeZones();
+    tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));  // Set IST explicitly
   }
 
   @override
@@ -46,118 +47,115 @@ class NotificationController extends GetxController {
     );
   }
 
-void scheduleGoalNotifications(Goal goal) {
-  // Schedule daily notifications for breakfast, lunch, and dinner
-  if (enableBreakfast.value) {
-    scheduleDailyNotification(
-      id: goal.goalId + 100,
-      title: "Breakfast Reminder",
-      body: "Time for your breakfast!",
-      hour: 8,
-    );
-  }
-  if (enableLunch.value) {
-    scheduleDailyNotification(
-      id: goal.goalId + 200,
-      title: "Lunch Reminder",
-      body: "Time for your lunch!",
-      hour: 12,
-    );
-  }
-  if (enableDinner.value) {
-    scheduleDailyNotification(
-      id: goal.goalId + 300,
-      title: "Dinner Reminder",
-      body: "Time for your dinner!",
-      hour: 18,
-    );
-  }
-
-  // Schedule meal reminders based on goal.MealValue
-  if (goal.MealValue != null) {
-    if (goal.MealValue!.morning == true) {
+  void scheduleGoalNotifications(Goal goal) {
+    // Schedule daily notifications for breakfast, lunch, and dinner
+    if (enableBreakfast.value) {
       scheduleDailyNotification(
-        id: goal.goalId + 400,
-        title: "Morning Meal Reminder",
-        body: "Time for your morning meal!",
+        id: goal.goalId + 100,
+        title: "Breakfast Reminder",
+        body: "Time for your breakfast!",
         hour: 8,
       );
     }
-    if (goal.MealValue!.afternoon == true) {
+    if (enableLunch.value) {
       scheduleDailyNotification(
-        id: goal.goalId + 500,
-        title: "Afternoon Meal Reminder",
-        body: "Time for your afternoon meal!",
+        id: goal.goalId + 200,
+        title: "Lunch Reminder",
+        body: "Time for your lunch!",
         hour: 12,
       );
     }
-    if (goal.MealValue!.evening == true) {
+    if (enableDinner.value) {
       scheduleDailyNotification(
-        id: goal.goalId + 600,
-        title: "Evening Meal Reminder",
-        body: "Time for your evening meal!",
+        id: goal.goalId + 300,
+        title: "Dinner Reminder",
+        body: "Time for your dinner!",
         hour: 18,
       );
     }
-    if (goal.MealValue!.night == true) {
-      scheduleDailyNotification(
-        id: goal.goalId + 700,
-        title: "Night Meal Reminder",
-        body: "Time for your night meal!",
-        hour: 21,
-      );
-    }
-  }
 
-  // Schedule notifications for medicines if provided
-  if (goal.medicines != null) {
-    for (var medicine in goal.medicines!) {
-      for (var selectedTime in medicine.selectedTimes) {
-        int hour = _getHourForTime(selectedTime);
-        scheduleMedicineNotification(goal.goalId, medicine, hour);
+    // Schedule meal reminders based on goal.MealValue
+    if (goal.MealValue != null) {
+      if (goal.MealValue!.morning == true) {
+        scheduleDailyNotification(
+          id: goal.goalId + 400,
+          title: "Morning Meal Reminder",
+          body: "Time for your morning meal!",
+          hour: 8,
+        );
+      }
+      if (goal.MealValue!.afternoon == true) {
+        scheduleDailyNotification(
+          id: goal.goalId + 500,
+          title: "Afternoon Meal Reminder",
+          body: "Time for your afternoon meal!",
+          hour: 12,
+        );
+      }
+      if (goal.MealValue!.evening == true) {
+        scheduleDailyNotification(
+          id: goal.goalId + 600,
+          title: "Evening Meal Reminder",
+          body: "Time for your evening meal!",
+          hour: 18,
+        );
+      }
+      if (goal.MealValue!.night == true) {
+        scheduleDailyNotification(
+          id: goal.goalId + 700,
+          title: "Night Meal Reminder",
+          body: "Time for your night meal!",
+          hour: 21,
+        );
+      }
+    }
+
+    // Schedule notifications for medicines if provided
+    if (goal.medicines != null) {
+      for (var medicine in goal.medicines!) {
+        for (var selectedTime in medicine.selectedTimes) {
+          int hour = _getHourForTime(selectedTime);
+          scheduleMedicineNotification(goal.goalId, medicine, hour);
+        }
       }
     }
   }
-}
 
-void scheduleDailyNotification({
-  required int id,
-  required String title,
-  required String body,
-  required int hour,
-}) {
-  var scheduleTime = tz.TZDateTime.now(tz.local).add(
-    Duration(hours: hour - tz.TZDateTime.now(tz.local).hour),
-  );
+  void scheduleDailyNotification({
+    required int id,
+    required String title,
+    required String body,
+    required int hour,
+  }) {
+    var now = tz.TZDateTime.now(tz.getLocation('Asia/Kolkata'));
+    var scheduleTime = tz.TZDateTime(tz.getLocation('Asia/Kolkata'), now.year, now.month, now.day, hour);
 
-  // Make sure the notification is scheduled for the same time every day
-  var androidDetails = AndroidNotificationDetails(
-    'daily_reminder_channel',
-    'Daily Reminders',
-    importance: Importance.max,
-    priority: Priority.high,
-  );
-  var platformDetails = NotificationDetails(android: androidDetails);
+    // Make sure the notification is scheduled for the same time every day
+    var androidDetails = AndroidNotificationDetails(
+      'daily_reminder_channel',
+      'Daily Reminders',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+    var platformDetails = NotificationDetails(android: androidDetails);
 
-  flutterLocalNotificationsPlugin.zonedSchedule(
-    id,
-    title,
-    body,
-    scheduleTime,
-    platformDetails,
-    androidAllowWhileIdle: true,
-    matchDateTimeComponents: DateTimeComponents.time,
-    uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-  );
+    flutterLocalNotificationsPlugin.zonedSchedule(
+      id,
+      title,
+      body,
+      scheduleTime,
+      platformDetails,
+      androidAllowWhileIdle: true,
+      matchDateTimeComponents: DateTimeComponents.time,
+      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+    );
 
-  print('Scheduled daily notification: $title at $scheduleTime');
-}
-
+    print('Scheduled daily notification: $title at $scheduleTime');
+  }
 
   void scheduleMedicineNotification(int goalId, Medicine medicine, int hour) {
-    var scheduleTime = tz.TZDateTime.now(tz.local).add(
-      Duration(hours: hour - tz.TZDateTime.now(tz.local).hour),
-    );
+    var now = tz.TZDateTime.now(tz.getLocation('Asia/Kolkata'));
+    var scheduleTime = tz.TZDateTime(tz.getLocation('Asia/Kolkata'), now.year, now.month, now.day, hour);
 
     var androidDetails = AndroidNotificationDetails(
       'medicine_reminder_channel',
@@ -289,17 +287,66 @@ void scheduleDailyNotification({
           night: enableDinner.value,
         ),
         medicines: medicinesData,
-        skipped: false,
       );
 
-      await box.put(goal.goalId, goal);
-      scheduleGoalNotifications(goal);
+         await box.put(goal.goalId, goal);
+   scheduleGoalNotifications(goal);
       Get.off(() =>  HomeScreen());
+      Get.snackbar('Success', 'Goals saved successfully');
+    }
+     
+  }
+
+  void scheduleSpecificTimeNotification() async {
+    // Initialize time zone
+ //   initializeTimeZones();
+
+    var androidDetails = AndroidNotificationDetails(
+      'specific_time_channel',
+      'Specific Time Notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+    var platformDetails = NotificationDetails(android: androidDetails);
+
+    // Get the current time in IST
+    var now = tz.TZDateTime.now(tz.getLocation('Asia/Kolkata'));
+    var targetTime = tz.TZDateTime(
+      tz.getLocation('Asia/Kolkata'),
+      now.year,
+      now.month,
+      now.day,
+      16, // Hours in IST
+      00, // Minutes in IST
+    );
+
+    // If the target time has passed for today, schedule for the next day
+    if (targetTime.isBefore(now)) {
+      targetTime = targetTime.add(Duration(days: 1));
+    }
+
+    // Debug output for current and target times
+    debugPrint("Device Current Time (IST): $now");
+    debugPrint("Scheduled Target Time (IST): $targetTime");
+
+    try {
+      await flutterLocalNotificationsPlugin.zonedSchedule(
+        DateTime.now().millisecondsSinceEpoch.remainder(100000), // Unique ID
+        'Specific Time Reminder',
+        'This is your reminder for ${targetTime.hour}:${targetTime.minute} on ${targetTime.year}-${targetTime.month}-${targetTime.day}',
+        targetTime,
+        platformDetails,
+        androidAllowWhileIdle: true,
+        matchDateTimeComponents: DateTimeComponents.time,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.wallClockTime,
+      );
+      debugPrint("Notification scheduled successfully for $targetTime");
+    } catch (e) {
+      debugPrint("Error scheduling notification: $e");
     }
   }
 
-
-
+  
 
   void testNotification() {
   var androidDetails = AndroidNotificationDetails(
@@ -325,52 +372,4 @@ void scheduleDailyNotification({
 
   print('Scheduled test notification at $now');
 }
-
-
-
-
-
-
-
-
-
-void scheduleSpecificTimeNotification() async {
-  var androidDetails = AndroidNotificationDetails(
-    'specific_time_channel',
-    'Specific Time Notifications',
-    importance: Importance.max,
-    priority: Priority.high,
-  );
-  var platformDetails = NotificationDetails(android: androidDetails);
-
-  // Get the current time according to device timezone
-  var now = tz.TZDateTime.now(tz.local);
-  var targetTime = tz.TZDateTime(tz.local, now.year, now.month, now.day, 5, 30);
-
-  // If the target time has passed for today, schedule for the next day
-  if (targetTime.isBefore(now)) {
-    targetTime = targetTime.add(Duration(days: 1));
-  }
-
-  // Debug output for current and target times
-  debugPrint("Device Current Time: $now");
-  debugPrint("Scheduled Target Time: ${targetTime.toLocal}");
-
-  try {
-    await flutterLocalNotificationsPlugin.zonedSchedule(
-      DateTime.now().millisecondsSinceEpoch.remainder(100000), // Unique ID
-      'Specific Time Reminder',
-      'This is your reminder for ${targetTime.hour}:${targetTime.minute} on ${targetTime.year}-${targetTime.month}-${targetTime.day}',
-      targetTime,
-      platformDetails,
-      androidAllowWhileIdle: true,
-      matchDateTimeComponents: DateTimeComponents.time,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.wallClockTime,
-    );
-    debugPrint("Notification scheduled successfully for $targetTime");
-  } catch (e) {
-    debugPrint("Error scheduling notification: $e");
-  }
-}
-
 }

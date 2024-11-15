@@ -113,7 +113,8 @@ class _DailyActivityUpdateMedicineScreenState extends State<DailyActivityUpdateM
           },
         );
       }).toList();
-
+_activityController.update();
+print('----------------');
       final mealValue = DailyactivityMealValue(
         morning: mealCompletionStatus[i]!['morning'] ?? false,
         afternoon: mealCompletionStatus[i]!['afternoon'] ?? false,
