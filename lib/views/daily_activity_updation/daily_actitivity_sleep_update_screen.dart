@@ -252,7 +252,7 @@ class _DailyActivitySleepUpdateScreenState
     walkingController.clear();
     waterController.clear();
 
-    Get.to(BottumNavBar());
+    Get.to(HomeScreen());
 
     // Show a confirmation message
     ScaffoldMessenger.of(context).showSnackBar(

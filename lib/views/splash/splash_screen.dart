@@ -41,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     await Future.delayed(const Duration(seconds: 2));
 
     if (isRegistered) {
-      Get.offAll(() => BottumNavBar());
+      Get.offAll(() => HomeScreen());
     } else {
       Get.offAll(() => DummyHomeScreen());
     }

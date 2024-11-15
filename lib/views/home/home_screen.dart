@@ -14,16 +14,19 @@ import 'package:alaram/views/main_activity/activity_main_screen.dart';
 import 'package:alaram/views/profile/profile_screen.dart';
 import 'package:alaram/views/video/video_tutorial.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:intl/intl.dart'; // For formatting the date
+import 'package:intl/intl.dart';
+
+import '../../tools/controllers/goal_notification_controller.dart'; // For formatting the date
 
 
 
-class BottumNavBar extends StatelessWidget {
+class HomeScreen extends StatelessWidget {
 
 
   final String date = DateFormat('yyyy-MM-dd').format(DateTime.now()); // Get current date
 
-
+  final NotificationController controller =
+      Get.put(NotificationController());
 
   @override
 
@@ -70,7 +73,10 @@ class BottumNavBar extends StatelessWidget {
                           ],
                         ),
                       
-                      ],
+                  InkWell(onTap: (){
+                   controller.testNotification();
+                    },
+                    child: Icon(Icons.notification_add,color: kwhite,))    ],
                     ),
                   ),
                   SizedBox(height: 16.h),

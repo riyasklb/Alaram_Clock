@@ -7,8 +7,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:alaram/tools/constans/color.dart';
 
 class OptionalGoalSettingScreen extends StatelessWidget {
-  final OptionalGoalSettingController controller =
-      Get.put(OptionalGoalSettingController());
+  final NotificationController controller =
+      Get.put(NotificationController());
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
@@ -34,7 +34,7 @@ class OptionalGoalSettingScreen extends StatelessWidget {
         //   ),
         // ],
       ),
-      body: GetBuilder<OptionalGoalSettingController>(
+      body: GetBuilder<NotificationController>(
         builder: (_) {
           return SingleChildScrollView(
             child: Form(
