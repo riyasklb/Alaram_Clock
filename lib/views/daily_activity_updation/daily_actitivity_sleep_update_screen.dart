@@ -1,8 +1,10 @@
 import 'package:alaram/tools/constans/color.dart';
+import 'package:alaram/tools/controllers/activity_controller.dart';
 import 'package:alaram/tools/model/activity_log.dart';
 import 'package:alaram/views/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,6 +19,8 @@ class DailyActivitySleepUpdateScreen extends StatefulWidget {
 
 class _DailyActivitySleepUpdateScreenState
     extends State<DailyActivitySleepUpdateScreen> {
+
+        final ActivityController _activityController = Get.put(ActivityController());
   final TextEditingController sleepController = TextEditingController();
   final TextEditingController walkingController = TextEditingController();
   final TextEditingController waterController = TextEditingController();
@@ -253,7 +257,7 @@ class _DailyActivitySleepUpdateScreenState
     waterController.clear();
 
     Get.to(HomeScreen());
-
+_activityController.update();
     // Show a confirmation message
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

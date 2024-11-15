@@ -1,14 +1,12 @@
 import 'dart:io';
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/controllers/activity_controller.dart';
-import 'package:alaram/tools/model/profile_model.dart';
 import 'package:alaram/views/chart/widgets/daily_activity_widget.dart';
 import 'package:alaram/views/chart/widgets/line_chart_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -22,12 +20,7 @@ class ActivityLineChartScreen extends StatefulWidget {
 class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
   final ActivityController _activityController = Get.put(ActivityController());
 
-  late Map<String, dynamic> _selectedFilter;
-
-  double totalSleep = 0;
-  double totalWalking = 0;
-  double totalWaterIntake = 0;
-
+  // Filter options
   final List<Map<String, dynamic>> _filterOptions = [
     {'label': 'All Time', 'days': 0},
     {'label': 'Last 7 Days', 'days': 7},
@@ -38,20 +31,7 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedFilter = _filterOptions[0];
-    _calculateTotals();
-  }
-
-  void _calculateTotals() {
-    totalSleep = 0;
-    totalWalking = 0;
-    totalWaterIntake = 0;
-
-    for (var log in _activityController.filteredActivityLogs) {
-      totalSleep += log.sleepHours;
-      totalWalking += log.walkingHours;
-      totalWaterIntake += log.waterIntake;
-    }
+    _activityController.setFilter(0); // Default filter to "All Time"
   }
 
   @override
@@ -77,7 +57,6 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
         elevation: 0,
       ),
       body: Obx(() {
-        _calculateTotals();
         return ListView(
           children: [
             _buildFilterDropdown(),
@@ -95,26 +74,15 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
   }
 
   Widget _buildFilterDropdown() {
-    return GetBuilder<ActivityController>(builder: (controller) {
-      return Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-        child: DropdownButton<Map<String, dynamic>>(
-          value: _selectedFilter,
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      child: Obx(() {
+        return DropdownButton<Map<String, dynamic>>(
+          value: _filterOptions.firstWhere(
+              (option) => option['days'] == _activityController.currentFilterDays.value),
           onChanged: (selectedOption) {
             if (selectedOption != null) {
-              setState(() {
-                _selectedFilter = selectedOption;
-              });
-
-              int days = selectedOption['days'];
-              if (days == 0) {
-                _activityController.filteredActivityLogs
-                    .assignAll(_activityController.activityLogs);
-              } else {
-                _activityController.filterByDateRange(days);
-              }
-
-              _activityController.update();
+              _activityController.setFilter(selectedOption['days']);
             }
           },
           items: _filterOptions.map((option) {
@@ -123,10 +91,11 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
               child: Text(option['label']),
             );
           }).toList(),
-        ),
-      );
-    });
+        );
+      }),
+    );
   }
+
 
   Widget _buildLineChart() {
     if (_activityController.filteredActivityLogs.isEmpty) {
@@ -155,7 +124,8 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
   Widget _buildActivityData() {
     if (_activityController.filteredActivityLogs.isEmpty) {
       return Center(
-          child: Text("No activity recorded for the selected period."));
+        child: Text("No activity recorded for the selected period."),
+      );
     }
 
     return Padding(
@@ -166,19 +136,19 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
             icon: Icons.nightlight_round,
             color: Colors.blue,
             label: 'Total Sleep',
-            value: '${totalSleep.toStringAsFixed(1)} hrs',
+            value: '${_activityController.totalSleep.toStringAsFixed(1)} hrs',
           ),
           _buildActivityRow(
             icon: Icons.directions_walk,
             color: Colors.green,
             label: 'Total Walking',
-            value: '${totalWalking.toStringAsFixed(1)} hrs',
+            value: '${_activityController.totalWalking.toStringAsFixed(1)} hrs',
           ),
           _buildActivityRow(
             icon: Icons.local_drink,
             color: Colors.teal,
             label: 'Total Water Intake',
-            value: '${totalWaterIntake.toStringAsFixed(1)} L',
+            value: '${_activityController.totalWaterIntake.toStringAsFixed(1)} L',
           ),
         ],
       ),
@@ -209,33 +179,35 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
           Text(
             value,
             style: GoogleFonts.roboto(
-                fontSize: 14.sp, fontWeight: FontWeight.bold),
+              fontSize: 14.sp,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),
     );
   }
-Future<void> _sharePdf() async {
-  final pdf = pw.Document();
 
-  pdf.addPage(
-    pw.Page(
-      build: (pw.Context context) {
-        return pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pw.Text('Activity Report', style: pw.TextStyle(fontSize: 24)),
-            pw.SizedBox(height: 16),
-            pw.Text('Total Sleep: ${totalSleep.toStringAsFixed(1)} hrs'),
-            pw.Text('Total Walking: ${totalWalking.toStringAsFixed(1)} hrs'),
-            pw.Text('Total Water Intake: ${totalWaterIntake.toStringAsFixed(1)} L'),
-            pw.SizedBox(height: 16),
-            pw.Text('Detailed Activity Logs:', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-            pw.SizedBox(height: 8),
-            pw.ListView.builder(
-              itemCount: _activityController.filteredActivityLogs.length,
-              itemBuilder: (context, index) {
-                final log = _activityController.filteredActivityLogs[index];
+  Future<void> _sharePdf() async {
+    final pdf = pw.Document();
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text('Activity Report', style: pw.TextStyle(fontSize: 24)),
+              pw.SizedBox(height: 16),
+              pw.Text('Total Sleep: ${_activityController.totalSleep.toStringAsFixed(1)} hrs'),
+              pw.Text('Total Walking: ${_activityController.totalWalking.toStringAsFixed(1)} hrs'),
+              pw.Text('Total Water Intake: ${_activityController.totalWaterIntake.toStringAsFixed(1)} L'),
+              pw.SizedBox(height: 16),
+              pw.Text('Detailed Activity Logs:', style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 8),
+              pw.ListView.builder(
+                itemCount: _activityController.filteredActivityLogs.length,
+                itemBuilder: (context, index) {
+                  final log = _activityController.filteredActivityLogs[index];
                 
                 // Format the date properly (e.g., MM/dd/yyyy)
                 String formattedDate = "${log.date.month}/${log.date.day}/${log.date.year}";
@@ -277,22 +249,19 @@ Future<void> _sharePdf() async {
                     'Date: $activityDate | Activity: ${activity.activityName} | Medicines: $medicinesStr | Meal Value: $mealValueStr | Frequency: ${activity.frequency}',
                     style: pw.TextStyle(fontSize: 14),
                   ),
-                );
-              },
-            ),
-          ],
-        );
-      },
-    ),
-  );
+                  );
+                },
+              ),
+            ],
+          );
+        },
+      ),
+    );
 
-  final output = await getTemporaryDirectory();
-  final file = File("${output.path}/activity_report.pdf");
-  await file.writeAsBytes(await pdf.save());
+    final output = await getTemporaryDirectory();
+    final file = File("${output.path}/activity_report.pdf");
+    await file.writeAsBytes(await pdf.save());
 
-  await Share.shareXFiles([XFile(file.path)], text: 'Here is my detailed activity report');
-}
-
-
-
+    await Share.shareXFiles([XFile(file.path)], text: 'Here is my activity report');
+  }
 }
