@@ -1,6 +1,7 @@
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/controllers/activity_controller.dart';
 import 'package:alaram/tools/model/activity_log.dart';
+import 'package:alaram/views/auth/set_goals_scrrw.dart';
 import 'package:alaram/views/home/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -107,12 +108,25 @@ class _DailyActivitySleepUpdateScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Daily Activity Tracker',
-          style: GoogleFonts.lato(fontSize: 20.sp, fontWeight: FontWeight.w600),
-        ),
-      ),
+    appBar: AppBar(
+  title: Text(
+    'Daily Activity Tracker',
+    style: GoogleFonts.lato(fontSize: 20.sp, fontWeight: FontWeight.w600),
+  ),
+  actions: [
+    IconButton(
+      icon: Icon(Icons.edit, size: 22.sp),
+      tooltip: 'Edit Goals',
+   onPressed: () {
+  Get.to(
+    GoalSettingScreen(showExtraOptions: true,),
+  
+  );
+}
+    ),
+  ],
+),
+
       body: Padding(
         padding: EdgeInsets.all(16.w),
         child: Column(

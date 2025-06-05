@@ -1,14 +1,14 @@
-import 'package:alaram/tools/constans/color.dart';
-import 'package:alaram/tools/model/activity_log.dart';
-import 'package:alaram/tools/model/daily_activity_model.dart';
-import 'package:alaram/tools/model/goal_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
-import '../auth/register_screen.dart';
+import 'package:get/get.dart';
 import 'package:alaram/tools/model/profile_model.dart';
+import 'package:alaram/tools/constans/color.dart';
+import '../auth/register_screen.dart';
+import 'package:alaram/tools/model/goal_model.dart';
+import 'package:alaram/tools/model/activity_log.dart';
+import 'package:alaram/tools/model/daily_activity_model.dart';
 
 class ProfileScreen extends StatelessWidget {
   Future<void> _openBoxes() async {
@@ -34,8 +34,9 @@ class ProfileScreen extends StatelessWidget {
         final profileBox = Hive.box<ProfileModel>('profileBox');
         final goalBox = Hive.box<Goal>('goals');
         final settingsBox = Hive.box('settingsBox');
-final activitylog= Hive.box<ActivityLog>('activityLogs');
-  final dailyactivitybox= Hive.box<DailyActivityModel>('dailyActivities');
+        final activitylog = Hive.box<ActivityLog>('activityLogs');
+        final dailyactivitybox = Hive.box<DailyActivityModel>('dailyActivities');
+
         return Scaffold(
           appBar: AppBar(
             automaticallyImplyLeading: false,
@@ -51,7 +52,7 @@ final activitylog= Hive.box<ActivityLog>('activityLogs');
             flexibleSpace: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.blueAccent, Colors.lightBlue],
+                  colors: [Colors.purpleAccent, Colors.blueAccent],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -66,13 +67,12 @@ final activitylog= Hive.box<ActivityLog>('activityLogs');
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildProfileHeader(profileBox),
-                  Divider(thickness: 1, color: Colors.grey[300]),
                   SizedBox(height: 20.h),
                   _buildSectionTitle('Profile Information'),
                   SizedBox(height: 10.h),
                   ..._buildProfileCards(profileBox),
                   SizedBox(height: 20.h),
-                  _buildLogoutButton(context, profileBox, goalBox, settingsBox,activitylog,dailyactivitybox),
+                  _buildLogoutButton(context, profileBox, goalBox, settingsBox, activitylog, dailyactivitybox),
                   SizedBox(height: 40.h),
                 ],
               ),
@@ -124,7 +124,7 @@ final activitylog= Hive.box<ActivityLog>('activityLogs');
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8.h),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(16.r),
       ),
       elevation: 4,
       color: Colors.blue[50],
@@ -185,7 +185,7 @@ final activitylog= Hive.box<ActivityLog>('activityLogs');
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8.h),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(16.r),
       ),
       elevation: 4,
       color: Colors.green[50],
@@ -223,7 +223,7 @@ final activitylog= Hive.box<ActivityLog>('activityLogs');
       style: GoogleFonts.poppins(
           fontSize: 20.sp,
           fontWeight: FontWeight.bold,
-          color: Colors.blueAccent),
+          color: Colors.purpleAccent),
     );
   }
 
@@ -231,11 +231,11 @@ final activitylog= Hive.box<ActivityLog>('activityLogs');
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.blueAccent, Colors.lightBlue],
+          colors: [Colors.purpleAccent, Colors.blueAccent],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(15.r),
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
               color: Colors.black26, blurRadius: 10.r, offset: Offset(0, 4)),
@@ -246,9 +246,9 @@ final activitylog= Hive.box<ActivityLog>('activityLogs');
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           CircleAvatar(
-            radius: 40.r,
+            radius: 50.r,
             backgroundColor: Colors.white,
-            child: Icon(Icons.person, size: 50.r, color: Colors.blueAccent),
+            child: Icon(Icons.person, size: 60.r, color: Colors.blueAccent),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -256,7 +256,7 @@ final activitylog= Hive.box<ActivityLog>('activityLogs');
               Text(
                 profileBox.get('userProfile')?.username ?? 'User',
                 style: GoogleFonts.poppins(
-                  fontSize: 22.sp,
+                  fontSize: 24.sp,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -287,8 +287,7 @@ final activitylog= Hive.box<ActivityLog>('activityLogs');
       _buildProfileCard('Ethnicity', profileBox.get('userProfile')?.ethnicity),
       _buildProfileCard(
           'Water Intake Goal',
-          profileBox.get('userProfile')?.waterIntakeGoal?.toString() ??
-              'Not Set'),
+          profileBox.get('userProfile')?.waterIntakeGoal?.toString() ?? 'Not Set'),
       _buildProfileCard('Sleep Goal',
           profileBox.get('userProfile')?.sleepGoal?.toString() ?? 'Not Set'),
       _buildProfileCard('Walking Goal',
@@ -310,8 +309,7 @@ final activitylog= Hive.box<ActivityLog>('activityLogs');
       style: ElevatedButton.styleFrom(
         padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 15.h),
         backgroundColor: Colors.redAccent,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
       ),
       child: Text(
         'Logout',

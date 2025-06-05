@@ -22,9 +22,11 @@ class VideoTutorial extends StatelessWidget {
       ),
       body: Padding(
         padding: EdgeInsets.all(8.0),
-        child: Column(
+        child: ListView(
           children: [
             SizedBox(height: 10.h),
+            _buildVideoCategoryList(),
+            SizedBox(height: 20.h),
             _buildVideoTutorialList(),
           ],
         ),
@@ -32,35 +34,82 @@ class VideoTutorial extends StatelessWidget {
     );
   }
 
+  // Horizontal list of categories like "Trending", "Recommended", etc.
+Widget _buildVideoCategoryList() {
+  List<String> categories = ["Trending", "Recommended", "Health", "Exercise"];
+
+  return SizedBox(
+    height: 40.h,
+    child: ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemCount: categories.length,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10.0),
+          child: GestureDetector(
+            onTap: () {
+              print('Clicked on category: ${categories[index]}');
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+              decoration: BoxDecoration(
+                color: kblue, // background color
+                borderRadius: BorderRadius.circular(20.0), // rounded corners
+              ),
+              child: Center(
+                child: Text(
+                  categories[index],
+                  style: GoogleFonts.poppins(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    ),
+  );
+}
+
+
   // Video tutorial list section with sample data
   Widget _buildVideoTutorialList() {
     List<Map<String, String>> tutorials = [
       {
         "title": "Intro to Recovery",
         "thumbnail": "assets/logo/rb_19305.png",
-        "description": "An introduction to the recovery process after thrombosis treatment, outlining essential steps and strategies."
+        "description": "An introduction to the recovery process after thrombosis treatment."
       },
       {
         "title": "Exercise Tips",
         "thumbnail": "assets/logo/7942060_3794815.jpg",
-        "description": "Learn about the best exercises that can help improve your mobility and overall health during recovery."
+        "description": "Learn about the best exercises that can help improve your mobility."
       },
       {
         "title": "Healthy Eating",
         "thumbnail": "assets/logo/rb_28533.png",
-        "description": "Discover nutritious foods that support your recovery and contribute to your well-being."
+        "description": "Discover nutritious foods that support your recovery."
       },
       {
         "title": "Mental Health",
         "thumbnail": "assets/logo/rb_2149044577.png",
-        "description": "Understanding the importance of mental health in recovery, including tips for maintaining a positive mindset."
+        "description": "Understanding the importance of mental health in recovery."
       },
     ];
 
-    return ListView.builder(
+    return GridView.builder(
       itemCount: tutorials.length,
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2, // Two videos per row
+        crossAxisSpacing: 12.0,
+        mainAxisSpacing: 12.0,
+        childAspectRatio: 0.75, // Aspect ratio for the grid items
+      ),
       itemBuilder: (context, index) {
         return _buildTutorialCard(
           title: tutorials[index]["title"]!,
@@ -71,85 +120,59 @@ class VideoTutorial extends StatelessWidget {
     );
   }
 
-  // Updated card design for a more engaging UI
+  // Updated card design resembling YouTube video tiles
   Widget _buildTutorialCard({
     required String title,
     required String thumbnail,
     required String description,
   }) {
-    return Card(
-      elevation: 5,
-      margin: EdgeInsets.symmetric(vertical: 12.0, horizontal: 10.0),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
-      child: Padding(
-        padding: EdgeInsets.all(12.0),
-        child: Row(
+    return GestureDetector(
+      onTap: () {
+        print('Play video for: $title');
+      },
+      child: Card(
+        elevation: 5,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Colors.black.withOpacity(0.4), Colors.transparent],
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.center,
-                      ),
-                    ),
-                    child: Image.asset(
-                      thumbnail,
-                      fit: BoxFit.cover,
-                      height: 100,
-                      width: 100,
-                    ),
-                  ),
-                ),
-                // Animated play button overlay
-                AnimatedScale(
-                  duration: const Duration(milliseconds: 200),
-                  scale: 1.0,
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.play_circle_fill,
-                      size: 40,
-                      color: Colors.white.withOpacity(0.8),
-                    ),
-                    onPressed: () {
-                      print('Play video for: $title');
-                    },
-                  ),
-                ),
-              ],
+            // Thumbnail section
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10.0),
+              child: Image.asset(
+                thumbnail,
+                fit: BoxFit.cover,
+                height: 120.h,
+                width: double.infinity,  // Full-width thumbnail
+              ),
             ),
-            SizedBox(width: 15.0),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16.sp,
-                      color: Colors.black87,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 8.0),
-                  Text(
-                    description,
-                    style: GoogleFonts.poppins(
-                      color: Colors.grey[700],
-                      fontSize: 13.sp,
-                    ),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+            SizedBox(height: 8.0),
+            // Title section
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8.0),
+              child: Text(
+                title,
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14.sp,
+                  color: Colors.black87,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            // Description section
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+              child: Text(
+                description,
+                style: GoogleFonts.poppins(
+                  color: Colors.grey[700],
+                  fontSize: 12.sp,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

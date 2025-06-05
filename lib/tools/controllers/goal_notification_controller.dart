@@ -25,6 +25,7 @@ class NotificationController extends GetxController {
   void onInit() {
     super.onInit();
     initializeNotifications();
+    addMedicine();
   }
 
   Future<void> initializeNotifications() async {

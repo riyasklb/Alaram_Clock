@@ -14,27 +14,28 @@ class OptionalGoalSettingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Set Optional Goals',
-          style: GoogleFonts.poppins(
-            fontSize: 22.sp,
-            fontWeight: FontWeight.bold,
-            color: kwhite,
-          ),
-        ),
-        backgroundColor: kblue,
-        // actions: [
-        //   TextButton(
-        //     onPressed: () {},
-        //     child: Text(
-        //       'Skip',
-        //       style: TextStyle(color: kwhite, fontSize: 16.sp),
-        //     ),
-        //   ),
-        // ],
+  appBar: AppBar(
+    title: Text(
+      'Set Optional Goals',
+      style: GoogleFonts.poppins(
+        fontSize: 22.sp,
+        fontWeight: FontWeight.bold,
+        color: kwhite,
       ),
-      body: GetBuilder<NotificationController>(
+    ),
+    backgroundColor: kblue,
+  ),
+  body: Stack(
+    children: [
+      // Background Image
+      Positioned.fill(
+        child: Image.asset(
+          'assets/logo/top-view-pills-with-spoon.jpg', // Ensure this image is in your assets folder
+          fit: BoxFit.fitHeight,
+        ),
+      ),
+      // Content on top of the background
+      GetBuilder<NotificationController>(
         builder: (_) {
           return SingleChildScrollView(
             child: Form(
@@ -84,15 +85,16 @@ class OptionalGoalSettingScreen extends StatelessWidget {
                     _buildToggleSwitch(
                         'Enable Breakfast', controller.enableBreakfast),
                     _buildToggleSwitch('Enable Lunch', controller.enableLunch),
-                    _buildToggleSwitch(
-                        'Enable Dinner', controller.enableDinner),
+                    _buildToggleSwitch('Enable Dinner', controller.enableDinner),
                     SizedBox(height: 30.h),
                     Center(
                       child: ElevatedButton(
                         onPressed: () => controller.saveOptionalGoals(_formKey),
                         child: Text('Save Goals',
                             style: TextStyle(
-                                fontSize: 18.sp, fontWeight: FontWeight.bold, color: kwhite)),
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.bold,
+                                color: kwhite)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: kblue,
                           padding: EdgeInsets.symmetric(
@@ -109,7 +111,10 @@ class OptionalGoalSettingScreen extends StatelessWidget {
           );
         },
       ),
-    );
+    ],
+  ),
+);
+
   }
 
  Widget _buildMedicineInput(int index) {

@@ -1,6 +1,12 @@
 import 'package:alaram/tools/model/goal_model.dart';
+import 'package:alaram/views/auth/set_goals_scrrw.dart';
+import 'package:alaram/views/auth/set_goals_with_remider_screen.dart';
 import 'package:alaram/views/daily_activity_updation/dailyactivity_medicine_update_screen.dart';
+import 'package:alaram/views/home/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
@@ -292,8 +298,20 @@ print('----------------------------1-------1--------------');
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppBar(leading: IconButton(onPressed: (){Get.to(HomeScreen());}, icon: Icon(Icons.arrow_back)),
         title: Text("Saved Goals"),
+          actions: [
+    IconButton(
+      icon: Icon(Icons.edit, size: 22.sp),
+      tooltip: 'Edit Goals',
+   onPressed: () {
+  Get.to(
+    OptionalGoalSettingScreen(),
+    
+  );
+}
+    ),
+  ],
       ),
       body:_isLoading
           ? Center(child: CircularProgressIndicator())
