@@ -159,6 +159,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               label: 'Ethnicity',
                               icon: Icons.public,
                               items: [
+                            //    'Asian: Bangladeshi'
                                 'Asian: Bangladeshi',
                                 'Asian: Chinese',
                                 'Asian: Indian',
