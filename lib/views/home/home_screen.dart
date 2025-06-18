@@ -86,14 +86,15 @@ class HomeScreen extends StatelessWidget {
               
                         final profileBox = Hive.box<ProfileModel>('profileBox');
               
-                        return Text(
-                          'Good Morning,\n${profileBox.get('userProfile')?.username ?? 'User'}',
-                          style: GoogleFonts.montserrat(
-                            color: Colors.white,
-                            fontSize: 28.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        );
+                     return Text(
+  'Welcome back,\n${profileBox.get('userProfile')?.username ?? 'there'}!',
+  style: GoogleFonts.montserrat(
+    color: Colors.white,
+    fontSize: 28.sp,
+    fontWeight: FontWeight.bold,
+  ),
+);
+
                       }),
                   SizedBox(height: 10.h),
                   Text(

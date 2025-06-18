@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:alaram/views/chart/chart_screen.dart';
 import 'package:alaram/views/daily_activity_updation/callender_daily_task_screen.dart';
 import 'package:alaram/views/daily_activity_updation/daily_actitivity_sleep_update_screen.dart';
-import 'package:lottie/lottie.dart';
+
 
 
 class LandingScreen extends StatelessWidget {

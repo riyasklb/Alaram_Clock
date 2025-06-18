@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -228,6 +230,8 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildProfileHeader(Box<ProfileModel> profileBox) {
+    final profile = profileBox.get('userProfile');
+  final imagePath = profile?.imagePath;
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -246,10 +250,23 @@ class ProfileScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           CircleAvatar(
-            radius: 50.r,
-            backgroundColor: Colors.white,
-            child: Icon(Icons.person, size: 60.r, color: Colors.blueAccent),
+          radius: 50.r,
+          backgroundColor: Colors.white,
+          child: ClipOval(
+            child: imagePath != null && File(imagePath).existsSync()
+                ? Image.file(
+                    File(imagePath),
+                    width: 100.w,
+                    height: 100.h,
+                    fit: BoxFit.cover,
+                  )
+                : Icon(
+                    Icons.person,
+                    size: 60.r,
+                    color: Colors.blueAccent,
+                  ),
           ),
+        ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [

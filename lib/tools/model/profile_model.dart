@@ -20,32 +20,32 @@ class ProfileModel extends HiveObject {
   late String nhsNumber;
 
   @HiveField(5)
-  late String gender;
+  String? gender;  // Make nullable
 
-  @HiveField(6) // New field for ethnicity
-  late String ethnicity;
+  @HiveField(6)
+  String? ethnicity;  // Make nullable
+
+  // New field for profile image path
+  @HiveField(16)
+  String? imagePath;  // Add this field
 
   @HiveField(7)
-  double? waterIntakeGoal; // Liters
-
+  double? waterIntakeGoal;
 
   @HiveField(8)
-  double? sleepGoal; // Hours
-
+  double? sleepGoal;
 
   @HiveField(9)
   double? walkingGoal;
 
-
-    @HiveField(10)
-  String? medicineGoal; // Morning, Afternoon, Night
+  @HiveField(10)
+  String? medicineGoal;
 
   @HiveField(11)
-  String? foodGoal; // Breakfast, Lunch, Dinner
+  String? foodGoal;
 
   @HiveField(12)
   String? injectionGoal;
-
 
   @HiveField(13)
   double? actualWaterIntake;
