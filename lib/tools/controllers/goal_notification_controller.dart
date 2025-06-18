@@ -26,8 +26,15 @@ class NotificationController extends GetxController {
     super.onInit();
     initializeNotifications();
     addMedicine();
+    ListOfmedicine();
   }
 
+
+ void ListOfmedicine() {
+    final sampleMedicines = ['Paracetamol', 'Ibuprofen', 'Amoxicillin','Aspirin'];
+    items.assignAll(sampleMedicines);
+    filteredItems.assignAll(sampleMedicines);
+  }
   Future<void> initializeNotifications() async {
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -373,4 +380,24 @@ class NotificationController extends GetxController {
 
   print('Scheduled test notification at $now');
 }
+var items = <String>[].obs;
+  var filteredItems = <String>[].obs;
+  var selectedValue = ''.obs;
+
+  void initialize(List<String> values) {
+    items.assignAll(values);
+    filteredItems.assignAll(values);
+  }
+
+  void filterItems(String input) {
+    selectedValue.value = input;
+    filteredItems.value = items
+        .where((item) => item.toLowerCase().contains(input.toLowerCase()))
+        .toList();
+  }
+
+  void selectItem(String item) {
+    selectedValue.value = item;
+    filteredItems.assignAll(items);
+  }
 }

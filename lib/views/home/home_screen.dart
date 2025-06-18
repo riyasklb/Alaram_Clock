@@ -1,8 +1,10 @@
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/model/profile_model.dart';
+import 'package:alaram/views/clinic_visit/clinic_visit_screen.dart';
 
 import 'package:alaram/views/completed_tasks/daily_activity_medicine_log.dart';
 import 'package:alaram/views/daily_activity_updation/daily_actitivity_sleep_update_screen.dart';
+import 'package:alaram/views/landing_screen/landing_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -354,29 +356,30 @@ final _gridItems = [
     title: 'Update Daily Goals',
     imagePath: 'assets/logo/medicine.png', // A more dynamic icon for tasks
     color: Colors.deepPurple,
-    onTap: () => Get.to(() => DailyActivitySleepUpdateScreen()),
+    onTap: () => Get.to(() =>LandingScreen()),
   ),
   GridItem(
-    title: 'Calendar',
+    title: 'Clinic Visit',
+    
     imagePath:
-        'assets/logo/calendar.png', // A calendar with a checkmark, ideal for tracking events
+        'assets/logo/veterinarian.png', // A calendar with a checkmark, ideal for tracking events
     color: Colors.orange,
-    onTap: () => Get.to(() => DailyMedicneTaskCallenderScreen()),
+    onTap: () => Get.to(() => ClinicalVisitScreen()),
   ),
   GridItem(
-    title: 'Chart',
+    title: 'DashBoard',
     imagePath:
         'assets/logo/bar-chart.png', // A bar chart, providing a more diverse chart option
     color: Colors.blueAccent,
     onTap: () => Get.to(() => ActivityLineChartScreen()),
   ),
-  GridItem(
-    title: 'Profile',
-    imagePath:
-        'assets/logo/boy.png', // A badge, giving a fresh approach to profile
-    color: Colors.green,
-    onTap: () => Get.to(() => ProfileScreen()),
-  ),
+  // GridItem(
+  //   title: 'Profile',
+  //   imagePath:
+  //       'assets/logo/boy.png', // A badge, giving a fresh approach to profile
+  //   color: Colors.green,
+  //   onTap: () => Get.to(() => ProfileScreen()),
+  // ),
   // GridItem(
   //   title: 'Activity',
   //   imagePath:
@@ -385,7 +388,7 @@ final _gridItems = [
   //   onTap: () => Get.to(() => DailyMedicineActivityLog()),
   // ),
   GridItem(
-    title: 'Video Tutorials',
+    title: 'Advice & Guidance',
     imagePath:
         'assets/logo/video-marketing.png', // A play icon for tutorials and videos
     color: Colors.pink,

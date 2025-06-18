@@ -1,4 +1,5 @@
 import 'package:alaram/tools/controllers/goal_notification_controller.dart';
+import 'package:alaram/views/auth/widgets/dropdown_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -121,13 +122,14 @@ class OptionalGoalSettingScreen extends StatelessWidget {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      _buildDropdownField(
-        label: 'Medicine Name',
-        icon: Icons.medical_services_outlined,
-        value: controller.medicines[index]['name'],
-        items: <String>['Paracetamol', 'Ibuprofen', 'Aspirin', 'Amoxicillin'],
-        onChanged: (String? val) => controller.updateMedicineName(index, val),
-      ),
+     
+GetxDropdownField(
+  label: 'Select or type Medicine',
+  icon: Icons.food_bank,
+  controller: controller,
+),
+
+   
       _buildIntTextField(
         controller: controller.medicines[index]['quantityController'],
         labelText: 'Quantity (e.g., 10 tablets)',
