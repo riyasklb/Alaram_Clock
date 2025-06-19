@@ -35,7 +35,17 @@ dependencies:
   animated_text_kit: ^4.2.2
   table_calendar: ^3.1.2
   delightful_toast: ^1.1.0
+  flutter_launcher_icons: ^0.14.4
 
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/logo/index-logo.jpg"
+  min_sdk_android: 21 
+
+
+
+  
 
 dev_dependencies:
   flutter_test:

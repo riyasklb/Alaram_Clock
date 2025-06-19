@@ -7,6 +7,7 @@ import 'package:alaram/views/auth/set_goals_scrrw.dart';
 import 'package:delightful_toast/delight_toast.dart';
 import 'package:delightful_toast/toast/components/toast_card.dart';
 import 'package:delightful_toast/toast/utils/enums.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
@@ -167,25 +168,39 @@ class RegisterScreen extends StatelessWidget {
                               hintText: 'Enter your mobile number',
                               icon: Icons.phone,
                               inputType: TextInputType.phone,
+                                inputFormatters: [
+    LengthLimitingTextInputFormatter(11), // Max 11 digits
+    FilteringTextInputFormatter.digitsOnly, // Only digits allowed
+  ],
                               validator: (value) {
                                 if (value!.isEmpty) return 'Mobile number cannot be empty';
-                                if (!RegExp(r'^\d{10}$').hasMatch(value)) {
-                                  return 'Enter a valid 10-digit mobile number';
+                                if (!RegExp(r'^\d{11}$').hasMatch(value)) {
+                                  return 'Enter a valid 11-digit mobile number';
                                 }
                                 return null;
                               },
                             ),
                             SizedBox(height: 16.h),
-                            _buildTextField(
-                              controller: controller.nhsNumberController,
-                              labelText: 'NHS Number',
-                              hintText: 'Enter your NHS number',
-                              icon: Icons.verified,
-                              inputType: TextInputType.number,
-                              validator: (value) => value!.isEmpty
-                                  ? 'NHS number cannot be empty'
-                                  : null,
-                            ),
+                          _buildTextField(
+  controller: controller.nhsNumberController,
+  labelText: 'NHS Number',
+  hintText: 'Enter your NHS number',
+  icon: Icons.verified,
+  inputType: TextInputType.number,
+  inputFormatters: [
+    LengthLimitingTextInputFormatter(10), // Max 10 digits
+    FilteringTextInputFormatter.digitsOnly, // Only digits allowed
+  ],
+  validator: (value) {
+    if (value == null || value.isEmpty) {
+      return 'NHS number cannot be empty';
+    } else if (value.length != 10) {
+      return 'NHS number must be exactly 10 digits';
+    }
+    return null;
+  },
+),
+
                             SizedBox(height: 16.h),
                             // Gender Dropdown
                            Obx(() => _buildDropdown(
@@ -369,7 +384,7 @@ class RegisterScreen extends StatelessWidget {
     required IconData icon,
     bool obscureText = false,
     TextInputType inputType = TextInputType.text,
-    String? Function(String?)? validator,
+    String? Function(String?)? validator,  List<TextInputFormatter> ?inputFormatters,
   }) {
     return Container(
       decoration: BoxDecoration(

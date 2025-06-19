@@ -116,6 +116,7 @@ class _GoalSettingScreenState extends State<GoalSettingScreen> {
       child: Padding(
         padding: EdgeInsets.all(14.w),
         child: TextFormField(
+         
           controller: controller,
           keyboardType: TextInputType.numberWithOptions(decimal: true),
           style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500),
@@ -128,6 +129,7 @@ class _GoalSettingScreenState extends State<GoalSettingScreen> {
               borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide.none,
             ),
+            
             filled: true,
             fillColor: Colors.white,
           ),
