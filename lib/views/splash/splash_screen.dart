@@ -1,4 +1,4 @@
-import 'package:alaram/tools/dummy/dummy_initial_screen.dart';
+
 import 'package:alaram/views/auth/register_screen.dart';
 import 'package:alaram/views/home/home_screen.dart';
 import 'package:flutter/material.dart';

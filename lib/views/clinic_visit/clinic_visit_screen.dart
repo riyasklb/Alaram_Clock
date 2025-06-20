@@ -1,4 +1,3 @@
-import 'package:alaram/tools/constans/color.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -14,7 +13,13 @@ class ClinicalVisitScreen extends StatefulWidget {
 
 class _ClinicalVisitScreenState extends State<ClinicalVisitScreen> {
   final TextEditingController _noteController = TextEditingController();
+  final TextEditingController _doctorController = TextEditingController();
+  final TextEditingController _medicalHistoryController = TextEditingController();
+  final TextEditingController _extraDetailsController = TextEditingController();
+
   DateTime? _selectedDate;
+  String? _selectedAppointmentType;
+
   List<Map<String, dynamic>> visits = [];
 
   @override
@@ -24,7 +29,11 @@ class _ClinicalVisitScreenState extends State<ClinicalVisitScreen> {
       appBar: AppBar(
         title: Text(
           'Clinical Visits',
-          style: GoogleFonts.poppins(fontSize: 18.sp, fontWeight: FontWeight.w600,color: kwhite),
+          style: GoogleFonts.poppins(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
         ),
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
@@ -70,9 +79,11 @@ class _ClinicalVisitScreenState extends State<ClinicalVisitScreen> {
             ),
           ),
           SizedBox(height: 16.h),
+
+          // Date Picker
           ElevatedButton.icon(
             onPressed: _pickDate,
-            icon: const Icon(Icons.calendar_today,color: Colors.white,),
+            icon: const Icon(Icons.calendar_today, color: Colors.white),
             label: Text(
               _selectedDate == null
                   ? 'Pick Visit Date'
@@ -89,6 +100,54 @@ class _ClinicalVisitScreenState extends State<ClinicalVisitScreen> {
             ),
           ),
           SizedBox(height: 16.h),
+
+          // Appointment Type Dropdown
+          DropdownButtonFormField<String>(
+            value: _selectedAppointmentType,
+            items: ['GP', 'Hospital', 'Others']
+                .map((type) => DropdownMenuItem(
+                      value: type,
+                      child: Text(type),
+                    ))
+                .toList(),
+            onChanged: (val) => setState(() => _selectedAppointmentType = val),
+            decoration: InputDecoration(
+              labelText: 'Appointment Type',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.r),
+              ),
+              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+            ),
+          ),
+          SizedBox(height: 16.h),
+
+          // Doctor Name
+          TextField(
+            controller: _doctorController,
+            style: GoogleFonts.poppins(fontSize: 14.sp),
+            decoration: InputDecoration(
+              labelText: 'Doctor Name',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
+              prefixIcon: Icon(Icons.person),
+            ),
+          ),
+          SizedBox(height: 16.h),
+
+          // Medical History
+          TextField(
+            controller: _medicalHistoryController,
+            style: GoogleFonts.poppins(fontSize: 14.sp),
+            decoration: InputDecoration(
+              labelText: 'Medical History',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
+              prefixIcon: Icon(Icons.history),
+            ),
+          ),
+          SizedBox(height: 16.h),
+
+          // Additional Details
+    
+          // Notes
           TextField(
             controller: _noteController,
             maxLines: 3,
@@ -101,6 +160,8 @@ class _ClinicalVisitScreenState extends State<ClinicalVisitScreen> {
             ),
           ),
           SizedBox(height: 16.h),
+
+          // Submit Button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -157,32 +218,58 @@ class _ClinicalVisitScreenState extends State<ClinicalVisitScreen> {
               ),
             ],
           ),
-          child: ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: Icon(Icons.local_hospital_rounded,
-                size: 28.sp, color: Colors.blueAccent),
-            title: Text(
-              DateFormat.yMMMMd().format(visit['date']),
-              style: GoogleFonts.poppins(
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w600,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.local_hospital_rounded,
+                    size: 28.sp, color: Colors.blueAccent),
+                title: Text(
+                  DateFormat.yMMMMd().format(visit['date']),
+                  style: GoogleFonts.poppins(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: Text(
+                  visit['notes'],
+                  style: GoogleFonts.poppins(fontSize: 13.sp),
+                ),
+                trailing: IconButton(
+                  icon: Icon(Icons.delete, color: Colors.redAccent, size: 22.sp),
+                  onPressed: () {
+                    setState(() {
+                      visits.removeAt(index);
+                    });
+                  },
+                ),
               ),
-            ),
-            subtitle: Text(
-              visit['notes'],
-              style: GoogleFonts.poppins(fontSize: 13.sp),
-            ),
-            trailing: IconButton(
-              icon: Icon(Icons.delete, color: Colors.redAccent, size: 22.sp),
-              onPressed: () {
-                setState(() {
-                  visits.removeAt(index);
-                });
-              },
-            ),
+              SizedBox(height: 4.h),
+              if (visit['appointmentType'] != null)
+                _infoRow('Type', visit['appointmentType']),
+              if (visit['doctorName'] != null && visit['doctorName'].isNotEmpty)
+                _infoRow('Doctor', visit['doctorName']),
+              if (visit['history'] != null && visit['history'].isNotEmpty)
+                _infoRow('History', visit['history']),
+              if (visit['extra'] != null && visit['extra'].isNotEmpty)
+                _infoRow('Details', visit['extra']),
+            ],
           ),
         );
       },
+    );
+  }
+
+  Widget _infoRow(String title, String value) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 2.h),
+      child: Row(
+        children: [
+          Text('$title: ', style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
+          Expanded(child: Text(value, style: GoogleFonts.poppins())),
+        ],
+      ),
     );
   }
 
@@ -201,10 +288,12 @@ class _ClinicalVisitScreenState extends State<ClinicalVisitScreen> {
   }
 
   void _addVisit() {
-    if (_selectedDate == null || _noteController.text.trim().isEmpty) {
+    if (_selectedDate == null ||
+        _noteController.text.trim().isEmpty ||
+        _selectedAppointmentType == null) {
       Get.snackbar(
         'Missing Info',
-        'Please select a date and enter notes',
+        'Please fill in all required fields',
         backgroundColor: Colors.redAccent,
         colorText: Colors.white,
         snackPosition: SnackPosition.BOTTOM,
@@ -217,9 +306,18 @@ class _ClinicalVisitScreenState extends State<ClinicalVisitScreen> {
       visits.add({
         'date': _selectedDate!,
         'notes': _noteController.text.trim(),
+        'appointmentType': _selectedAppointmentType,
+        'doctorName': _doctorController.text.trim(),
+        'history': _medicalHistoryController.text.trim(),
+        'extra': _extraDetailsController.text.trim(),
       });
+
       _selectedDate = null;
+      _selectedAppointmentType = null;
       _noteController.clear();
+      _doctorController.clear();
+      _medicalHistoryController.clear();
+      _extraDetailsController.clear();
     });
 
     Get.snackbar(

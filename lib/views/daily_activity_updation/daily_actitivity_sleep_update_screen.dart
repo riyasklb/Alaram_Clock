@@ -113,18 +113,18 @@ class _DailyActivitySleepUpdateScreenState
     'Daily Activity Tracker',
     style: GoogleFonts.lato(fontSize: 20.sp, fontWeight: FontWeight.w600),
   ),
-  actions: [
-    IconButton(
-      icon: Icon(Icons.edit, size: 22.sp),
-      tooltip: 'Edit Goals',
-   onPressed: () {
-  Get.to(
-    GoalSettingScreen(showExtraOptions: true,),
+ // actions: [
+//     IconButton(
+//       icon: Icon(Icons.edit, size: 22.sp),
+//       tooltip: 'Edit Goals',
+//    onPressed: () {
+//   Get.to(
+//     GoalSettingScreen(showExtraOptions: true,),
   
-  );
-}
-    ),
-  ],
+//   );
+// }
+//     ),
+  //],
 ),
 
       body: Padding(
