@@ -15,11 +15,13 @@ class ActivityLog extends HiveObject {
 
   @HiveField(3)
   final double waterIntake;
-
+  @HiveField(4)
+  final String? additionalInformation;
   ActivityLog({
     required this.date,
     required this.sleepHours,
     required this.walkingHours,
     required this.waterIntake,
+    this.additionalInformation,
   });
 }

@@ -21,13 +21,14 @@ class ActivityLogAdapter extends TypeAdapter<ActivityLog> {
       sleepHours: fields[1] as double,
       walkingHours: fields[2] as double,
       waterIntake: fields[3] as double,
+      additionalInformation: fields[4] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, ActivityLog obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(5)
       ..writeByte(0)
       ..write(obj.date)
       ..writeByte(1)
@@ -35,7 +36,9 @@ class ActivityLogAdapter extends TypeAdapter<ActivityLog> {
       ..writeByte(2)
       ..write(obj.walkingHours)
       ..writeByte(3)
-      ..write(obj.waterIntake);
+      ..write(obj.waterIntake)
+      ..writeByte(4)
+      ..write(obj.additionalInformation);
   }
 
   @override

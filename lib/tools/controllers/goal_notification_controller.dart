@@ -14,6 +14,7 @@ class NotificationController extends GetxController {
   var enableBreakfast = false.obs;
   var enableLunch = false.obs;
   var enableDinner = false.obs;
+  var enableevening= false.obs;
   var medicines = <Map<String, dynamic>>[].obs;
 
   NotificationController() {
@@ -293,6 +294,7 @@ class NotificationController extends GetxController {
           morning: enableBreakfast.value,
           afternoon: enableLunch.value,
           night: enableDinner.value,
+          evening: enableevening.value
         ),
         medicines: medicinesData,
       );

@@ -191,14 +191,15 @@ class RegisterScreen extends StatelessWidget {
     LengthLimitingTextInputFormatter(10), // Max 10 digits
     FilteringTextInputFormatter.digitsOnly, // Only digits allowed
   ],
-  validator: (value) {
-    if (value == null || value.isEmpty) {
-      return 'NHS number cannot be empty';
-    } else if (value.length != 10) {
-      return 'NHS number must be exactly 10 digits';
-    }
-    return null;
-  },
+validator: (value) {
+  if (value == null || value.isEmpty) {
+    return 'NHS number cannot be empty';
+  } else if (!RegExp(r'^\d{1,10}$').hasMatch(value)) {
+    return 'Only digits are allowed (max 10)';
+  }
+  return null;
+},
+
 ),
 
                             SizedBox(height: 16.h),

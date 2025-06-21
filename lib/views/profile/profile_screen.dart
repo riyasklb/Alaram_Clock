@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:alaram/views/home/home_screen.dart';
+import 'package:alaram/views/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -96,7 +98,7 @@ void _saveProfile() {
     // Save updated profile
     profileBox.put('userProfile', updatedProfile);
     
-    Get.back(); // Return to profile screen
+    Get.to(HomeScreen()); // Return to profile screen
     Get.snackbar(
       'Success',
       'Profile updated successfully',
@@ -112,12 +114,7 @@ void _saveProfile() {
       appBar: AppBar(
         title: Text('Edit Profile', style: GoogleFonts.poppins(color: kblack)),
         backgroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.save, color: Colors.black),
-            onPressed: _saveProfile,
-          ),
-        ],
+      
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.w),
@@ -149,6 +146,32 @@ void _saveProfile() {
               _buildEditableField('Water Intake Goal (ml)', _waterController, isNumber: true),
               _buildEditableField('Sleep Goal (hours)', _sleepController, isNumber: true),
               _buildEditableField('Walking Goal (steps)', _walkingController, isNumber: true),
+
+              kheight40,  
+               ElevatedButton.icon(
+  onPressed: _saveProfile,
+  icon: Icon(Icons.save, color: kwhite, size: 22.sp),
+  label: Text(
+    'Save Profile',
+    style: TextStyle(
+      color: kwhite,
+      fontSize: 16.sp,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.5,
+    ),
+  ),
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.blueAccent,
+    padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 14.h),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12.r),
+    ),
+    elevation: 3, // subtle shadow
+    splashFactory: InkRipple.splashFactory,
+  ),
+),
+
+ kheight40,
             ],
           ),
         ),
@@ -234,6 +257,24 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             elevation: 0,
+            actions: [
+    TextButton.icon(
+      onPressed: () => Get.to(EditProfileScreen()),
+      icon: Icon(Icons.edit, color: Colors.white, size: 22.r),
+      label: Text(
+        'Edit',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 16.sp,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      style: TextButton.styleFrom(
+        foregroundColor: Colors.white,
+        padding: EdgeInsets.symmetric(horizontal: 12.w),
+      ),
+    ),
+  ],
           ),
           body: SingleChildScrollView(
             child: Padding(
@@ -404,10 +445,7 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           SizedBox(width: 8.w),
-          IconButton(
-            icon: Icon(Icons.edit, color: Colors.white, size: 28.r),
-            onPressed: () => Get.to(EditProfileScreen()),
-          ),
+         
         ],
       ),
     );
@@ -441,7 +479,7 @@ class ProfileScreen extends StatelessWidget {
         settingsBox.clear();
         activityLogsBox.clear();
         dailyActivitiesBox.clear();
-        Get.offAll(RegisterScreen());
+        Get.offAll(SplashScreen());
       },
       style: ElevatedButton.styleFrom(
         padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 15.h),

@@ -121,28 +121,28 @@ class _ClinicalVisitScreenState extends State<ClinicalVisitScreen> {
           ),
           SizedBox(height: 16.h),
 
-          // Doctor Name
-          TextField(
-            controller: _doctorController,
-            style: GoogleFonts.poppins(fontSize: 14.sp),
-            decoration: InputDecoration(
-              labelText: 'Doctor Name',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
-              prefixIcon: Icon(Icons.person),
-            ),
-          ),
-          SizedBox(height: 16.h),
+      
+        
 
           // Medical History
-          TextField(
-            controller: _medicalHistoryController,
-            style: GoogleFonts.poppins(fontSize: 14.sp),
-            decoration: InputDecoration(
-              labelText: 'Medical History',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
-              prefixIcon: Icon(Icons.history),
-            ),
-          ),
+        TextField(
+  controller: _medicalHistoryController,
+  style: GoogleFonts.poppins(fontSize: 16.sp), // Slightly bigger font
+  maxLines: 2, // Adjust this number as needed
+  decoration: InputDecoration(
+    labelText: 'Medical History',
+    labelStyle: GoogleFonts.poppins(fontSize: 16.sp),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(16.r),
+    ),
+    prefixIcon: Icon(Icons.history),
+    contentPadding: EdgeInsets.symmetric(
+      horizontal: 16.w,
+      vertical: 20.h, // Increases height
+    ),
+  ),
+),
+
           SizedBox(height: 16.h),
 
           // Additional Details

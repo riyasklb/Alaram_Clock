@@ -25,6 +25,7 @@ class _DailyActivitySleepUpdateScreenState
   final TextEditingController sleepController = TextEditingController();
   final TextEditingController walkingController = TextEditingController();
   final TextEditingController waterController = TextEditingController();
+   final TextEditingController additionalInfoController  = TextEditingController();
 
   DateTime selectedDate =
       DateTime.now().subtract(Duration(days: 1)); // Default to yesterday's date
@@ -128,76 +129,125 @@ class _DailyActivitySleepUpdateScreenState
 ),
 
       body: Padding(
-        padding: EdgeInsets.all(16.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (hasPendingUpdate)
-              Padding(
-                padding: EdgeInsets.only(bottom: 10.h),
-                child: Text(
-                  'You have a pending update for $pendingDate. Please update to keep your activity log complete.',
-                  style: GoogleFonts.roboto(
-                      fontSize: 14.sp,
-                      color: Colors.redAccent,
-                      fontWeight: FontWeight.w500),
-                ),
-              )
-            else
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  kheight40,
-                  kheight40,
-                  kheight40,
-                  Center(
-                    child: Text(
-                      'No update pending, you can update tomorrow.',
-                      style: GoogleFonts.roboto(
-                          fontSize: 20.sp,
-                          color: Colors.green,
-                          fontWeight: FontWeight.w500),
-                    ),
-                  ),
-                ],
-              ),
-            if (hasPendingUpdate) ...[
-              Text(
-                'Update your yesterday activities to keep track of your daily progress.',
+  padding: EdgeInsets.all(16.w),
+  child: ListView(
+    children: [
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (hasPendingUpdate)
+            Padding(
+              padding: EdgeInsets.only(bottom: 10.h),
+              child: Text(
+                'You have a pending update for $pendingDate. Please update to keep your activity log complete.',
                 style: GoogleFonts.roboto(
-                    fontSize: 16.sp, color: Colors.grey[700]),
+                    fontSize: 14.sp,
+                    color: Colors.redAccent,
+                    fontWeight: FontWeight.w500),
               ),
-              SizedBox(height: 20.h),
-              _buildDateSelector(),
-              _buildActivityCard(
-                  'Sleep', 'Hours of sleep', 'hours', sleepController),
-              _buildActivityCard(
-                  'Walking', 'Hours walked', 'hours', walkingController),
-              _buildActivityCard(
-                  'Water Intake', 'Liters of water', 'liters', waterController),
-              Spacer(),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: saveActivityLog,
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 14.h),
-                    backgroundColor: Colors.blueAccent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                  ),
+            )
+          else
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                kheight40,
+                kheight40,
+                kheight40,
+                Center(
                   child: Text(
-                    'Update Activities',
-                    style:
-                        GoogleFonts.lato(fontSize: 18.sp, color: Colors.white),
+                    'No update pending, you can update tomorrow.',
+                    style: GoogleFonts.roboto(
+                        fontSize: 20.sp,
+                        color: Colors.green,
+                        fontWeight: FontWeight.w500),
                   ),
                 ),
+              ],
+            ),
+          if (hasPendingUpdate) ...[
+            Text(
+              'Update your yesterday activities to keep track of your daily progress.',
+              style: GoogleFonts.roboto(
+                  fontSize: 16.sp, color: Colors.grey[700]),
+            ),
+            SizedBox(height: 20.h),
+            _buildDateSelector(),
+            _buildActivityCard(
+                'Sleep', 'Hours of sleep', 'hours', sleepController),
+            _buildActivityCard(
+                'Walking', 'Hours walked', 'hours', walkingController),
+            _buildActivityCard(
+                'Water Intake', 'Liters of water', 'liters', waterController),
+            Card(
+              margin: EdgeInsets.symmetric(vertical: 10.h),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.r),
               ),
-            ]
+              elevation: 3,
+              child: Padding(
+                padding: EdgeInsets.all(16.w),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Additional Information (optional)',
+                      style: GoogleFonts.roboto(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.blueAccent,
+                      ),
+                    ),
+                    SizedBox(height: 8.h),
+                    TextField(
+                      controller: additionalInfoController,
+                      keyboardType: TextInputType.multiline,
+                      maxLines: 5,
+                      decoration: InputDecoration(
+                        hintText: 'Enter any notes or comments...',
+                        hintStyle: GoogleFonts.roboto(
+                          fontSize: 16.sp,
+                          color: Colors.grey,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.r),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 12.w,
+                          vertical: 12.h,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 20.h),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: saveActivityLog,
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 14.h),
+                  backgroundColor: Colors.blueAccent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                ),
+                child: Text(
+                  'Update Activities',
+                  style: GoogleFonts.lato(
+                      fontSize: 18.sp, color: Colors.white),
+                ),
+              ),
+            ),
           ],
-        ),
+          SizedBox(height: 20),
+        ],
       ),
+    ],
+  ),
+)
+
     );
   }
 
@@ -261,6 +311,7 @@ class _DailyActivitySleepUpdateScreenState
       sleepHours: sleep,
       walkingHours: walking,
       waterIntake: water,
+      additionalInformation: additionalInfoController.text
     );
 
     await box.add(activityLog);

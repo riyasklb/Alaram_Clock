@@ -86,6 +86,7 @@ class OptionalGoalSettingScreen extends StatelessWidget {
                     _buildToggleSwitch(
                         'Enable Breakfast', controller.enableBreakfast),
                     _buildToggleSwitch('Enable Lunch', controller.enableLunch),
+                    _buildToggleSwitch('Enable Evening', controller.enableevening),
                     _buildToggleSwitch('Enable Dinner', controller.enableDinner),
                     SizedBox(height: 30.h),
                     Center(
@@ -125,7 +126,7 @@ class OptionalGoalSettingScreen extends StatelessWidget {
      
 GetxDropdownField(
   label: 'Select or type Medicine',
-  icon: Icons.food_bank,
+  icon: Icons.medication,
   controller: controller,
 ),
 
@@ -138,7 +139,7 @@ GetxDropdownField(
       ),
       _buildMultiSelectChip(
         label: 'Select Medicine Times',
-        items: <String>['Morning', 'Afternoon', 'Evening', 'Night'],
+        items: <String>['Morning', 'Afternoon',  'Night'],
         selectedItems: controller.medicines[index]['selectedTimes'],
         onSelectionChanged: (List<String> selectedList) {
           controller.updateSelectedTimes(index, selectedList);

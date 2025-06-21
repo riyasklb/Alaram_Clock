@@ -75,6 +75,33 @@ class _DailyActivitiesWidgetState extends State<DailyActivitiesWidget> {
                     label: 'Water Intake',
                     value: '${matchingLog.waterIntake.toStringAsFixed(1)} L',
                   ),
+if (matchingLog.additionalInformation != null &&
+    matchingLog.additionalInformation!.trim().isNotEmpty)
+  Padding(
+    padding: EdgeInsets.symmetric(vertical: 8.h),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Additional Notes:',
+          style: GoogleFonts.roboto(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+            color: Colors.blueAccent,
+          ),
+        ),
+        SizedBox(height: 4.h),
+        Text(
+          matchingLog.additionalInformation!,
+          style: GoogleFonts.roboto(
+            fontSize: 16.sp,
+            color: Colors.black87,
+          ),
+          textAlign: TextAlign.start,
+        ),
+      ],
+    ),
+  ),
 
                   // Medicines Section
                   if (activity.medicines != null && activity.medicines!.isNotEmpty)

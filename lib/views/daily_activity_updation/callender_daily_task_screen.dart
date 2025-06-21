@@ -28,7 +28,50 @@ class _DailyMedicneTaskCallenderScreenState extends State<DailyMedicneTaskCallen
   void initState() {
     super.initState();
     _openBox();
+    printAllGoals();
   }
+
+void printAllGoals() async {
+  // Open the box
+  var goalData = await Hive.openBox<Goal>('goals');
+
+  // Iterate through all goals
+  for (var goal in goalData.values) {
+    print('--- Goal ---');
+    print('Goal ID: ${goal.goalId}');
+    print('Goal Type: ${goal.goalType}');
+    print('Date: ${goal.date}');
+    print('Skipped: ${goal.skipped}');
+
+    // Print Meal info
+    if (goal.MealValue != null) {
+      print('Meal Details:');
+      print('  Morning: ${goal.MealValue?.morning}');
+      print('  Afternoon: ${goal.MealValue?.afternoon}');
+      print('  Evening: ${goal.MealValue?.evening}');
+      print('  Night: ${goal.MealValue?.night}');
+    } else {
+      print('Meal: None');
+    }
+
+    // Print Medicine info
+    if (goal.medicines != null && goal.medicines!.isNotEmpty) {
+      print('Medicines:');
+      for (var med in goal.medicines!) {
+        print('  Name: ${med.name}');
+        print('  Frequency Type: ${med.frequencyType}');
+        print('  Dosage: ${med.dosage}');
+        print('  Quantity: ${med.quantity}');
+        print('  Next Intake Date: ${med.nextIntakeDate}');
+        print('  Selected Times: ${med.selectedTimes.join(', ')}');
+      }
+    } else {
+      print('Medicines: None');
+    }
+
+    print('--------------\n');
+  }
+}
 
   Future<void> _openBox() async {
     goalData = await Hive.openBox<Goal>('goals');
