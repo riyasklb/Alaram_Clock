@@ -1,5 +1,6 @@
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/model/profile_model.dart';
+import 'package:alaram/views/careers_and_advice/careers_and_advice.dart';
 import 'package:alaram/views/clinic_visit/clinic_visit_screen.dart';
 
 import 'package:alaram/views/completed_tasks/daily_activity_medicine_log.dart';
@@ -393,7 +394,7 @@ final _gridItems = [
     imagePath:
         'assets/logo/video-marketing.png', // A play icon for tutorials and videos
     color: Colors.pink,
-    onTap: () => Get.to(() => VideoTutorial()),
+    onTap: () => Get.to(() => AdviceGuidanceScreen()),
   ),
 ];
 

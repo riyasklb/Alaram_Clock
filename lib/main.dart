@@ -1,5 +1,6 @@
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/model/activity_log.dart';
+import 'package:alaram/tools/model/clinical_visit_model.dart';
 import 'package:alaram/tools/model/daily_activity_model.dart';
 import 'package:alaram/tools/model/goal_model.dart';
 
@@ -40,7 +41,9 @@ void main() async {
   Hive.registerAdapter(MealAdapter());
    Hive.registerAdapter(DailyMedicineAdapter());
 Hive.registerAdapter(DailyactivityMealValueAdapter());
- Hive.registerAdapter(ActivityLogAdapter()); // Register the new adapter
+ Hive.registerAdapter(ActivityLogAdapter());
+ Hive.registerAdapter(ClinicalVisitAdapter());
+  await Hive.openBox<ClinicalVisit>('clinical_visits'); // Register the new adapter
   await Hive.openBox<ActivityLog>(sleepactivitys);
   await Hive.openBox<DailyActivityModel>('dailyActivities');
 

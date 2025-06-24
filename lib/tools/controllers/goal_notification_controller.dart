@@ -15,7 +15,7 @@ class NotificationController extends GetxController {
   var enableLunch = false.obs;
   var enableDinner = false.obs;
   var enableevening= false.obs;
-  var medicines = <Map<String, dynamic>>[].obs;
+   var medicines = <Map<String, dynamic>>[].obs;
 
   NotificationController() {
     tz.initializeTimeZones();
@@ -27,15 +27,15 @@ class NotificationController extends GetxController {
     super.onInit();
     initializeNotifications();
     addMedicine();
-    ListOfmedicine();
+    
   }
 
 
- void ListOfmedicine() {
-    final sampleMedicines = ['Paracetamol', 'Ibuprofen', 'Amoxicillin','Aspirin'];
-    items.assignAll(sampleMedicines);
-    filteredItems.assignAll(sampleMedicines);
-  }
+//  void ListOfmedicine() {
+//     final sampleMedicines = ['Paracetamol', 'Ibuprofen', 'Amoxicillin','Aspirin'];
+//     items.assignAll(sampleMedicines);
+//     filteredItems.assignAll(sampleMedicines);
+//   }
   Future<void> initializeNotifications() async {
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -244,9 +244,9 @@ class NotificationController extends GetxController {
     }
   }
 
-  void addMedicine() {
+   void addMedicine() {
     medicines.add({
-      'name': null,
+      'nameController': TextEditingController(), // ADDED
       'quantityController': TextEditingController(),
       'selectedTimes': <String>[],
       'frequency': null,
@@ -276,9 +276,10 @@ class NotificationController extends GetxController {
   void saveOptionalGoals(GlobalKey<FormState> formKey) async {
     if (formKey.currentState?.validate() ?? false) {
       final box = await Hive.openBox<Goal>('goals');
-      List<Medicine> medicinesData = medicines.map((medicine) {
+           List<Medicine> medicinesData = medicines.map((medicine) {
         return Medicine(
-          name: medicine['name'] ?? 'Unnamed Medicine',
+          // FIX: Get name from text controller
+          name: medicine['nameController'].text, 
           frequencyType: medicine['frequency'] ?? 'daily',
           dosage: medicine['dosageController'].text,
           quantity: int.tryParse(medicine['quantityController'].text) ?? 1,
@@ -358,30 +359,7 @@ class NotificationController extends GetxController {
 
   
 
-  void testNotification() {
-  var androidDetails = AndroidNotificationDetails(
-    'test_channel',
-    'Test Notifications',
-    importance: Importance.max,
-    priority: Priority.high,
-  );
-  var platformDetails = NotificationDetails(android: androidDetails);
-
-  var now = tz.TZDateTime.now(tz.local).add(Duration(seconds: 5)); // 5 seconds from now
-
-  flutterLocalNotificationsPlugin.zonedSchedule(
-    2000, // Unique ID
-    'Test Reminder',
-    'This is a test notification.',
-    now,
-    platformDetails,
-    androidAllowWhileIdle: true,
-    uiLocalNotificationDateInterpretation:
-        UILocalNotificationDateInterpretation.absoluteTime,
-  );
-
-  print('Scheduled test notification at $now');
-}
+ 
 var items = <String>[].obs;
   var filteredItems = <String>[].obs;
   var selectedValue = ''.obs;
