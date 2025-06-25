@@ -1,5 +1,6 @@
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/model/clinical_visit_model.dart';
+import 'package:alaram/views/clinic_visit/list_clinic_vist.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -16,30 +17,29 @@ class ClinicalVisitScreen extends StatefulWidget {
 
 class _ClinicalVisitScreenState extends State<ClinicalVisitScreen> {
   final TextEditingController _noteController = TextEditingController();
-  final TextEditingController _medicalHistoryController = TextEditingController();
+  final TextEditingController _medicalHistoryController =
+      TextEditingController();
 
   DateTime? _selectedDate;
   String? _selectedAppointmentType;
 
-List<ClinicalVisit> visits = [];
+  List<ClinicalVisit> visits = [];
 
+  late Box<ClinicalVisit> visitBox;
 
+  @override
+  void initState() {
+    super.initState();
+    visitBox = Hive.box<ClinicalVisit>('clinical_visits');
+    loadVisits();
+  }
 
-
-late Box<ClinicalVisit> visitBox;
-
-@override
-void initState() {
-  super.initState();
-  visitBox = Hive.box<ClinicalVisit>('clinical_visits');
-  loadVisits();
-}
-void loadVisits() {
-  final data = visitBox.values.toList();
-  setState(() {
-    visits = data;
-  });
-}
+  void loadVisits() {
+    final data = visitBox.values.toList();
+    setState(() {
+      visits = data;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +63,18 @@ void loadVisits() {
         child: Column(
           children: [
             _buildAddVisitCard(),
-            SizedBox(height: 24.h),
+            SizedBox(height: 15.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                    onPressed: () {
+                      Get.to(ClinicalVisitListScreen());
+                    },
+                    child: Text('View All'))
+              ],
+            ),
+            SizedBox(height: 15.h),
             _buildVisitList(),
           ],
         ),
@@ -102,7 +113,6 @@ void loadVisits() {
             ),
           ),
           SizedBox(height: 16.h),
-
           ElevatedButton.icon(
             onPressed: _pickDate,
             icon: Icon(Icons.calendar_today, color: Colors.white, size: 18.sp),
@@ -110,7 +120,7 @@ void loadVisits() {
               _selectedDate == null
                   ? 'Pick Visit Date'
                   : DateFormat.yMMMMd().format(_selectedDate!),
-              style: GoogleFonts.poppins(fontSize: 14.sp,color: kwhite),
+              style: GoogleFonts.poppins(fontSize: 14.sp, color: kwhite),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.indigo.shade500,
@@ -121,7 +131,6 @@ void loadVisits() {
             ),
           ),
           SizedBox(height: 16.h),
-
           DropdownButtonFormField<String>(
             value: _selectedAppointmentType,
             items: ['GP', 'Hospital', 'Others']
@@ -137,11 +146,11 @@ void loadVisits() {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
             ),
           ),
           SizedBox(height: 16.h),
-
           TextField(
             controller: _medicalHistoryController,
             style: GoogleFonts.poppins(fontSize: 14.sp),
@@ -156,7 +165,6 @@ void loadVisits() {
             ),
           ),
           SizedBox(height: 16.h),
-
           TextField(
             controller: _noteController,
             maxLines: 3,
@@ -164,12 +172,12 @@ void loadVisits() {
             decoration: InputDecoration(
               labelText: 'Notes (Doctor, Clinic, Reason...)',
               labelStyle: GoogleFonts.poppins(fontSize: 13.sp),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
               prefixIcon: Icon(Icons.note_alt_rounded),
             ),
           ),
           SizedBox(height: 20.h),
-
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
@@ -177,7 +185,8 @@ void loadVisits() {
               icon: Icon(Icons.add_circle_outline, size: 18.sp),
               label: Text(
                 'Add Visit',
-                style: GoogleFonts.poppins(fontSize: 15.sp, fontWeight: FontWeight.w600),
+                style: GoogleFonts.poppins(
+                    fontSize: 15.sp, fontWeight: FontWeight.w600),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green.shade600,
@@ -201,7 +210,8 @@ void loadVisits() {
           padding: EdgeInsets.only(top: 60.h),
           child: Text(
             'No clinical visits added yet.',
-            style: GoogleFonts.poppins(fontSize: 14.sp, color: Colors.grey.shade600),
+            style: GoogleFonts.poppins(
+                fontSize: 14.sp, color: Colors.grey.shade600),
           ),
         ),
       );
@@ -237,7 +247,8 @@ void loadVisits() {
                 leading: CircleAvatar(
                   radius: 24.r,
                   backgroundColor: Colors.indigo.shade100,
-                  child: Icon(Icons.local_hospital_rounded, color: Colors.indigo, size: 22.sp),
+                  child: Icon(Icons.local_hospital_rounded,
+                      color: Colors.indigo, size: 22.sp),
                 ),
                 title: Text(
                   DateFormat.yMMMMd().format(visit.date),
@@ -251,12 +262,12 @@ void loadVisits() {
                   style: GoogleFonts.poppins(fontSize: 13.sp),
                 ),
                 trailing: IconButton(
-                  icon: Icon(Icons.delete, color: Colors.redAccent, size: 22.sp),
-                onPressed: () async {
-  await visits[index].delete();
-  setState(() => visits.removeAt(index));
-},
-
+                  icon:
+                      Icon(Icons.delete, color: Colors.redAccent, size: 22.sp),
+                  onPressed: () async {
+                    await visits[index].delete();
+                    setState(() => visits.removeAt(index));
+                  },
                 ),
               ),
               SizedBox(height: 8.h),
@@ -312,44 +323,43 @@ void loadVisits() {
   }
 
   void _addVisit() async {
-  if (_selectedDate == null ||
-      _noteController.text.trim().isEmpty ||
-      _selectedAppointmentType == null) {
+    if (_selectedDate == null ||
+        _noteController.text.trim().isEmpty ||
+        _selectedAppointmentType == null) {
+      Get.snackbar(
+        'Missing Info',
+        'Please fill in all required fields',
+        backgroundColor: Colors.redAccent,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: EdgeInsets.all(12.w),
+      );
+      return;
+    }
+
+    final visit = ClinicalVisit()
+      ..date = _selectedDate!
+      ..notes = _noteController.text.trim()
+      ..appointmentType = _selectedAppointmentType!
+      ..history = _medicalHistoryController.text.trim();
+
+    await visitBox.add(visit);
+
+    setState(() {
+      visits.add(visit);
+      _selectedDate = null;
+      _selectedAppointmentType = null;
+      _noteController.clear();
+      _medicalHistoryController.clear();
+    });
+
     Get.snackbar(
-      'Missing Info',
-      'Please fill in all required fields',
-      backgroundColor: Colors.redAccent,
+      'Visit Added',
+      'Your clinical visit has been scheduled.',
+      backgroundColor: Colors.green,
       colorText: Colors.white,
       snackPosition: SnackPosition.BOTTOM,
       margin: EdgeInsets.all(12.w),
     );
-    return;
   }
-
-  final visit = ClinicalVisit()
-    ..date = _selectedDate!
-    ..notes = _noteController.text.trim()
-    ..appointmentType = _selectedAppointmentType!
-    ..history = _medicalHistoryController.text.trim();
-
-  await visitBox.add(visit);
-
-  setState(() {
-    visits.add(visit);
-    _selectedDate = null;
-    _selectedAppointmentType = null;
-    _noteController.clear();
-    _medicalHistoryController.clear();
-  });
-
-  Get.snackbar(
-    'Visit Added',
-    'Your clinical visit has been scheduled.',
-    backgroundColor: Colors.green,
-    colorText: Colors.white,
-    snackPosition: SnackPosition.BOTTOM,
-    margin: EdgeInsets.all(12.w),
-  );
-}
-
 }
