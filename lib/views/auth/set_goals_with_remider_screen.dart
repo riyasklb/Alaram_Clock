@@ -9,12 +9,18 @@ import 'package:alaram/tools/constans/color.dart';
 class OptionalGoalSettingScreen extends StatelessWidget {
   final NotificationController controller = Get.put(NotificationController());
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final List<String> predefinedMedicines = [
-    'Paracetamol', 
-    'Ibuprofen', 
-    'Amoxicillin',
-    'Aspirin'
-  ];
+ final List<String> predefinedMedicines = [
+  'Paracetamol',
+  'Ibuprofen',
+  'Amoxicillin',
+  'Aspirin',
+  'Warfarin',
+  'Rivaroxaban',
+  'Dabigatran',
+  'Apixaban',
+  'Edoxaban',
+];
+
 
   @override
   Widget build(BuildContext context) {

@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:alaram/tools/constans/color.dart';
+import 'package:alaram/tools/controllers/goal_notification_controller.dart';
 import 'package:alaram/tools/model/profile_model.dart';
 import 'package:alaram/views/careers_and_advice/careers_and_advice.dart';
 import 'package:alaram/views/clinic_visit/clinic_visit_screen.dart';
@@ -46,76 +49,108 @@ class HomeScreen extends StatelessWidget {
 
           // The rest of your widgets remain the same...
       Container(
-        height: 240.h,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF3F51B5), Color(0xFF1E88E5)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.blue.shade200,
-              blurRadius: 15,
-              offset: Offset(0, 5),
+  height: 240.h,
+  width: double.infinity,
+  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 40.h),
+  decoration: BoxDecoration(
+    gradient: const LinearGradient(
+      colors: [Color(0xFF3F51B5), Color(0xFF1E88E5)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.blue.shade200,
+        blurRadius: 15,
+        offset: const Offset(0, 5),
+      ),
+    ],
+    borderRadius: BorderRadius.circular(20.r),
+  ),
+  child: GestureDetector(
+    onTap: () => Get.to(() => ProfileScreen()),
+    child: FutureBuilder(
+      future: _openBoxes(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.white),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Center(
+            child: Text(
+              'Failed to load profile',
+              style: GoogleFonts.montserrat(
+                color: Colors.white,
+                fontSize: 16.sp,
+              ),
             ),
-          ],
-        ),
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 40.h),
-        child: GestureDetector(
-             onTap: () {
-          Get.to(ProfileScreen());
-        },
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
+          );
+        }
+
+        final profileBox = Hive.box<ProfileModel>('profileBox');
+        final profile = profileBox.get('userProfile');
+
+        final username = profile?.username?.trim().isNotEmpty == true
+            ? profile!.username!
+            : 'there';
+
+        final hasProfileImage = profile?.imagePath != null &&
+            File(profile!.imagePath!).existsSync();
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(height: 20.h),
-                  FutureBuilder(
-                      future: _openBoxes(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return Center(child: CircularProgressIndicator());
-                        }
-                        if (snapshot.hasError) {
-                          return Center(child: Text('Failed to open Hive boxes.'));
-                        }
-              
-                        final profileBox = Hive.box<ProfileModel>('profileBox');
-              
-                     return Text(
-  'Welcome back,\n${profileBox.get('userProfile')?.username ?? 'there'}!',
-  style: GoogleFonts.montserrat(
-    color: Colors.white,
-    fontSize: 28.sp,
-    fontWeight: FontWeight.bold,
-  ),
-);
-
-                      }),
-                  SizedBox(height: 10.h),
                   Text(
-                    'Here is your daily overview!',
+                    'Welcome back,',
+                    style: GoogleFonts.montserrat(
+                      color: Colors.white,
+                      fontSize: 22.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    '$username!',
+                    style: GoogleFonts.montserrat(
+                      color: Colors.white,
+                      fontSize: 28.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    'Here is your daily overview.',
                     style: GoogleFonts.montserrat(
                       color: Colors.white70,
-                      fontSize: 16.sp,
+                      fontSize: 15.sp,
                     ),
                   ),
                 ],
               ),
-              Image.asset(
-                'assets/logo/doctor.png',
-                height: 120.h,
-                width: 120.w,
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
+            CircleAvatar(
+              radius: 45.r,
+              backgroundColor: Colors.white,
+              backgroundImage: hasProfileImage
+                  ? FileImage(File(profile!.imagePath!))
+                  : const AssetImage('assets/images/default_avatar.png')
+                      as ImageProvider,
+            ),
+          ],
+        );
+      },
+    ),
+  ),
+),
+
       
       // Calendar Icon Positioned at top right
       Positioned(

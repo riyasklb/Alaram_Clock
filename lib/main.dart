@@ -1,4 +1,5 @@
 import 'package:alaram/tools/constans/color.dart';
+import 'package:alaram/tools/controllers/goal_notification_controller.dart';
 import 'package:alaram/tools/model/activity_log.dart';
 import 'package:alaram/tools/model/clinical_visit_model.dart';
 import 'package:alaram/tools/model/daily_activity_model.dart';
@@ -8,6 +9,8 @@ import 'package:alaram/tools/model/profile_model.dart';
 import 'package:alaram/views/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,6 +22,7 @@ import 'package:timezone/timezone.dart' as tz;
 FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 void main() async {
+   Get.put(NotificationController());
   // Ensure the Flutter bindings are initialized before running any app code
   WidgetsFlutterBinding.ensureInitialized();
 

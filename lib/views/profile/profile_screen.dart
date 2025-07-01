@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:alaram/tools/cutomwidget/cutom_home_button.dart';
 import 'package:alaram/views/home/home_screen.dart';
 import 'package:alaram/views/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,32 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
+  final List<String> genderOptions = ['Male', 'Female', 'Other'];
+  final List<String> ethnicityOptions = [
+    'Asian: Bangladeshi',
+    'Asian: Chinese',
+    'Asian: Indian',
+    'Asian: Pakistani',
+    'Asian: Other Asian',
+    'Black: African',
+    'Black: Caribbean',
+    'Black: Other Black',
+    'Mixed: White and Asian',
+    'Mixed: White and Black African',
+    'Mixed: White and Black Caribbean',
+    'Mixed: Other Mixed',
+    'White: British',
+    'White: Irish',
+    'White: Gypsy or Irish Traveller',
+    'White: Roma',
+    'White: Other White',
+    'Other: Arab',
+    'Other: Any other ethnic group',
+  ];
+
+  String? selectedGender;
+  String? selectedEthnicity;
+
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _usernameController;
   late TextEditingController _emailController;
@@ -33,7 +60,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _waterController;
   late TextEditingController _sleepController;
   late TextEditingController _walkingController;
-  
+
   String? _imagePath;
   final ImagePicker _picker = ImagePicker();
   final profileBox = Hive.box<ProfileModel>('profileBox');
@@ -51,10 +78,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _ethnicityController = TextEditingController(text: profile?.ethnicity);
     _waterController = TextEditingController(
         text: profile?.waterIntakeGoal?.toString() ?? '0');
-    _sleepController = TextEditingController(
-        text: profile?.sleepGoal?.toString() ?? '0');
-    _walkingController = TextEditingController(
-        text: profile?.walkingGoal?.toString() ?? '0');
+    _sleepController =
+        TextEditingController(text: profile?.sleepGoal?.toString() ?? '0');
+    _walkingController =
+        TextEditingController(text: profile?.walkingGoal?.toString() ?? '0');
     _imagePath = profile?.imagePath;
   }
 
@@ -67,54 +94,56 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
-void _saveProfile() {
-  if (_formKey.currentState!.validate()) {
-    // Get existing profile or create new one
-    final updatedProfile = profileBox.get('userProfile') ?? ProfileModel();
-    
-    // Update fields from form controllers
-    updatedProfile.username = _usernameController.text;
-    updatedProfile.email = _emailController.text;
-    updatedProfile.age = int.parse(_ageController.text);  // Use parse since validated
-    updatedProfile.mobile = _mobileController.text;
-    updatedProfile.nhsNumber = _nhsController.text;
-    
-    // Handle nullable fields
-    updatedProfile.gender = _genderController.text.isNotEmpty 
-        ? _genderController.text 
-        : null;
-    updatedProfile.ethnicity = _ethnicityController.text.isNotEmpty 
-        ? _ethnicityController.text 
-        : null;
-    
-    // Convert goal values properly
-    updatedProfile.waterIntakeGoal = double.tryParse(_waterController.text);
-    updatedProfile.sleepGoal = double.tryParse(_sleepController.text);
-    updatedProfile.walkingGoal = double.tryParse(_walkingController.text);
-    
-    // Preserve existing image path if not updating
-    updatedProfile.imagePath = _imagePath; // Uncomment if you have image handling
-    
-    // Save updated profile
-    profileBox.put('userProfile', updatedProfile);
-    
-    Get.to(HomeScreen()); // Return to profile screen
-    Get.snackbar(
-      'Success',
-      'Profile updated successfully',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-    );
+  void _saveProfile() {
+    if (_formKey.currentState!.validate()) {
+      // Get existing profile or create new one
+      final updatedProfile = profileBox.get('userProfile') ?? ProfileModel();
+
+      // Update fields from form controllers
+      updatedProfile.username = _usernameController.text;
+      updatedProfile.email = _emailController.text;
+      updatedProfile.age =
+          int.parse(_ageController.text); // Use parse since validated
+      updatedProfile.mobile = _mobileController.text;
+      updatedProfile.nhsNumber = _nhsController.text;
+
+      // Handle nullable fields
+      updatedProfile.gender =
+          _genderController.text.isNotEmpty ? _genderController.text : null;
+      updatedProfile.ethnicity = _ethnicityController.text.isNotEmpty
+          ? _ethnicityController.text
+          : null;
+
+      // Convert goal values properly
+      updatedProfile.waterIntakeGoal = double.tryParse(_waterController.text);
+      updatedProfile.sleepGoal = double.tryParse(_sleepController.text);
+      updatedProfile.walkingGoal = double.tryParse(_walkingController.text);
+
+      // Preserve existing image path if not updating
+      updatedProfile.imagePath =
+          _imagePath; // Uncomment if you have image handling
+
+      // Save updated profile
+      profileBox.put('userProfile', updatedProfile);
+
+      Get.to(HomeScreen()); // Return to profile screen
+      Get.snackbar(
+        'Success',
+        'Profile updated successfully',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
+    }
   }
-}
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(backgroundColor: kwhite,
+    return Scaffold(
+      backgroundColor: kwhite,
       appBar: AppBar(
         title: Text('Edit Profile', style: GoogleFonts.poppins(color: kblack)),
         backgroundColor: Colors.white,
-      
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.w),
@@ -127,9 +156,10 @@ void _saveProfile() {
                 child: CircleAvatar(
                   radius: 60.r,
                   backgroundColor: Colors.grey[300],
-                  backgroundImage: _imagePath != null && File(_imagePath!).existsSync()
-                      ? FileImage(File(_imagePath!))
-                      : null,
+                  backgroundImage:
+                      _imagePath != null && File(_imagePath!).existsSync()
+                          ? FileImage(File(_imagePath!))
+                          : null,
                   child: _imagePath == null
                       ? Icon(Icons.camera_alt, size: 40.r, color: Colors.blue)
                       : null,
@@ -141,37 +171,45 @@ void _saveProfile() {
               _buildEditableField('Age', _ageController, isNumber: true),
               _buildEditableField('Mobile', _mobileController),
               _buildEditableField('NHS Number', _nhsController),
-              _buildEditableField('Gender', _genderController),
-              _buildEditableField('Ethnicity', _ethnicityController),
-              _buildEditableField('Water Intake Goal (ml)', _waterController, isNumber: true),
-              _buildEditableField('Sleep Goal (hours)', _sleepController, isNumber: true),
-              _buildEditableField('Walking Goal (steps)', _walkingController, isNumber: true),
-
-              kheight40,  
-               ElevatedButton.icon(
-  onPressed: _saveProfile,
-  icon: Icon(Icons.save, color: kwhite, size: 22.sp),
-  label: Text(
-    'Save Profile',
-    style: TextStyle(
-      color: kwhite,
-      fontSize: 16.sp,
-      fontWeight: FontWeight.w600,
-      letterSpacing: 0.5,
-    ),
-  ),
-  style: ElevatedButton.styleFrom(
-    backgroundColor: Colors.blueAccent,
-    padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 14.h),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12.r),
-    ),
-    elevation: 3, // subtle shadow
-    splashFactory: InkRipple.splashFactory,
-  ),
-),
-
- kheight40,
+              _buildDropdownField('Gender', genderOptions, selectedGender,
+                  (val) {
+                setState(() => selectedGender = val);
+              }),
+              _buildDropdownField(
+                  'Ethnicity', ethnicityOptions, selectedEthnicity, (val) {
+                setState(() => selectedEthnicity = val);
+              }),
+              _buildEditableField('Water Intake Goal (ml)', _waterController,
+                  isNumber: true),
+              _buildEditableField('Sleep Goal (hours)', _sleepController,
+                  isNumber: true),
+              _buildEditableField('Walking Goal (steps)', _walkingController,
+                  isNumber: true),
+              kheight40,
+              ElevatedButton.icon(
+                onPressed: _saveProfile,
+                icon: Icon(Icons.save, color: kwhite, size: 22.sp),
+                label: Text(
+                  'Save Profile',
+                  style: TextStyle(
+                    color: kwhite,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent,
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 24.w, vertical: 14.h),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  elevation: 3, // subtle shadow
+                  splashFactory: InkRipple.splashFactory,
+                ),
+              ),
+              kheight40,
             ],
           ),
         ),
@@ -179,10 +217,36 @@ void _saveProfile() {
     );
   }
 
-  Widget _buildEditableField(String label, TextEditingController controller, {bool isNumber = false}) {
+  Widget _buildDropdownField(String label, List<String> items,
+      String? selectedValue, ValueChanged<String?> onChanged) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8.h),
+      child: DropdownButtonFormField<String>(
+        value: selectedValue,
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          filled: true,
+          fillColor: Colors.grey[100],
+        ),
+        items: items
+            .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+            .toList(),
+        onChanged: onChanged,
+        validator: (value) =>
+            value == null || value.isEmpty ? 'Please select $label' : null,
+      ),
+    );
+  }
+
+  Widget _buildEditableField(String label, TextEditingController controller,
+      {bool isNumber = false}) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8.h),
       child: TextFormField(
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         controller: controller,
         decoration: InputDecoration(
           labelText: label,
@@ -197,9 +261,22 @@ void _saveProfile() {
           if (value == null || value.isEmpty) {
             return 'Please enter $label';
           }
-         if (isNumber && double.tryParse(value) == null) {
-  return 'Please enter a valid number';
-}
+
+          if (label == 'Mobile') {
+            if (!RegExp(r'^\d{11}$').hasMatch(value)) {
+              return 'Mobile number must be exactly 11 digits';
+            }
+          }
+
+          if (label == 'NHS Number') {
+            if (!RegExp(r'^\d{1,10}$').hasMatch(value)) {
+              return 'NHS Number must be up to 10 digits only';
+            }
+          }
+
+          if (isNumber && double.tryParse(value) == null) {
+            return 'Please enter a valid number';
+          }
 
           return null;
         },
@@ -230,10 +307,10 @@ class ProfileScreen extends StatelessWidget {
         }
 
         final profileBox = Hive.box<ProfileModel>('profileBox');
-        final goalBox = Hive.box<Goal>('goals');
-        final settingsBox = Hive.box('settingsBox');
-        final activitylog = Hive.box<ActivityLog>('activityLogs');
-        final dailyactivitybox = Hive.box<DailyActivityModel>('dailyActivities');
+        // final goalBox = Hive.box<Goal>('goals');
+        // final settingsBox = Hive.box('settingsBox');
+        // final activitylog = Hive.box<ActivityLog>('activityLogs');
+        // final dailyactivitybox = Hive.box<DailyActivityModel>('dailyActivities');
 
         return Scaffold(
           appBar: AppBar(
@@ -258,23 +335,23 @@ class ProfileScreen extends StatelessWidget {
             ),
             elevation: 0,
             actions: [
-    TextButton.icon(
-      onPressed: () => Get.to(EditProfileScreen()),
-      icon: Icon(Icons.edit, color: Colors.white, size: 22.r),
-      label: Text(
-        'Edit',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 16.sp,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      style: TextButton.styleFrom(
-        foregroundColor: Colors.white,
-        padding: EdgeInsets.symmetric(horizontal: 12.w),
-      ),
-    ),
-  ],
+              TextButton.icon(
+                onPressed: () => Get.to(EditProfileScreen()),
+                icon: Icon(Icons.edit, color: Colors.white, size: 22.r),
+                label: Text(
+                  'Edit',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 12.w),
+                ),
+              ),
+            ],
           ),
           body: SingleChildScrollView(
             child: Padding(
@@ -288,7 +365,8 @@ class ProfileScreen extends StatelessWidget {
                   SizedBox(height: 10.h),
                   ..._buildProfileCards(profileBox),
                   SizedBox(height: 20.h),
-                  _buildLogoutButton(context, profileBox, goalBox, settingsBox, activitylog, dailyactivitybox),
+                  CustomHomeButton(),
+                  //   _buildLogoutButton(context, profileBox, goalBox, settingsBox, activitylog, dailyactivitybox),
                   SizedBox(height: 40.h),
                 ],
               ),
@@ -445,7 +523,6 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           SizedBox(width: 8.w),
-         
         ],
       ),
     );
@@ -462,7 +539,8 @@ class ProfileScreen extends StatelessWidget {
       _buildProfileCard('Ethnicity', profileBox.get('userProfile')?.ethnicity),
       _buildProfileCard(
           'Water Intake Goal',
-          profileBox.get('userProfile')?.waterIntakeGoal?.toString() ?? 'Not Set'),
+          profileBox.get('userProfile')?.waterIntakeGoal?.toString() ??
+              'Not Set'),
       _buildProfileCard('Sleep Goal',
           profileBox.get('userProfile')?.sleepGoal?.toString() ?? 'Not Set'),
       _buildProfileCard('Walking Goal',
@@ -470,30 +548,31 @@ class ProfileScreen extends StatelessWidget {
     ];
   }
 
-  Widget _buildLogoutButton(BuildContext context, Box profileBox, Box goalBox,
-      Box settingsBox, Box activityLogsBox, Box dailyActivitiesBox) {
-    return ElevatedButton(
-      onPressed: () {
-        profileBox.clear();
-        goalBox.clear();
-        settingsBox.clear();
-        activityLogsBox.clear();
-        dailyActivitiesBox.clear();
-        Get.offAll(SplashScreen());
-      },
-      style: ElevatedButton.styleFrom(
-        padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 15.h),
-        backgroundColor: Colors.redAccent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-      ),
-      child: Text(
-        'Logout',
-        style: GoogleFonts.poppins(
-          fontSize: 18.sp,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
+
+  // Widget _buildLogoutButton(BuildContext context, Box profileBox, Box goalBox,
+  //     Box settingsBox, Box activityLogsBox, Box dailyActivitiesBox) {
+  //   return ElevatedButton(
+  //     onPressed: () {
+  //       // profileBox.clear();
+  //       // goalBox.clear();
+  //       // settingsBox.clear();
+  //       // activityLogsBox.clear();
+  //       // dailyActivitiesBox.clear();
+  //       Get.offAll(SplashScreen());
+  //     },
+  //     style: ElevatedButton.styleFrom(
+  //       padding: EdgeInsets.symmetric(horizontal: 40.w, vertical: 15.h),
+  //       backgroundColor: Colors.redAccent,
+  //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+  //     ),
+  //     child: Text(
+  //       'Logout',
+  //       style: GoogleFonts.poppins(
+  //         fontSize: 18.sp,
+  //         fontWeight: FontWeight.bold,
+  //         color: Colors.white,
+  //       ),
+  //     ),
+  //   );
+  // }
 }

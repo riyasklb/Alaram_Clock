@@ -1,4 +1,5 @@
 
+import 'package:alaram/tools/cutomwidget/cutom_home_button.dart';
 import 'package:alaram/tools/model/clinical_visit_model.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -45,7 +46,10 @@ class _ClinicalVisitListScreenState extends State<ClinicalVisitListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Scaffold(bottomNavigationBar: Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: CustomHomeButton(),
+    ),
       backgroundColor: const Color(0xffF2F5FA),
       appBar: AppBar(
         title: Text(
