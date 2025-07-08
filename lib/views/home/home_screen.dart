@@ -48,133 +48,132 @@ class HomeScreen extends StatelessWidget {
           ),
 
           // The rest of your widgets remain the same...
-      Container(
-  height: 240.h,
-  width: double.infinity,
-  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 40.h),
-  decoration: BoxDecoration(
-    gradient: const LinearGradient(
-      colors: [Color(0xFF3F51B5), Color(0xFF1E88E5)],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    ),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.blue.shade200,
-        blurRadius: 15,
-        offset: const Offset(0, 5),
-      ),
-    ],
-    borderRadius: BorderRadius.circular(20.r),
-  ),
-  child: GestureDetector(
-    onTap: () => Get.to(() => ProfileScreen()),
-    child: FutureBuilder(
-      future: _openBoxes(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(color: Colors.white),
-          );
-        }
-
-        if (snapshot.hasError) {
-          return Center(
-            child: Text(
-              'Failed to load profile',
-              style: GoogleFonts.montserrat(
-                color: Colors.white,
-                fontSize: 16.sp,
-              ),
-            ),
-          );
-        }
-
-        final profileBox = Hive.box<ProfileModel>('profileBox');
-        final profile = profileBox.get('userProfile');
-
-        final username = profile?.username?.trim().isNotEmpty == true
-            ? profile!.username!
-            : 'there';
-
-        final hasProfileImage = profile?.imagePath != null &&
-            File(profile!.imagePath!).existsSync();
-
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Welcome back,',
-                    style: GoogleFonts.montserrat(
-                      color: Colors.white,
-                      fontSize: 22.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  Text(
-                    '$username!',
-                    style: GoogleFonts.montserrat(
-                      color: Colors.white,
-                      fontSize: 28.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 8.h),
-                  Text(
-                    'Here is your daily overview.',
-                    style: GoogleFonts.montserrat(
-                      color: Colors.white70,
-                      fontSize: 15.sp,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            CircleAvatar(
-              radius: 45.r,
-              backgroundColor: Colors.white,
-              backgroundImage: hasProfileImage
-                  ? FileImage(File(profile!.imagePath!))
-                  : const AssetImage('assets/images/default_avatar.png')
-                      as ImageProvider,
-            ),
-          ],
-        );
-      },
-    ),
-  ),
-),
-
-      
-      // Calendar Icon Positioned at top right
-      Positioned(
-        top: 37.h,
-        left: 16,
-        child: GestureDetector(
-          onTap: () {
-            Get.to(DailyMedicneTaskCallenderScreen());
-            // Handle calendar tap
-          },
-          child: Container(
-            padding: EdgeInsets.all(8),
+          Container(
+            height: 240.h,
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 40.h),
             decoration: BoxDecoration(
-              color: Colors.white24,
-              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                colors: [Color(0xFF3F51B5), Color(0xFF1E88E5)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.blue.shade200,
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+              borderRadius: BorderRadius.circular(20.r),
             ),
-            child: Icon(
-              Icons.calendar_today,
-              color: Colors.white,
-              size: 30.sp,
+            child: GestureDetector(
+              onTap: () => Get.to(() => ProfileScreen()),
+              child: FutureBuilder(
+                future: _openBoxes(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    );
+                  }
+
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                        'Failed to load profile',
+                        style: GoogleFonts.montserrat(
+                          color: Colors.white,
+                          fontSize: 16.sp,
+                        ),
+                      ),
+                    );
+                  }
+
+                  final profileBox = Hive.box<ProfileModel>('profileBox');
+                  final profile = profileBox.get('userProfile');
+
+                  final username = profile?.username?.trim().isNotEmpty == true
+                      ? profile!.username!
+                      : 'there';
+
+                  final hasProfileImage = profile?.imagePath != null &&
+                      File(profile!.imagePath!).existsSync();
+
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Welcome back,',
+                              style: GoogleFonts.montserrat(
+                                color: Colors.white,
+                                fontSize: 22.sp,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            Text(
+                              '$username!',
+                              style: GoogleFonts.montserrat(
+                                color: Colors.white,
+                                fontSize: 28.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 8.h),
+                            Text(
+                              'Here is your daily overview.',
+                              style: GoogleFonts.montserrat(
+                                color: Colors.white70,
+                                fontSize: 15.sp,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      CircleAvatar(
+                        radius: 45.r,
+                        backgroundColor: Colors.white,
+                        backgroundImage: hasProfileImage
+                            ? FileImage(File(profile!.imagePath!))
+                            : const AssetImage('assets/logo/boy.png')
+                                as ImageProvider,
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
-        ),
-      ),
+
+          // Calendar Icon Positioned at top right
+          Positioned(
+            top: 37.h,
+            left: 16,
+            child: GestureDetector(
+              onTap: () {
+                Get.to(DailyMedicneTaskCallenderScreen());
+                // Handle calendar tap
+              },
+              child: Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.calendar_today,
+                  color: Colors.white,
+                  size: 30.sp,
+                ),
+              ),
+            ),
+          ),
 
           // Cards Section
           ValueListenableBuilder(
@@ -199,19 +198,19 @@ class HomeScreen extends StatelessWidget {
                       color: Colors.deepPurpleAccent,
                       icon: 'assets/logo/walking.png',
                       value: totalHoursWalked,
-                      label: 'Hours Walked',
+                      label: '   Hrs  ',
                     ),
                     _buildStatCard(
-                      color: Colors.cyan,
+                      color: const Color.fromARGB(255, 0, 73, 56),
                       icon: 'assets/logo/sleeping.png',
                       value: totalHoursSlept,
-                      label: 'Hours Slept',
+                      label: '   Hrs  ',
                     ),
                     _buildStatCard(
-                      color: Colors.pinkAccent,
+                      color: const Color.fromARGB(255, 19, 60, 131),
                       icon: 'assets/logo/drinking-water.png',
                       value: totalWaterIntake,
-                      label: 'Water Intake',
+                      label: '   Lts  ',
                     ),
                   ],
                 ),
@@ -263,21 +262,29 @@ class HomeScreen extends StatelessWidget {
           ), //  Icon(icon, size: 32.sp, color: Colors.white),  // Using FontAwesomeIcons here
           //SizedBox(height: 10.h),
 
-          Text(
-            value,
-            style: GoogleFonts.montserrat(
-              color: Colors.white,
-              fontSize: 20.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 5.h),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.montserrat(
-              color: Colors.white70,
-              fontSize: 12.sp,
+          Container(
+            decoration: BoxDecoration(
+                 borderRadius: BorderRadius.circular(18)),
+            child: Column(
+              children: [
+                Text(
+                  value,
+                  style: GoogleFonts.montserrat(
+                    color: const Color.fromARGB(255, 248, 21, 5),
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 5.h),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.montserrat(
+                    color: kwhite,
+                    fontSize: 12.sp,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -393,11 +400,11 @@ final _gridItems = [
     title: 'Update Daily Goals',
     imagePath: 'assets/logo/medicine.png', // A more dynamic icon for tasks
     color: Colors.deepPurple,
-    onTap: () => Get.to(() =>LandingScreen()),
+    onTap: () => Get.to(() => LandingScreen()),
   ),
   GridItem(
     title: 'Clinic Visit',
-    
+
     imagePath:
         'assets/logo/veterinarian.png', // A calendar with a checkmark, ideal for tracking events
     color: Colors.orange,

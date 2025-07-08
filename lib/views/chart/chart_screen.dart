@@ -1,17 +1,20 @@
 // Updated ActivityLineChartScreen with more colorful UI
 import 'dart:io';
-import 'package:alaram/views/chart/widgets/pie_chart.dart';
+
+import 'package:alaram/tools/constans/color.dart';
+import 'package:alaram/tools/cutomwidget/cutom_home_button.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:alaram/tools/constans/color.dart';
+
 import 'package:alaram/tools/controllers/activity_controller.dart';
 import 'package:alaram/views/chart/widgets/daily_activity_widget.dart';
 import 'package:alaram/views/chart/widgets/line_chart_widget.dart';
 
 import 'package:pdf/widgets.dart' as pw;
-//import 'package:share_plus/share_plus.dart';
+
 import 'package:path_provider/path_provider.dart';
 
 class ActivityLineChartScreen extends StatefulWidget {
@@ -22,7 +25,6 @@ class ActivityLineChartScreen extends StatefulWidget {
 
 class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
   final ActivityController _activityController = Get.put(ActivityController());
-  String _selectedChartType = 'Line';
 
   @override
   void initState() {
@@ -33,52 +35,77 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.blue, Colors.purple],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        backgroundColor: kwhite,
+        appBar: AppBar(
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blue, Colors.purple],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.print, color: Colors.white),
+              onPressed: _sharePdf,
+            )
+          ],
+          title: Text(
+            'Activity Chart',
+            style: GoogleFonts.lato(
+              fontSize: 22.sp,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
           ),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.print, color: Colors.white),
-            onPressed: _sharePdf,
-          )
-        ],
-        title: Text(
-          'Activity Chart',
-          style: GoogleFonts.lato(
-            fontSize: 22.sp,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-      ),
-      body: Obx(() {
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.orange.shade100, Colors.yellow.shade100],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-          child: ListView(
-            children: [
-              _buildFilterDropdown(),
-              _buildChartTypeSelector(),
-              _buildChart(),
-              _buildActivityData(),
-              DailyActivitiesWidget(activityController: _activityController),
-            ],
-          ),
-        );
-      }),
-    );
+        body: Obx(() {
+          return Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.lightBlue.shade100,
+                    Colors.blue.shade100,
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+              child: ListView(
+                children: [
+                  _buildFilterDropdown(),
+                  _buildChart(),
+                  _buildActivityData(),
+                  Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: EdgeInsets.symmetric(vertical: 15.h,),
+                      ),
+                      icon: Icon(Icons.list, color: Colors.white),
+                      label: Text(
+                        'Show All Logs',
+                        style: TextStyle(color: Colors.white, fontSize: 16.sp),
+                      ),
+                      onPressed: () {
+                        Get.to(() => DailyActivitiesWidget());
+                      },
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                    child: CustomHomeButton(),
+                  )
+                ],
+              ));
+        }));
   }
 
   Widget _buildFilterDropdown() {
@@ -99,79 +126,90 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
     );
   }
 
-  Widget _buildChartTypeSelector() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: ['Line', 'Pie'].map((type) {
-          return ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _selectedChartType == type ? Colors.blue : Colors.grey,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
-            onPressed: () => setState(() => _selectedChartType = type),
-            child: Text(type, style: TextStyle(color: Colors.white)),
-          );
-        }).toList(),
-      ),
+  Widget _buildChart() {
+    if (_activityController.filteredActivityLogs.isEmpty) {
+      return Center(
+        child: Text(
+          'No activity data available.',
+          style: GoogleFonts.poppins(fontSize: 16.sp),
+        ),
+      );
+    }
+
+    List<String> dateStrings = ['2024-02-10', '2024-02-11', '2024-02-12'];
+    List<DateTime> dates =
+        dateStrings.map((date) => DateTime.parse(date)).toList();
+    List<double> sleepData = [7, 8, 6.5];
+    List<double> walkingData = [2, 3, 1.5];
+    List<double> waterIntakeData = [2, 2.5, 3];
+
+    return ActivityLineChart(
+      sleepData: sleepData,
+      walkingData: walkingData,
+      waterIntakeData: waterIntakeData,
+      dates: dates,
     );
   }
-
- Widget _buildChart() {
-  if (_activityController.filteredActivityLogs.isEmpty) {
-    return Center(
-      child: Text(
-        'No activity data available.',
-        style: GoogleFonts.poppins(fontSize: 16.sp),
-      ),
-    );
-  }
-
-List<String> dateStrings = ['2024-02-10', '2024-02-11', '2024-02-12'];
-List<DateTime> dates = dateStrings.map((date) => DateTime.parse(date)).toList();
-  List<double> sleepData = [7, 8, 6.5];
-  List<double> walkingData = [2, 3, 1.5];
-  List<double> waterIntakeData = [2, 2.5, 3];
-
-  return _selectedChartType == 'Line'
-      ? ActivityLineChart(
-          sleepData: sleepData,
-          walkingData: walkingData,
-          waterIntakeData: waterIntakeData,
-          dates: dates,
-        )
-      : ActivityPieChart(
-          sleepTotal: sleepData.reduce((a, b) => a + b),
-          walkingTotal: walkingData.reduce((a, b) => a + b),
-          waterIntakeTotal: waterIntakeData.reduce((a, b) => a + b),
-        );
-}
-
 
   Widget _buildActivityData() {
     return Padding(
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       child: Column(
         children: [
-          _buildActivityRow('Total Sleep', '22 hrs', Colors.blue,'assets/logo/sleeping.png'),
-          _buildActivityRow('Total Walking', '7 hrs', Colors.green,'assets/logo/treadmill.png'),
-          _buildActivityRow('Water Intake', '7.5 L', Colors.orange,'assets/logo/drinking-water.png'),
+          _buildActivityRow(
+              'Total Sleep', '22 hrs', Colors.blue, 'assets/logo/sleeping.png'),
+          SizedBox(height: 12.h),
+          _buildActivityRow('Total Walking', '7 hrs', Colors.green,
+              'assets/logo/treadmill.png'),
+          SizedBox(height: 12.h),
+          _buildActivityRow('Water Intake', '7.5 L', Colors.orange,
+              'assets/logo/drinking-water.png'),
         ],
       ),
     );
   }
 
-  Widget _buildActivityRow(String label, String value, Color color,String imge) {
+  Widget _buildActivityRow(
+      String label, String value, Color color, String imagePath) {
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: CircleAvatar(backgroundColor: color,backgroundImage:AssetImage(imge),),
-        title: Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
-        trailing: Text(value, style: TextStyle(fontWeight: FontWeight.bold)),
+      elevation: 6,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+      child: Padding(
+        padding: EdgeInsets.all(12.w),
+        child: Row(
+          children: [
+            Container(
+              width: 60.w,
+              height: 70.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color.withOpacity(0.15),
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(8.w),
+                child: Image.asset(imagePath, fit: BoxFit.contain),
+              ),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -198,6 +236,6 @@ List<DateTime> dates = dateStrings.map((date) => DateTime.parse(date)).toList();
     final file = File("${output.path}/ActivityReport.pdf");
     await file.writeAsBytes(await pdf.save());
 
-  //  await Share.shareXFiles([XFile(file.path)], text: "Activity Report PDF");
+    //  await Share.shareXFiles([XFile(file.path)], text: "Activity Report PDF");
   }
 }

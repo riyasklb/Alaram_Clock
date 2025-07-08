@@ -327,7 +327,7 @@ class ProfileScreen extends StatelessWidget {
             flexibleSpace: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.purpleAccent, Colors.blueAccent],
+                  colors: [Colors.blue, Colors.blueAccent],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -456,7 +456,7 @@ class ProfileScreen extends StatelessWidget {
       style: GoogleFonts.poppins(
           fontSize: 20.sp,
           fontWeight: FontWeight.bold,
-          color: Colors.purpleAccent),
+          color: kblue),
     );
   }
 
@@ -465,11 +465,7 @@ class ProfileScreen extends StatelessWidget {
     final imagePath = profile?.imagePath;
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.purpleAccent, Colors.blueAccent],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+      color: kblue,
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
@@ -516,7 +512,7 @@ class ProfileScreen extends StatelessWidget {
                   profileBox.get('userProfile')?.email ?? 'Email',
                   style: GoogleFonts.poppins(
                     fontSize: 16.sp,
-                    color: Colors.white70,
+                    color: kwhite,
                   ),
                 ),
               ],
