@@ -7,7 +7,7 @@ import 'package:alaram/views/careers_and_advice/careers_and_advice.dart';
 import 'package:alaram/views/clinic_visit/clinic_visit_screen.dart';
 
 import 'package:alaram/views/completed_tasks/daily_activity_medicine_log.dart';
-import 'package:alaram/views/daily_activity_updation/daily_actitivity_sleep_update_screen.dart';
+import 'package:alaram/views/daily_activity_updation/update_daily_activity_screeen.dart';
 import 'package:alaram/views/landing_screen/landing_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -19,11 +19,15 @@ import 'package:alaram/tools/model/activity_log.dart';
 import '../video/video_tutorial.dart';
 
 import '../daily_activity_updation/callender_daily_task_screen.dart';
-import '../chart/chart_screen.dart';
+import '../chart/dashboard_screen.dart';
 import '../main_activity/activity_main_screen.dart';
 import '../profile/profile_screen.dart';
+import 'package:alaram/tools/controllers/profile_controller.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatelessWidget {
+  final ProfileController profileController = Get.put(ProfileController());
+
   Future<void> _openBoxes() async {
     await Hive.openBox<ProfileModel>('profileBox');
   }
@@ -175,6 +179,79 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
 
+          // All main content widgets (background, profile header, cards, interactive section, etc.)
+
+          // Move the pending activity log modal to the end so it is always on top
+          FutureBuilder(
+            future: _getPendingActivityDates(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) return SizedBox();
+              final List<DateTime> pendingDates = snapshot.data as List<DateTime>? ?? [];
+              if (pendingDates.isEmpty) return SizedBox();
+              return Positioned.fill(
+                child: Container(
+                  color: Colors.black.withOpacity(0.35),
+                  child: Center(
+                    child: Card(
+                      color: Colors.redAccent.withOpacity(0.95),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                      elevation: 12,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 28.h, horizontal: 24.w),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.warning_amber_rounded, color: Colors.white, size: 32.sp),
+                                SizedBox(width: 12.w),
+                                Expanded(
+                                  child: Text(
+                                    'Pending Activity Logs',
+                                    style: GoogleFonts.montserrat(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20.sp,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 16.h),
+                            Text(
+                              'You have not updated your activity for:',
+                              style: GoogleFonts.montserrat(color: Colors.white70, fontSize: 16.sp),
+                            ),
+                            SizedBox(height: 8.h),
+                            ...pendingDates.map((date) => Text(
+                              '- ${DateFormat('MMMM dd, yyyy').format(date)}',
+                              style: GoogleFonts.montserrat(color: Colors.white, fontSize: 16.sp),
+                            )),
+                            SizedBox(height: 20.h),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: Colors.redAccent,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                icon: Icon(Icons.edit_calendar),
+                                label: Text('Update Now', style: TextStyle(fontWeight: FontWeight.bold)),
+                                onPressed: () => Get.to(() => UpdateYourDailyActivityScreen()),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+
           // Cards Section
           ValueListenableBuilder(
             valueListenable: Hive.box<ActivityLog>(sleepactivitys).listenable(),
@@ -187,34 +264,63 @@ class HomeScreen extends StatelessWidget {
               String totalWaterIntake =
                   latestLog?.waterIntake?.toStringAsFixed(1) ?? '0L';
 
-              return Positioned(
-                top: 180.h, // Place the cards just below the blue background
-                left: 16.w,
-                right: 16.w,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildStatCard(
-                      color: Colors.deepPurpleAccent,
-                      icon: 'assets/logo/walking.png',
-                      value: totalHoursWalked,
-                      label: '   Hrs  ',
-                    ),
-                    _buildStatCard(
-                      color: const Color.fromARGB(255, 0, 73, 56),
-                      icon: 'assets/logo/sleeping.png',
-                      value: totalHoursSlept,
-                      label: '   Hrs  ',
-                    ),
-                    _buildStatCard(
-                      color: const Color.fromARGB(255, 19, 60, 131),
-                      icon: 'assets/logo/drinking-water.png',
-                      value: totalWaterIntake,
-                      label: '   Lts  ',
-                    ),
-                  ],
-                ),
-              );
+              return Obx(() {
+                final double sleepGoal = profileController.sleepGoal.value;
+                final double walkingGoal = profileController.walkingGoal.value;
+                final double waterGoal = profileController.waterGoal.value;
+
+                final bool sleepAchieved = sleepGoal > 0 && latestLog != null && latestLog.sleepHours >= sleepGoal;
+                final bool walkingAchieved = walkingGoal > 0 && latestLog != null && latestLog.walkingHours >= walkingGoal;
+                final bool waterAchieved = waterGoal > 0 && latestLog != null && latestLog.waterIntake >= waterGoal;
+
+          
+
+                return Positioned(
+                  top: 180.h,
+                  left: 16.w,
+                  right: 16.w,
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          _buildStatCard(
+                            color: Colors.deepPurpleAccent,
+                            icon: 'assets/logo/walking.png',
+                            value: totalHoursWalked,
+                            label: 'Hrs',
+                            achieved: walkingAchieved,
+                            percent: (walkingGoal > 0 && latestLog != null)
+                                ? (latestLog.walkingHours / walkingGoal)
+                                : null,
+                          ),
+                          _buildStatCard(
+                            color: const Color.fromARGB(255, 0, 73, 56),
+                            icon: 'assets/logo/sleeping.png',
+                            value: totalHoursSlept,
+                            label: 'Hrs',
+                            achieved: sleepAchieved,
+                            percent: (sleepGoal > 0 && latestLog != null)
+                                ? (latestLog.sleepHours / sleepGoal)
+                                : null,
+                          ),
+                          _buildStatCard(
+                            color: const Color.fromARGB(255, 19, 60, 131),
+                            icon: 'assets/logo/drinking-water.png',
+                            value: totalWaterIntake,
+                            label: 'Lts',
+                            achieved: waterAchieved,
+                            percent: (waterGoal > 0 && latestLog != null)
+                                ? (latestLog.waterIntake / waterGoal)
+                                : null,
+                          ),
+                        ],
+                      ),
+                    
+                    ],
+                  ),
+                );
+              });
             },
           ),
 
@@ -223,9 +329,94 @@ class HomeScreen extends StatelessWidget {
             padding: EdgeInsets.only(top: 360.h),
             child: _InteractiveSection(),
           ),
-        ],
+    // Move the pending activity log modal to the end so it is always on top
+          FutureBuilder(
+            future: _getPendingActivityDates(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) return SizedBox();
+              final List<DateTime> pendingDates = snapshot.data as List<DateTime>? ?? [];
+              if (pendingDates.isEmpty) return SizedBox();
+              return Positioned.fill(
+                child: Container(
+                  color: Colors.black.withOpacity(0.35),
+                  child: Center(
+                    child: Card(
+                      color: Colors.redAccent.withOpacity(0.95),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                      elevation: 12,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 28.h, horizontal: 24.w),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.warning_amber_rounded, color: Colors.white, size: 32.sp),
+                                SizedBox(width: 12.w),
+                                Expanded(
+                                  child: Text(
+                                    'Pending Activity Logs',
+                                    style: GoogleFonts.montserrat(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20.sp,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 16.h),
+                            Text(
+                              'You have not updated your activity for:',
+                              style: GoogleFonts.montserrat(color: Colors.white70, fontSize: 16.sp),
+                            ),
+                            SizedBox(height: 8.h),
+                            ...pendingDates.map((date) => Text(
+                              '- ${DateFormat('MMMM dd, yyyy').format(date)}',
+                              style: GoogleFonts.montserrat(color: Colors.white, fontSize: 16.sp),
+                            )),
+                            SizedBox(height: 20.h),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: Colors.redAccent,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                icon: Icon(Icons.edit_calendar),
+                                label: Text('Update Now', style: TextStyle(fontWeight: FontWeight.bold)),
+                                onPressed: () => Get.to(() => UpdateYourDailyActivityScreen()),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),     ],
       ),
     );
+  }
+
+  // Helper to get pending activity log dates for the last 3 days (excluding today)
+  Future<List<DateTime>> _getPendingActivityDates() async {
+    final box = await Hive.openBox<ActivityLog>('activityLogs');
+    final now = DateTime.now();
+    List<DateTime> last3Days = List.generate(3, (i) => DateTime(now.year, now.month, now.day).subtract(Duration(days: i + 1)));
+    List<DateTime> missing = [];
+    for (final date in last3Days) {
+      bool exists = box.values.any((log) {
+        final logDate = DateTime(log.date.year, log.date.month, log.date.day);
+        return logDate.isAtSameMomentAs(date);
+      });
+      if (!exists) missing.add(date);
+    }
+    return missing;
   }
 
   Widget _buildStatCard({
@@ -233,60 +424,90 @@ class HomeScreen extends StatelessWidget {
     required String icon,
     required String value,
     required String label,
+    required bool achieved,
+    double? percent, // new param for progress bar
   }) {
     return AnimatedContainer(
       duration: Duration(milliseconds: 300),
-      height: 140.h,
-      width: 110.w,
+      height: 160.h,
+      width: 120.w,
+      margin: EdgeInsets.symmetric(horizontal: 4.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [color.withOpacity(0.8), color],
+          colors: [color, color],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(40.r),
+        borderRadius: BorderRadius.circular(32.r),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.4),
-            blurRadius: 10,
-            offset: Offset(0, 5),
+            color: color.withOpacity(0.18),
+            blurRadius: 16,
+            offset: Offset(0, 8),
           ),
         ],
+       
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset(
-            icon, height: 70.h, // Adjust the size of the image
-            width: 70.w,
-          ), //  Icon(icon, size: 32.sp, color: Colors.white),  // Using FontAwesomeIcons here
-          //SizedBox(height: 10.h),
-
+          SizedBox(height: 8.h),
           Container(
             decoration: BoxDecoration(
-                 borderRadius: BorderRadius.circular(18)),
-            child: Column(
-              children: [
-                Text(
-                  value,
-                  style: GoogleFonts.montserrat(
-                    color: const Color.fromARGB(255, 248, 21, 5),
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 5.h),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.montserrat(
-                    color: kwhite,
-                    fontSize: 12.sp,
-                  ),
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.12),
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
                 ),
               ],
             ),
+            padding: EdgeInsets.all(8.w),
+            child: Image.asset(
+              icon, height: 44.h, width: 44.w,
+            ),
           ),
+          SizedBox(height: 8.h),
+          Icon(
+            achieved ? Icons.check_circle : Icons.cancel,
+            color: achieved ? Colors.green : Colors.red,
+            size: 22.sp,
+          ),
+          SizedBox(height: 6.h),
+          Text(
+            value,
+            style: GoogleFonts.montserrat(
+              color: Colors.white,
+              fontSize: 22.sp,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.montserrat(
+              color: Colors.white,
+              fontSize: 13.sp,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          // Progress bar
+          if (percent != null)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10.w),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8.r),
+                child: LinearProgressIndicator(
+                  value: percent.clamp(0, 1),
+                  minHeight: 7,
+                  backgroundColor: Colors.grey.shade200,
+                  valueColor: AlwaysStoppedAnimation<Color>(achieved ? Colors.green : Colors.red),
+                ),
+              ),
+            ),
+          SizedBox(height: 8.h),
         ],
       ),
     );
@@ -415,7 +636,7 @@ final _gridItems = [
     imagePath:
         'assets/logo/bar-chart.png', // A bar chart, providing a more diverse chart option
     color: Colors.blueAccent,
-    onTap: () => Get.to(() => ActivityLineChartScreen()),
+    onTap: () => Get.to(() => DashBoardScreen()),
   ),
   // GridItem(
   //   title: 'Profile',
@@ -454,58 +675,3 @@ class GridItem {
   });
 }
 
-Widget _buildStatCard({
-  required Color color,
-  required String imagePath, // Use imagePath instead of icon
-  required String value,
-  required String label,
-}) {
-  return AnimatedContainer(
-    duration: Duration(milliseconds: 300),
-    height: 140.h,
-    width: 110.w,
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        colors: [color.withOpacity(0.8), color],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-      borderRadius: BorderRadius.circular(20.r),
-      boxShadow: [
-        BoxShadow(
-          color: color.withOpacity(0.4),
-          blurRadius: 10,
-          offset: Offset(0, 5),
-        ),
-      ],
-    ),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Image.asset(
-          imagePath, // Use Image.asset() to load an image
-          height: 32.sp, // Adjust size as needed
-          width: 32.sp, // Adjust size as needed
-        ),
-        SizedBox(height: 10.h),
-        Text(
-          value,
-          style: GoogleFonts.montserrat(
-            color: Colors.white,
-            fontSize: 20.sp,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(height: 5.h),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: GoogleFonts.montserrat(
-            color: Colors.white70,
-            fontSize: 12.sp,
-          ),
-        ),
-      ],
-    ),
-  );
-}

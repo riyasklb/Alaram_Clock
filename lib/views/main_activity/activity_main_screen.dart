@@ -1,7 +1,7 @@
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/model/activity_log.dart';
 import 'package:alaram/tools/model/profile_model.dart';
-import 'package:alaram/views/chart/chart_screen.dart';
+import 'package:alaram/views/chart/dashboard_screen.dart';
 import 'package:alaram/views/completed_tasks/activity_sleep_log_screen.dart';
 import 'package:alaram/views/completed_tasks/daily_activity_medicine_log.dart';
 import 'package:flutter/material.dart';

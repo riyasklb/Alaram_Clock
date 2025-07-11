@@ -12,14 +12,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 
-class DailyActivitySleepUpdateScreen extends StatefulWidget {
+class UpdateYourDailyActivityScreen extends StatefulWidget {
   @override
-  _DailyActivitySleepUpdateScreenState createState() =>
-      _DailyActivitySleepUpdateScreenState();
+  _UpdateYourDailyActivityScreenState createState() =>
+      _UpdateYourDailyActivityScreenState();
 }
 
-class _DailyActivitySleepUpdateScreenState
-    extends State<DailyActivitySleepUpdateScreen> {
+class _UpdateYourDailyActivityScreenState
+    extends State<UpdateYourDailyActivityScreen> {
 
         final ActivityController _activityController = Get.put(ActivityController());
   final TextEditingController sleepController = TextEditingController();
@@ -114,18 +114,7 @@ class _DailyActivitySleepUpdateScreenState
     'Daily Activity Tracker',
     style: GoogleFonts.lato(fontSize: 20.sp, fontWeight: FontWeight.w600),
   ),
- // actions: [
-//     IconButton(
-//       icon: Icon(Icons.edit, size: 22.sp),
-//       tooltip: 'Edit Goals',
-//    onPressed: () {
-//   Get.to(
-//     GoalSettingScreen(showExtraOptions: true,),
-  
-//   );
-// }
-//     ),
-  //],
+
 ),
 
       body: Padding(
@@ -306,6 +295,24 @@ class _DailyActivitySleepUpdateScreenState
     DateTime normalizedDate =
         DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
 
+    // Validation: Prevent duplicate entry for the same date
+    bool alreadyExists = box.values.any((log) {
+      DateTime logDate = DateTime(log.date.year, log.date.month, log.date.day);
+      return logDate.isAtSameMomentAs(normalizedDate);
+    });
+    if (alreadyExists) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'You have already updated your activity for this date.',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
     final activityLog = ActivityLog(
       date: normalizedDate,
       sleepHours: sleep,
@@ -322,7 +329,7 @@ class _DailyActivitySleepUpdateScreenState
     waterController.clear();
 
     Get.to(HomeScreen());
-_activityController.update();
+    _activityController.update();
     // Show a confirmation message
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

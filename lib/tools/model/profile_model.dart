@@ -38,21 +38,5 @@ class ProfileModel extends HiveObject {
   @HiveField(9)
   double? walkingGoal;
 
-  @HiveField(10)
-  String? medicineGoal;
 
-  @HiveField(11)
-  String? foodGoal;
-
-  @HiveField(12)
-  String? injectionGoal;
-
-  @HiveField(13)
-  double? actualWaterIntake;
-
-  @HiveField(14)
-  double? actualSleep;
-
-  @HiveField(15)
-  double? actualWalking;
 }

@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import 'package:google_fonts/google_fonts.dart';
-import 'package:alaram/views/chart/chart_screen.dart';
+import 'package:alaram/views/chart/dashboard_screen.dart';
 import 'package:alaram/views/daily_activity_updation/callender_daily_task_screen.dart';
-import 'package:alaram/views/daily_activity_updation/daily_actitivity_sleep_update_screen.dart';
+import 'package:alaram/views/daily_activity_updation/update_daily_activity_screeen.dart';
 
 
 
@@ -71,7 +71,7 @@ class LandingScreen extends StatelessWidget {
                   child: _buildGlassButton(
                     label: 'Update Daily Goals',
                     icon: Icons.flag_rounded,
-                    onTap: () => Get.to(DailyActivitySleepUpdateScreen()),
+                    onTap: () => Get.to(UpdateYourDailyActivityScreen()),
                   ),
                 ),
                 const SizedBox(height: 20),

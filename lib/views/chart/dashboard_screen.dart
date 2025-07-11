@@ -16,14 +16,15 @@ import 'package:alaram/views/chart/widgets/line_chart_widget.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import 'package:path_provider/path_provider.dart';
+import 'package:alaram/views/chart/activity_metric_detail_screen.dart';
 
-class ActivityLineChartScreen extends StatefulWidget {
+class DashBoardScreen extends StatefulWidget {
   @override
-  State<ActivityLineChartScreen> createState() =>
-      _ActivityLineChartScreenState();
+  State<DashBoardScreen> createState() =>
+      _DashBoardScreenState();
 }
 
-class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
+class _DashBoardScreenState extends State<DashBoardScreen> {
   final ActivityController _activityController = Get.put(ActivityController());
 
   @override
@@ -46,12 +47,12 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
               ),
             ),
           ),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.print, color: Colors.white),
-              onPressed: _sharePdf,
-            )
-          ],
+          // actions: [
+          //   IconButton(
+          //     icon: Icon(Icons.print, color: Colors.white),
+          //     onPressed: _sharePdf,
+          //   )
+          // ],
           title: Text(
             'Activity Chart',
             style: GoogleFonts.lato(
@@ -76,7 +77,7 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
               child: ListView(
                 children: [
                   _buildFilterDropdown(),
-                  _buildChart(),
+              
                   _buildActivityData(),
                   Padding(
                     padding:
@@ -109,6 +110,13 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
   }
 
   Widget _buildFilterDropdown() {
+    final filterOptions = {
+      'All Time': 0,
+      'Last 7 Days': 7,
+      'Last 30 Days': 30,
+      'Last 90 Days': 90,
+    };
+    String currentLabel = filterOptions.entries.firstWhere((e) => e.value == _activityController.currentFilterDays.value, orElse: () => filterOptions.entries.first).key;
     return Padding(
       padding: EdgeInsets.all(16.w),
       child: DropdownButtonFormField<String>(
@@ -117,53 +125,64 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
           fillColor: Colors.white,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         ),
-        value: 'All Time',
-        onChanged: (value) {},
-        items: ['All Time', 'Last 7 Days', 'Last 30 Days', 'Last 90 Days']
+        value: currentLabel,
+        onChanged: (value) {
+          if (value != null) {
+            _activityController.setFilter(filterOptions[value]!);
+          }
+        },
+        items: filterOptions.keys
             .map((label) => DropdownMenuItem(value: label, child: Text(label)))
             .toList(),
       ),
     );
   }
 
-  Widget _buildChart() {
-    if (_activityController.filteredActivityLogs.isEmpty) {
-      return Center(
-        child: Text(
-          'No activity data available.',
-          style: GoogleFonts.poppins(fontSize: 16.sp),
-        ),
-      );
-    }
 
-    List<String> dateStrings = ['2024-02-10', '2024-02-11', '2024-02-12'];
-    List<DateTime> dates =
-        dateStrings.map((date) => DateTime.parse(date)).toList();
-    List<double> sleepData = [7, 8, 6.5];
-    List<double> walkingData = [2, 3, 1.5];
-    List<double> waterIntakeData = [2, 2.5, 3];
-
-    return ActivityLineChart(
-      sleepData: sleepData,
-      walkingData: walkingData,
-      waterIntakeData: waterIntakeData,
-      dates: dates,
-    );
-  }
 
   Widget _buildActivityData() {
+    final totalSleep = _activityController.totalSleep;
+    final totalWalking = _activityController.totalWalking;
+    final totalWaterIntake = _activityController.totalWaterIntake;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       child: Column(
         children: [
-          _buildActivityRow(
-              'Total Sleep', '22 hrs', Colors.blue, 'assets/logo/sleeping.png'),
+          GestureDetector(
+            onTap: () {
+              Get.to(() => ActivityMetricDetailScreen(
+                metric: 'sleep',
+                label: 'Sleep',
+                color: Colors.blue,
+              ));
+            },
+            child: _buildActivityRow(
+                'Total Sleep', '${totalSleep.toStringAsFixed(1)} hrs', Colors.blue, 'assets/logo/sleeping.png'),
+          ),
           SizedBox(height: 12.h),
-          _buildActivityRow('Total Walking', '7 hrs', Colors.green,
-              'assets/logo/treadmill.png'),
+          GestureDetector(
+            onTap: () {
+              Get.to(() => ActivityMetricDetailScreen(
+                metric: 'walking',
+                label: 'Walking',
+                color: Colors.green,
+              ));
+            },
+            child: _buildActivityRow('Total Walking', '${totalWalking.toStringAsFixed(1)} hrs', Colors.green,
+                'assets/logo/treadmill.png'),
+          ),
           SizedBox(height: 12.h),
-          _buildActivityRow('Water Intake', '7.5 L', Colors.orange,
-              'assets/logo/drinking-water.png'),
+          GestureDetector(
+            onTap: () {
+              Get.to(() => ActivityMetricDetailScreen(
+                metric: 'water',
+                label: 'Water Intake',
+                color: Colors.orange,
+              ));
+            },
+            child: _buildActivityRow('Water Intake', '${totalWaterIntake.toStringAsFixed(1)} L', Colors.orange,
+                'assets/logo/drinking-water.png'),
+          ),
         ],
       ),
     );
@@ -216,6 +235,9 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
 
   Future<void> _sharePdf() async {
     final pdf = pw.Document();
+    final totalSleep = _activityController.totalSleep;
+    final totalWalking = _activityController.totalWalking;
+    final totalWaterIntake = _activityController.totalWaterIntake;
     pdf.addPage(
       pw.Page(
         build: (pw.Context context) {
@@ -223,19 +245,17 @@ class _ActivityLineChartScreenState extends State<ActivityLineChartScreen> {
             children: [
               pw.Text('Activity Report', style: pw.TextStyle(fontSize: 24)),
               pw.Divider(),
-              pw.Text('Total Sleep: 22 hrs'),
-              pw.Text('Total Walking: 7 hrs'),
-              pw.Text('Water Intake: 7.5 L'),
+              pw.Text('Total Sleep: ${totalSleep.toStringAsFixed(1)} hrs'),
+              pw.Text('Total Walking: ${totalWalking.toStringAsFixed(1)} hrs'),
+              pw.Text('Water Intake: ${totalWaterIntake.toStringAsFixed(1)} L'),
             ],
           );
         },
       ),
     );
-
     final output = await getTemporaryDirectory();
     final file = File("${output.path}/ActivityReport.pdf");
     await file.writeAsBytes(await pdf.save());
-
     //  await Share.shareXFiles([XFile(file.path)], text: "Activity Report PDF");
   }
 }
