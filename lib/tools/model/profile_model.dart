@@ -37,6 +37,7 @@ class ProfileModel extends HiveObject {
 
   @HiveField(9)
   double? walkingGoal;
-
+ @HiveField(10)
+  DateTime? registerdate;
 
 }

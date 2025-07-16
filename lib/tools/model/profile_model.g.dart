@@ -27,13 +27,14 @@ class ProfileModelAdapter extends TypeAdapter<ProfileModel> {
       ..imagePath = fields[16] as String?
       ..waterIntakeGoal = fields[7] as double?
       ..sleepGoal = fields[8] as double?
-      ..walkingGoal = fields[9] as double?;
+      ..walkingGoal = fields[9] as double?
+      ..registerdate = fields[10] as DateTime?;
   }
 
   @override
   void write(BinaryWriter writer, ProfileModel obj) {
     writer
-      ..writeByte(11)
+      ..writeByte(12)
       ..writeByte(0)
       ..write(obj.username)
       ..writeByte(1)
@@ -55,7 +56,9 @@ class ProfileModelAdapter extends TypeAdapter<ProfileModel> {
       ..writeByte(8)
       ..write(obj.sleepGoal)
       ..writeByte(9)
-      ..write(obj.walkingGoal);
+      ..write(obj.walkingGoal)
+      ..writeByte(10)
+      ..write(obj.registerdate);
   }
 
   @override

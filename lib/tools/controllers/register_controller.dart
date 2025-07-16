@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:hive/hive.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:alaram/tools/model/profile_model.dart';
@@ -45,6 +46,7 @@ class RegisterController extends GetxController {
     }
   }
 
+//String registerDate = DateFormat('dd MMMM yyyy').format(DateTime.now());
   // Save Data Function
   Future<bool> saveData() async {
     isLoading.value = true;
@@ -73,8 +75,8 @@ class RegisterController extends GetxController {
     ..ethnicity = selectedEthnicity.value == 'Select Ethnicity' 
         ? 'Not specified' 
         : selectedEthnicity.value
-        ..imagePath = imagePath;
-
+        ..imagePath = imagePath
+        ..registerdate=DateTime.now(); 
       await profileBox.put('userProfile', profile);
       await settingsBox.put('isRegistered', true);
 

@@ -406,7 +406,16 @@ class HomeScreen extends StatelessWidget {
   // Helper to get pending activity log dates for the last 3 days (excluding today)
   Future<List<DateTime>> _getPendingActivityDates() async {
     final box = await Hive.openBox<ActivityLog>('activityLogs');
+    final profileBox = await Hive.openBox<ProfileModel>('profileBox');
+    final profile = profileBox.get('userProfile');
     final now = DateTime.now();
+    // Check if registered today
+    if (profile != null && profile.registerdate != null) {
+      final reg = profile.registerdate!;
+      if (reg.year == now.year && reg.month == now.month && reg.day == now.day) {
+        return [];
+      }
+    }
     List<DateTime> last3Days = List.generate(3, (i) => DateTime(now.year, now.month, now.day).subtract(Duration(days: i + 1)));
     List<DateTime> missing = [];
     for (final date in last3Days) {
@@ -429,7 +438,7 @@ class HomeScreen extends StatelessWidget {
   }) {
     return AnimatedContainer(
       duration: Duration(milliseconds: 300),
-      height: 160.h,
+// height: 160.h,
       width: 120.w,
       margin: EdgeInsets.symmetric(horizontal: 4.w),
       decoration: BoxDecoration(
@@ -507,7 +516,7 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 13.h),
         ],
       ),
     );
