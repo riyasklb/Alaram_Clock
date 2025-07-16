@@ -1,13 +1,11 @@
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/controllers/activity_controller.dart';
 import 'package:alaram/tools/model/activity_log.dart';
-import 'package:alaram/views/auth/set_goals_scrrw.dart';
 import 'package:alaram/views/home/home_screen.dart';
+import 'package:alaram/tools/cutomwidget/cutom_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/get_navigation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
@@ -231,6 +229,7 @@ class _UpdateYourDailyActivityScreenState
             ),
           ],
           SizedBox(height: 20),
+          CustomHomeButton(),
         ],
       ),
     ],

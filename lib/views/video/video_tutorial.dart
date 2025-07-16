@@ -1,4 +1,5 @@
 import 'package:alaram/tools/constans/color.dart';
+import 'package:alaram/tools/cutomwidget/cutom_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,16 +21,26 @@ class VideoTutorial extends StatelessWidget {
           ),
         ),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(8.0),
-        child: ListView(
-          children: [
-            SizedBox(height: 10.h),
-            _buildVideoCategoryList(),
-            SizedBox(height: 20.h),
-            _buildVideoTutorialList(),
-          ],
-        ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: ListView(
+                children: [
+                  SizedBox(height: 10.h),
+                  _buildVideoCategoryList(),
+                  SizedBox(height: 20.h),
+                  _buildVideoTutorialList(),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(16.w),
+            child: CustomHomeButton(),
+          ),
+        ],
       ),
     );
   }

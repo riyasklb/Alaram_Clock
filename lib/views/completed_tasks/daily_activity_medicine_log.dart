@@ -1,5 +1,6 @@
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/model/activity_log.dart';
+import 'package:alaram/tools/cutomwidget/cutom_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
@@ -241,7 +242,11 @@ class _DailyMedicineActivityLogState extends State<DailyMedicineActivityLog> {
                       }
                     },
                   ),
-          )
+          ),
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: CustomHomeButton(),
+          ),
         ],
       ),
     );

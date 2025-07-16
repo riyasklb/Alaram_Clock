@@ -83,6 +83,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _walkingController =
         TextEditingController(text: profile?.walkingGoal?.toString() ?? '0');
     _imagePath = profile?.imagePath;
+    
+    // Initialize dropdown values with existing profile data
+    selectedGender = profile?.gender;
+    selectedEthnicity = profile?.ethnicity;
   }
 
   Future<void> _pickImage() async {
@@ -108,11 +112,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       updatedProfile.nhsNumber = _nhsController.text;
 
       // Handle nullable fields
-      updatedProfile.gender =
-          _genderController.text.isNotEmpty ? _genderController.text : null;
-      updatedProfile.ethnicity = _ethnicityController.text.isNotEmpty
-          ? _ethnicityController.text
-          : null;
+      updatedProfile.gender = selectedGender;
+      updatedProfile.ethnicity = selectedEthnicity;
 
       // Convert goal values properly
       updatedProfile.waterIntakeGoal = double.tryParse(_waterController.text);

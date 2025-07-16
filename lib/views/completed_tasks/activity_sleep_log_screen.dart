@@ -1,4 +1,5 @@
 import 'package:alaram/tools/constans/color.dart';
+import 'package:alaram/tools/cutomwidget/cutom_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -48,6 +49,10 @@ class _ActivitySleeplogState extends State<ActivitySleeplog> {
         children: [
           _buildCalendar(),
           Expanded(child: _buildActivityLogList()),
+          Padding(
+            padding: EdgeInsets.all(16.w),
+            child: CustomHomeButton(),
+          ),
         ],
       ),
     );

@@ -1,6 +1,3 @@
-// Updated ActivityLineChartScreen with more colorful UI
-import 'dart:io';
-
 import 'package:alaram/tools/constans/color.dart';
 import 'package:alaram/tools/cutomwidget/cutom_home_button.dart';
 
@@ -13,9 +10,6 @@ import 'package:alaram/tools/controllers/activity_controller.dart';
 import 'package:alaram/views/chart/widgets/daily_activity_widget.dart';
 import 'package:alaram/views/chart/widgets/line_chart_widget.dart';
 
-import 'package:pdf/widgets.dart' as pw;
-
-import 'package:path_provider/path_provider.dart';
 import 'package:alaram/views/chart/activity_metric_detail_screen.dart';
 
 class DashBoardScreen extends StatefulWidget {
@@ -233,29 +227,5 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
     );
   }
 
-  Future<void> _sharePdf() async {
-    final pdf = pw.Document();
-    final totalSleep = _activityController.totalSleep;
-    final totalWalking = _activityController.totalWalking;
-    final totalWaterIntake = _activityController.totalWaterIntake;
-    pdf.addPage(
-      pw.Page(
-        build: (pw.Context context) {
-          return pw.Column(
-            children: [
-              pw.Text('Activity Report', style: pw.TextStyle(fontSize: 24)),
-              pw.Divider(),
-              pw.Text('Total Sleep: ${totalSleep.toStringAsFixed(1)} hrs'),
-              pw.Text('Total Walking: ${totalWalking.toStringAsFixed(1)} hrs'),
-              pw.Text('Water Intake: ${totalWaterIntake.toStringAsFixed(1)} L'),
-            ],
-          );
-        },
-      ),
-    );
-    final output = await getTemporaryDirectory();
-    final file = File("${output.path}/ActivityReport.pdf");
-    await file.writeAsBytes(await pdf.save());
-    //  await Share.shareXFiles([XFile(file.path)], text: "Activity Report PDF");
-  }
+
 }

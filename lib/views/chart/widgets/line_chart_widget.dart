@@ -4,162 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive/hive.dart';
 import 'package:alaram/tools/model/profile_model.dart';
 
-class ActivityLineChart extends StatelessWidget {
-  final List<double> sleepData;
-  final List<double> walkingData;
-  final List<double> waterIntakeData;
-  final List<DateTime> dates;
-
-  const ActivityLineChart({
-    Key? key,
-    required this.sleepData,
-    required this.walkingData,
-    required this.waterIntakeData,
-    required this.dates,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    if (sleepData.isEmpty || walkingData.isEmpty || waterIntakeData.isEmpty || dates.isEmpty) {
-      return Center(child: Text("No activity data available to display the chart."));
-    }
-
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Container(
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.3),
-              spreadRadius: 2,
-              blurRadius: 5,
-              offset: Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Activity Overview',
-              style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.black),
-            ),
-            SizedBox(height: 10.h),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildLegendIndicator(Colors.blue, 'Sleep (hours)'),
-                _buildLegendIndicator(Colors.green, 'Walking (hours)'),
-                _buildLegendIndicator(Colors.indigo, 'Water (liters)'),
-              ],
-            ),
-            SizedBox(height: 10.h),
-            SizedBox(
-              height: 300.h,
-              child: LineChart(
-                LineChartData(
-                  minY: 0,
-                  maxY: 10,
-                  titlesData: FlTitlesData(
-                    bottomTitles: AxisTitles(
-                      axisNameWidget: Padding(
-                        padding: EdgeInsets.only(top: 18.h),
-                        child: Text('Date', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600)),
-                      ),
-                      axisNameSize: 32,
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 22,
-                        interval: 1,
-                        getTitlesWidget: (value, meta) {
-                          int index = value.toInt();
-                          if (index >= 0 && index < dates.length) {
-                            return Text(_formatDate(dates[index]), style: TextStyle(fontSize: 10.sp));
-                          }
-                          return Container();
-                        },
-                      ),
-                    ),
-                    leftTitles: AxisTitles(
-                      axisNameWidget: Padding(
-                        padding: EdgeInsets.only(right: 8.w),
-                        child: Text('Hours', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600)),
-                      ),
-                      axisNameSize: 32,
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 40,
-                        interval: 2,
-                        getTitlesWidget: (value, meta) {
-                          if (value >= 0 && value <= 10) {
-                            return Text(value.toInt().toString());
-                          }
-                          return Container();
-                        },
-                      ),
-                    ),
-                    rightTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    topTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                  ),
-                  borderData: FlBorderData(show: true, border: Border.all(color: Colors.black)),
-                  lineBarsData: [
-                    _buildLineChartBarData(_generateSpots(sleepData), Colors.blue),
-                    _buildLineChartBarData(_generateSpots(walkingData), Colors.green),
-                    _buildLineChartBarData(_generateSpots(waterIntakeData), Colors.indigo),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLegendIndicator(Color color, String label) {
-    return Row(
-      children: [
-        Container(width: 12, height: 12, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-        SizedBox(width: 4),
-        Text(label, style: TextStyle(fontSize: 12.sp)),
-      ],
-    );
-  }
-
-  List<FlSpot> _generateSpots(List<double> data) {
-    return List.generate(data.length, (index) => FlSpot(index.toDouble(), data[index]));
-  }
-
-  String _formatDate(DateTime date) {
-    return "${date.day}/${date.month}";
-  }
-
-  LineChartBarData _buildLineChartBarData(List<FlSpot> spots, Color color) {
-    return LineChartBarData(
-      spots: spots,
-      isCurved: true,
-      color: color,
-      barWidth: 3,
-      belowBarData: BarAreaData(show: false),
-      dotData: FlDotData(
-        show: true,
-        getDotPainter: (spot, _, __, ___) => FlDotCirclePainter(
-          radius: 3,
-          color: color,
-          strokeWidth: 1.5,
-          strokeColor: Colors.white,
-        ),
-      ),
-    );
-  }
-}
 
 class SingleMetricLineChart extends StatelessWidget {
   final List<double> data;
@@ -292,108 +136,128 @@ class SingleMetricLineChart extends StatelessWidget {
             // Chart
             SizedBox(
               height: 320.h,
-              child: LineChart(
-                LineChartData(
-                  minY: 0,
-                  maxY: (data.isNotEmpty) ? (max + 2).clamp(5, 24) : 10,
-                  titlesData: FlTitlesData(
-                    bottomTitles: AxisTitles(
-                      axisNameWidget: Padding(
-                        padding: EdgeInsets.only(top: 18.h),
-                        child: Text('Date', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600)),
-                      ),
-                      axisNameSize: 32,
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 32,
-                        interval: 1,
-                        getTitlesWidget: (value, meta) {
-                          int index = value.toInt();
-                          if (index >= 0 && index < dates.length) {
-                            return Padding(
-                              padding: EdgeInsets.only(top: 8.h),
-                              child: Text(_formatDate(dates[index]), style: TextStyle(fontSize: 11.sp)),
-                            );
-                          }
-                          return Container();
-                        },
-                      ),
-                    ),
-                    leftTitles: AxisTitles(
-                      axisNameWidget: Padding(
-                        padding: EdgeInsets.only(right: 8.w),
-                        child: Text(_yAxisLabel(), style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600)),
-                      ),
-                      axisNameSize: 32,
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 40,
-                        interval: ((max / 5).ceil()).toDouble().clamp(1, 5),
-                        getTitlesWidget: (value, meta) {
-                          if (value >= 0 && value <= 24) {
-                            return Text(value.toInt().toString(), style: TextStyle(fontSize: 11.sp));
-                          }
-                          return Container();
-                        },
-                      ),
-                    ),
-                    rightTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    topTitles: AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                  ),
-                  borderData: FlBorderData(show: true, border: Border.all(color: Colors.black)),
-                  gridData: FlGridData(show: true, drawVerticalLine: false, horizontalInterval: ((max / 5).ceil()).toDouble().clamp(1, 5)),
-                  lineBarsData: [
-                    LineChartBarData(
-                      spots: List.generate(data.length, (index) => FlSpot(index.toDouble(), data[index])),
-                      isCurved: true,
-                      color: color,
-                      barWidth: 3,
-                      belowBarData: BarAreaData(
-                        show: true,
-                        gradient: LinearGradient(
-                          colors: [color.withOpacity(0.3), color.withOpacity(0.05)],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: LineChart(
+                  LineChartData(
+                    minY: 0,
+                    maxY: (data.isNotEmpty) ? (max + 2).clamp(5, 24) : 10,
+                    titlesData: FlTitlesData(
+                      bottomTitles: AxisTitles(
+                        axisNameWidget: Padding(
+                          padding: EdgeInsets.only(top: 18.h),
+                          child: Text('Date', style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                        ),
+                        axisNameSize: 32,
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 32,
+                          interval: 1,
+                          getTitlesWidget: (value, meta) {
+                            int index = value.toInt();
+                            if (index >= 0 && index < dates.length) {
+                              return Padding(
+                                padding: EdgeInsets.only(top: 8.h),
+                                child: Text(_formatDate(dates[index]), style: TextStyle(fontSize: 11.sp)),
+                              );
+                            }
+                            return Container();
+                          },
                         ),
                       ),
-                      dotData: FlDotData(
-                        show: true,
-                        getDotPainter: (spot, _, __, ___) => FlDotCirclePainter(
-                          radius: 4,
-                          color: color,
-                          strokeWidth: 2,
-                          strokeColor: Colors.white,
+                      leftTitles: AxisTitles(
+                        axisNameWidget: Padding(
+                          padding: EdgeInsets.only(right: 8.w),
+                          child: Text(_yAxisLabel(), style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600)),
+                        ),
+                        axisNameSize: 32,
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 40,
+                          interval: ((max / 5).ceil()).toDouble().clamp(1, 5),
+                          getTitlesWidget: (value, meta) {
+                            if (value >= 0 && value <= 24) {
+                              return Text(value.toInt().toString(), style: TextStyle(fontSize: 11.sp));
+                            }
+                            return Container();
+                          },
                         ),
                       ),
-                    ),
-                    if (goal != null && goal > 0)
-                      LineChartBarData(
-                        spots: [
-                          FlSpot(0, goal),
-                          FlSpot((data.length - 1).toDouble(), goal),
-                        ],
-                        isCurved: false,
-                        color: goalColor,
-                        barWidth: 2,
-                        dashArray: [8, 6],
-                        dotData: FlDotData(show: false),
-                        belowBarData: BarAreaData(show: false),
+                      rightTitles: AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
                       ),
-                  ],
-                  lineTouchData: LineTouchData(
-                    enabled: true,
-                    touchTooltipData: LineTouchTooltipData(
-                      getTooltipItems: (spots) => spots.map((spot) {
-                        int idx = spot.x.toInt();
-                        return LineTooltipItem(
-                          '${_formatDate(dates[idx])}\n${data[idx].toStringAsFixed(2)}',
-                          TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14.sp),
+                      topTitles: AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                    ),
+                    borderData: FlBorderData(
+                      show: true,
+                      border: Border(
+                        left: BorderSide(color: Colors.black),
+                        bottom: BorderSide(color: Colors.black),
+                      ),
+                    ),
+                    gridData: FlGridData(
+                      show: true,
+                      drawVerticalLine: false,
+                      drawHorizontalLine: true,
+                      horizontalInterval: ((max / 5).ceil()).toDouble().clamp(1, 5),
+                      getDrawingHorizontalLine: (value) {
+                        return FlLine(
+                          color: Colors.grey.withOpacity(0.3),
+                          strokeWidth: 1,
                         );
-                      }).toList(),
+                      },
+                    ),
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots: List.generate(data.length, (index) => FlSpot(index.toDouble(), data[index])),
+                        isCurved: true,
+                        color: color,
+                        barWidth: 3,
+                        belowBarData: BarAreaData(
+                          show: true,
+                          gradient: LinearGradient(
+                            colors: [color.withOpacity(0.3), color.withOpacity(0.05)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
+                        dotData: FlDotData(
+                          show: true,
+                          getDotPainter: (spot, _, __, ___) => FlDotCirclePainter(
+                            radius: 4,
+                            color: color,
+                            strokeWidth: 2,
+                            strokeColor: Colors.white,
+                          ),
+                        ),
+                      ),
+                      if (goal != null && goal > 0)
+                        LineChartBarData(
+                          spots: [
+                            FlSpot(0, goal),
+                            FlSpot((data.length - 1).toDouble(), goal),
+                          ],
+                          isCurved: false,
+                          color: goalColor,
+                          barWidth: 2,
+                          dashArray: [8, 6],
+                          dotData: FlDotData(show: false),
+                          belowBarData: BarAreaData(show: false),
+                        ),
+                    ],
+                    lineTouchData: LineTouchData(
+                      enabled: true,
+                      touchTooltipData: LineTouchTooltipData(
+                        getTooltipItems: (spots) => spots.map((spot) {
+                          int idx = spot.x.toInt();
+                          return LineTooltipItem(
+                            '${_formatDate(dates[idx])}\n${data[idx].toStringAsFixed(2)}',
+                            TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14.sp),
+                          );
+                        }).toList(),
+                      ),
                     ),
                   ),
                 ),

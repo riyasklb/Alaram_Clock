@@ -3,6 +3,7 @@ import 'package:alaram/views/auth/set_goals_scrrw.dart';
 import 'package:alaram/views/auth/set_goals_with_remider_screen.dart';
 import 'package:alaram/views/daily_activity_updation/dailyactivity_medicine_update_screen.dart';
 import 'package:alaram/views/home/home_screen.dart';
+import 'package:alaram/tools/cutomwidget/cutom_home_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -369,10 +370,24 @@ print('----------------------------1-------1--------------');
                         onTap: _onTapCalendar,
                       ),
                     ),
+                    Padding(
+                      padding: EdgeInsets.all(16.w),
+                      child: CustomHomeButton(),
+                    ),
                   ],
                 )
-              : Center(
-                  child: Text("No saved goals found"),
+              : Column(
+                  children: [
+                    Expanded(
+                      child: Center(
+                        child: Text("No saved goals found"),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(16.w),
+                      child: CustomHomeButton(),
+                    ),
+                  ],
                 ),
     );
   }
