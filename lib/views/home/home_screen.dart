@@ -285,7 +285,7 @@ class HomeScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           _buildStatCard(
-                            color: Colors.deepPurpleAccent,
+                            color:  const Color.fromARGB(255, 122, 60, 37),
                             icon: 'assets/logo/walking.png',
                             value: totalHoursWalked,
                             label: 'Hrs',
@@ -480,7 +480,7 @@ class HomeScreen extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Icon(
-            achieved ? Icons.check_circle : Icons.cancel,
+            achieved ? Icons.circle : Icons.circle,
             color: achieved ? Colors.green : Colors.red,
             size: 22.sp,
           ),

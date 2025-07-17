@@ -317,40 +317,47 @@ class NotificationController extends GetxController {
   void removeMedicine(int index) {
     medicines.removeAt(index);
   }
+void saveOptionalGoals(GlobalKey<FormState> formKey) async {
+  if (formKey.currentState?.validate() ?? false) {
+    final box = await Hive.openBox<Goal>('goals');
 
-  void saveOptionalGoals(GlobalKey<FormState> formKey) async {
-    if (formKey.currentState?.validate() ?? false) {
-      final box = await Hive.openBox<Goal>('goals');
-      List<Medicine> medicinesData = medicines.map((medicine) {
-        return Medicine(
-          name: medicine['nameController'].text,
-          frequencyType: medicine['frequency'] ?? 'daily',
-          dosage: medicine['dosageController'].text,
-          quantity: int.tryParse(medicine['quantityController'].text) ?? 1,
-          selectedTimes: List<String>.from(medicine['selectedTimes']),
-        );
-      }).toList();
+    // 🧹 Clear all previously saved Goal data
+    await box.clear();
 
-      // Use 32-bit safe key
-      Goal goal = Goal(
-        goalId: _generate32BitKey(),
-        goalType: "Optional",
-        date: DateTime.now(),
-        MealValue: Meal(
-          morning: enableBreakfast.value,
-          afternoon: enableLunch.value,
-          night: enableDinner.value,
-          evening: enableevening.value,
-        ),
-        medicines: medicinesData,
+    // ⏱ Optional delay
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    List<Medicine> medicinesData = medicines.map((medicine) {
+      return Medicine(
+        name: medicine['nameController'].text,
+        frequencyType: medicine['frequency'] ?? 'daily',
+        dosage: medicine['dosageController'].text,
+        quantity: int.tryParse(medicine['quantityController'].text) ?? 1,
+        selectedTimes: List<String>.from(medicine['selectedTimes']),
       );
+    }).toList();
 
-      await box.put(goal.goalId, goal);
-      scheduleGoalNotifications(goal);
-      Get.off(() => HomeScreen());
-      Get.snackbar('Success', 'Goals saved successfully');
-    }
+    Goal goal = Goal(
+      goalId: _generate32BitKey(),
+      goalType: "Optional",
+      date: DateTime.now(),
+      MealValue: Meal(
+        morning: enableBreakfast.value,
+        afternoon: enableLunch.value,
+        evening: enableevening.value,
+        night: enableDinner.value,
+      ),
+      medicines: medicinesData,
+    );
+
+    await box.put(goal.goalId, goal);
+    scheduleGoalNotifications(goal);
+    Get.off(() => HomeScreen());
+    Get.snackbar('Success', 'Previous goals cleared and new goal saved');
   }
+}
+
+
 
   void scheduleSpecificTimeNotification() async {
     final location = tz.getLocation('Asia/Kolkata');

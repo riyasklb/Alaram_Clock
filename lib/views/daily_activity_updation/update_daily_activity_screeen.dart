@@ -288,6 +288,21 @@ class _UpdateYourDailyActivityScreenState
     var walking = double.tryParse(walkingController.text) ?? 0.0;
     var water = double.tryParse(waterController.text) ?? 0.0;
 
+    // Validation: Max value check
+    if (sleep > 15 || walking > 15 || water > 15) {
+      String errorMsg = '';
+      if (sleep > 15) errorMsg += 'Sleep hours cannot exceed 15.\n';
+      if (walking > 15) errorMsg += 'Walking hours cannot exceed 15.\n';
+      if (water > 15) errorMsg += 'Water intake cannot exceed 15 liters.';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMsg.trim()),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
     var box = Hive.box<ActivityLog>('activityLogs');
 
     // Normalize the date before saving it to Hive
